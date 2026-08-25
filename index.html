@@ -197,6 +197,149 @@ body.loading .app{visibility:hidden}
 
 #temporaryPasswordModal .warningBig{font-size:12px;line-height:1.5}
 #forcedPasswordGate .loginCard{max-width:440px}
+
+/* REVIBE v1.27.5 - proper phone layout */
+.mobileMenuButton{display:none}
+.mobileNavBackdrop{display:none}
+
+@media(max-width:650px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{font-size:14px}
+  .app{display:block!important;min-height:100vh}
+  .main{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    padding:72px 12px 18px!important;
+    overflow-x:hidden!important;
+  }
+
+  .app aside{
+    display:block!important;
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    bottom:0!important;
+    width:min(300px,86vw)!important;
+    z-index:120!important;
+    padding:68px 14px 24px!important;
+    overflow-y:auto!important;
+    transform:translateX(-105%);
+    transition:transform .2s ease;
+    box-shadow:8px 0 30px #0008;
+  }
+  body.mobileNavOpen .app aside{transform:translateX(0)}
+  .app aside .logo{
+    font-size:23px!important;
+    margin:0 10px 22px!important;
+  }
+  .app aside nav button{
+    font-size:14px!important;
+    padding:12px 14px!important;
+  }
+  .app aside nav button:before{content:none!important}
+  .navtitle{font-size:11px!important}
+
+  .mobileMenuButton{
+    display:flex!important;
+    position:fixed;
+    top:10px;
+    left:10px;
+    width:42px;
+    height:42px;
+    z-index:150;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    font-size:22px;
+    background:#171a1f;
+    border:1px solid var(--line);
+  }
+  .mobileNavBackdrop{
+    position:fixed;
+    inset:0;
+    z-index:110;
+    background:#000a;
+  }
+  body.mobileNavOpen .mobileNavBackdrop{display:block}
+
+  .userBar{
+    top:10px!important;
+    right:10px!important;
+    bottom:auto!important;
+    max-width:calc(100vw - 66px)!important;
+    min-width:0!important;
+    padding:5px 6px 5px 9px!important;
+    font-size:10px!important;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+  .userBar button{padding:7px 9px!important;font-size:11px!important}
+  .userBar span,.userBar div{overflow:hidden;text-overflow:ellipsis}
+
+  .top{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+    margin-bottom:16px!important;
+  }
+  .top h1,h1{font-size:23px!important;line-height:1.15}
+  .actions{flex-wrap:wrap}
+  .actions button,.top>button{width:100%}
+
+  .trackergrid,.formgrid,.metricgrid,.perfMetrics,.performanceButtons,
+  .sunbedSettingsGrid,.financeGrid,.financeRevenueGrid,.financeStatGrid,
+  .periodRevenueSummary,.bonusRow{
+    grid-template-columns:1fr!important;
+  }
+  .trackerpanel,.card{padding:14px!important}
+  .metric .value{font-size:25px!important}
+  .checkchoice{min-width:0!important;width:100%}
+  .sessionrow{grid-template-columns:58px minmax(0,1fr) auto!important}
+
+  .table{min-width:680px}
+  .card:has(>.table),.perfTableWrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  .table th,.table td{white-space:nowrap}
+
+  .grid{
+    display:flex!important;
+    overflow-x:auto!important;
+    gap:10px!important;
+    scroll-snap-type:x proximity;
+    padding-bottom:8px;
+  }
+  .grid .day{
+    flex:0 0 86vw!important;
+    min-width:86vw!important;
+    min-height:0!important;
+    scroll-snap-align:start;
+  }
+
+  .modal{
+    align-items:flex-start!important;
+    padding:12px!important;
+    overflow-y:auto!important;
+  }
+  .modalbox{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:none!important;
+    margin:10px 0!important;
+    padding:16px!important;
+  }
+  .perfOverlay{padding:10px!important}
+  .perfBox{padding:14px!important}
+  .perfHeader{flex-direction:column!important}
+  .perfHeader button{align-self:flex-end}
+
+  input,select,textarea{font-size:16px!important}
+  button,.btn{min-height:40px}
+  .productgrid{grid-template-columns:1fr!important}
+  .purchaseGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .globalNewCustomer{float:none!important;width:100%!important}
+}
+
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
@@ -216,6 +359,8 @@ body.loading .app{visibility:hidden}
   <pre id='debugOutput'>Waiting...</pre>
 </div>
 <div id='userBar' class='userBar' style='display:none'></div>
+<button id='mobileMenuButton' class='mobileMenuButton' type='button' aria-label='Open menu' onclick='toggleMobileNav()'>☰</button>
+<div id='mobileNavBackdrop' class='mobileNavBackdrop' onclick='closeMobileNav()'></div>
 <div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
 
 
@@ -667,13 +812,41 @@ body.loading .app{visibility:hidden}
         <div><label>Mins Per Bed Per Hour Target</label><input id='monthlyKpiTarget' type='number' min='0' step='0.1' placeholder='e.g. 10.0'></div>
         <div><label>Number of New Sign Ups</label><input id='monthlySignupTarget' type='number' min='0' step='1' placeholder='e.g. 120'></div>
         <div><label>Number of Red Light Therapy Only Sessions</label><input id='monthlyRltSessionsTarget' type='number' min='0' step='1' placeholder='e.g. 80'></div>
-        <div><label>Total Minutes Used</label><input id='monthlyTotalMinutesTarget' type='number' min='0' step='1' placeholder='e.g. 18000'></div><div><label>Number of New Reviews</label><input id='monthlyNewReviewsTarget' type='number' min='0' step='1' placeholder='e.g. 25'></div>
+        <div><label>Total Minutes Used</label><input id='monthlyTotalMinutesTarget' type='number' min='0' step='1' placeholder='e.g. 18000'></div>
+        <div><label>Number of New Reviews</label><input id='monthlyNewReviewsTarget' type='number' min='0' step='1' placeholder='e.g. 25'></div>
+        <div><label>RLT Case Studies</label><input id='monthlyRltCaseStudiesTarget' type='number' min='0' step='1' placeholder='e.g. 8'></div>
+      </div>
+
+      <div style='margin-top:22px;border-top:1px solid var(--line);padding-top:18px'>
+        <h3 style='margin:0 0 5px'>Bonus Stack</h3>
+        <div class='muted' style='margin-bottom:14px'>Three monthly bonus levels based on Mins Per Bed Per Hour.</div>
+
+        <div class='bonusRow'>
+          <div><label>Level 1 Target</label><input id='bonus1Kpi' type='number' min='0' step='0.1' placeholder='e.g. 10.0'></div>
+          <div><label>Bonus Amount (£)</label><input id='bonus1Amount' type='number' min='0' step='0.01' placeholder='e.g. 250'></div>
+          <div id='bonus1Perf' class='customerBalance'>Performance: —</div>
+        </div>
+
+        <div class='bonusRow'>
+          <div><label>Level 2 Target</label><input id='bonus2Kpi' type='number' min='0' step='0.1' placeholder='e.g. 11.0'></div>
+          <div><label>Bonus Amount (£)</label><input id='bonus2Amount' type='number' min='0' step='0.01' placeholder='e.g. 500'></div>
+          <div id='bonus2Perf' class='customerBalance'>Performance: —</div>
+        </div>
+
+        <div class='bonusRow'>
+          <div><label>Level 3 Target</label><input id='bonus3Kpi' type='number' min='0' step='0.1' placeholder='e.g. 12.0'></div>
+          <div><label>Bonus Amount (£)</label><input id='bonus3Amount' type='number' min='0' step='0.01' placeholder='e.g. 750'></div>
+          <div id='bonus3Perf' class='customerBalance'>Performance: —</div>
+        </div>
       </div>
     </div>
     <div id='monthlyTargetError' class='loginError' style='margin-top:12px'></div>
-    <div style='text-align:right;margin-top:18px'>
-      <button onclick='closeMonthlyTargetModal()'>Cancel</button>
-      <button class='primary' id='monthlyTargetSaveBtn' onclick='saveMonthlyTarget()'>Save Target Stack</button>
+    <div style='display:flex;justify-content:space-between;gap:10px;margin-top:18px'>
+      <button id='monthlyTargetDeleteButton' onclick='deleteMonthlyTargetStack()' style='display:none'>Delete Target Stack</button>
+      <div>
+        <button onclick='closeMonthlyTargetModal()'>Cancel</button>
+        <button class='primary' id='monthlyTargetSaveBtn' onclick='saveMonthlyTarget()'>Save Target Stack</button>
+      </div>
     </div>
   </div>
 </div>
@@ -876,6 +1049,21 @@ body.loading .app{visibility:hidden}
   </div>
 </div>
 <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script><script>
+
+function toggleMobileNav(){
+  document.body.classList.toggle('mobileNavOpen');
+}
+function closeMobileNav(){
+  document.body.classList.remove('mobileNavOpen');
+}
+window.addEventListener('resize',()=>{
+  if(window.innerWidth>650)closeMobileNav();
+});
+
+document.addEventListener('click',(e)=>{
+  if(e.target.closest && e.target.closest('#nav button'))closeMobileNav();
+});
+
 const SUPABASE_URL='https://fjryihtrtqygpozkirqp.supabase.co';
 const SUPABASE_KEY='sb_publishable_ciDrF9_Fo5_tVL9E9m8EZw_R0QStFpc';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -2526,6 +2714,7 @@ function openMonthlyTargetCreate(){
   document.getElementById('monthlyRltSessionsTarget').value='';
   document.getElementById('monthlyTotalMinutesTarget').value='';
   document.getElementById('monthlyNewReviewsTarget').value='';document.getElementById('monthlyRltCaseStudiesTarget').value='';['bonus1Kpi','bonus1Amount','bonus2Kpi','bonus2Amount','bonus3Kpi','bonus3Amount'].forEach(id=>document.getElementById(id).value='');
+  ['bonus1Perf','bonus2Perf','bonus3Perf'].forEach(id=>document.getElementById(id).textContent='Performance: —');
   document.getElementById('monthlyTargetModalTitle').textContent='Create Monthly Target Stack';
   document.getElementById('monthlyTargetError').style.display='none';
   document.getElementById('monthlyTargetDeleteButton').style.display='none';document.getElementById('monthlyTargetModal').classList.add('show');
@@ -2547,6 +2736,7 @@ function openMonthlyTargetEdit(id){
   document.getElementById('targetYear').readOnly=true;
   document.getElementById('monthlyTargetModalTitle').textContent=`${MONTH_NAMES[row.monthNumber-1]} ${row.year} Target Stack`;
   document.getElementById('monthlyTargetError').style.display='none';
+  document.getElementById('monthlyTargetDeleteButton').style.display='inline-block';
   document.getElementById('monthlyTargetModal').classList.add('show');
 }
 async function deleteMonthlyTargetStack(){if(!editingMonthlyTargetId)return alert('Save the Target Stack first.');if(!confirm('Delete this monthly Target Stack?'))return;let {error}=await sb.from('monthly_targets').delete().eq('id',editingMonthlyTargetId);if(error)return alert(error.message);closeMonthlyTargetModal();await loadLiveData();renderMonthlyTargets();renderPerformanceReporting()}
