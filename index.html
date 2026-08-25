@@ -163,7 +163,7 @@ body.loading .app{visibility:hidden}
 .sortable{cursor:pointer;user-select:none}.sortIcon{opacity:.55;margin-left:5px}
 @media(max-width:650px){.globalNewCustomer{position:static;float:right;margin-bottom:12px}.bonusRow{grid-template-columns:1fr}}
 
-.appTopBar{
+.appTopBar{display:none!important;
   position:fixed;
   top:0;
   left:0;
@@ -182,23 +182,18 @@ body.loading .app{visibility:hidden}
   position:static!important;
   margin:0!important;
 }
-.app aside{
-  padding-top:58px;
-  box-sizing:border-box;
-}
-.main{
-  padding-top:78px!important;
-}
+.app aside{box-sizing:border-box}.main{padding-top:20px!important}
 .topCustomerNav{
   margin-top:0!important;
   margin-bottom:18px!important;
   font-weight:800!important;
 }
 @media(max-width:700px){
-  .appTopBar{height:54px;padding:0 10px}
+  .appTopBar{display:none!important;height:54px;padding:0 10px}
   .app aside{padding-top:54px}
   .main{padding-top:72px!important}
 }
+.temporarilyDisabled{opacity:.45!important;cursor:not-allowed!important;background:#30343a!important}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
@@ -218,7 +213,7 @@ body.loading .app{visibility:hidden}
   <pre id='debugOutput'>Waiting...</pre>
 </div>
 <div id='userBar' class='userBar' style='display:none'></div>
-<div class='appTopBar'><button class='primary globalNewCustomer' onclick='openCustomerCreate()'>+ New Customer</button></div><div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
+<div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
@@ -289,11 +284,11 @@ body.loading .app{visibility:hidden}
   </div>
 </section>
 <section id='products' class='page'><div id='productListView'><div class='top'><div><h1>Treatment Types</h1><div class='muted'>Create a Treatment Type, then configure the Session Types available within it.</div></div><button class='primary' onclick='addProduct()'>+ Create Treatment Type</button></div><div id='productTiles' class='productgrid'></div></div><div id='productDetailView' style='display:none'><div class='top'><div><button onclick='backToProducts()'>← Treatment Types</button><h1 id='productTitle' style='margin-top:12px'></h1><div class='muted' id='productSub'></div></div><button class='primary' onclick='addTreatmentToCurrentProduct()'>+ Add Session Type</button></div><div class='card'><table class='table' id='productTreatmentTable'></table></div></div></section>
-<section id='customers' class='page'><div class='top'><div><h1>Customers</h1><div class='muted'>Customer accounts, minutes and purchase history.</div></div></div><div class='card'><table class='table' id='customerTable'></table></div></section>
+<section id='customers' class='page'><div class='top'><div><h1>Customers</h1><div class='muted'>Customer accounts, minutes and purchase history.</div></div><button class='primary' onclick='openCustomerCreate()'>+ New Customer</button></div><div class='card'><table class='table' id='customerTable'></table></div></section>
 <section id='tanningproducts' class='page'><div class='top'><div><h1>Tanning/RLT Products</h1><div class='muted'>Configure PAYG, block minutes, RLT programmes and tangible products.</div></div><button class='primary' onclick='openTanningProduct()'>+ New Product</button></div><div class='card'><table class='table' id='tanningProductsTable'></table></div></section>
 <section id='renters' class='page'><div class='top'><h1>Clinicians</h1><button class='primary' onclick='addRenter()'>+ Add Clinician</button></div><div class='card'><table class='table' id='renterTable'></table></div></section>
 <section id='staffmembers' class='page'><div class='top'><div><h1>Staff Members</h1><div class='muted'>Manage Revibe staff details and holiday entitlement.</div></div><button class='primary' id='addStaffMemberBtn' onclick='openStaffMemberCreate()'>+ Add Staff Member</button></div><div class='card'><table class='table' id='staffMembersTable'></table></div></section>
-<section id='staffrota' class='page'><div class='top'><div><h1>Staff Rota</h1><div class='muted' id='staffRotaWeekLabel'></div></div><div class='actions'><button id='staffRotaPrev'>←</button><button id='staffRotaToday'>Today</button><button id='staffRotaNext'>→</button><button class='primary' onclick='openStaffShiftCreate()'>+ Create New Shift</button></div></div><div id='staffRotaCalendar' class='staffRotaMatrixWrap'></div><div id='staffRotaSummary' class='card staffWeekSummary'></div></section>
+<section id='staffrota' class='page'><div class='top'><div><h1>Staff Rota</h1><div class='muted' id='staffRotaWeekLabel'></div></div><div class='actions'><select id='staffRotaRange' onchange='changeStaffRotaRange()'><option value='7'>Week</option><option value='14'>Fortnight</option></select><button id='staffRotaPrev'>←</button><button id='staffRotaToday'>Today</button><button id='staffRotaNext'>→</button><button class='primary' onclick='openStaffShiftCreate()'>+ Create New Shift</button></div></div><div id='staffRotaCalendar' class='staffRotaMatrixWrap'></div><div id='staffRotaSummary' class='card staffWeekSummary'></div></section>
 
 <section id='holidayrequests' class='page'>
   <div class='top'>
@@ -304,10 +299,10 @@ body.loading .app{visibility:hidden}
     <table class='table' id='holidayRequestsTable'></table>
   </div>
 </section>
-<section id='bedtracker' class='page active'><div class='top'><div><h1>Log Session</h1><div class='muted'>Record and monitor sunbed and red light therapy sessions.</div></div></div><div class='trackergrid'><div class='trackerpanel recordSessionPanel'><h2>Record New Session</h2><div class='muted'>Enter the session details below.</div><div class='sessionform'><div><label>Customer</label><select id='sessionCustomer' onchange='sessionCustomerChanged()'><option value=''>Select customer...</option></select></div><div id='sessionCustomerBalance' class='customerBalance'>Select a customer to see account minutes.</div><div><label>Session Length</label><input id='sessionLength' type='number' min='1' step='1' placeholder='Minutes'></div><div><label>Payment Type</label><select id='sessionPayment'><option value='Account Minutes' selected>Account Minutes</option><option value='PAYG - Cash'>PAYG - Cash</option><option value='PAYG - Card'>PAYG - Card</option></select></div><div class='sessionDetailsTitle'>Session Details</div><label class='fieldInlineCheck'><span>New Sign Up</span><input id='sessionSignup' type='checkbox' onchange='toggleBlockBookingQuestion()'></label><label id='blockBookingRow' class='fieldInlineCheck' style='display:none'><span>Purchased Block Booking?</span><input id='sessionBlockBooking' type='checkbox'></label><div class='sessionTypeChoices'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='sessionRlt' type='checkbox' onchange="exclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='sessionHybrid' type='checkbox' onchange="exclusiveSessionType('hybrid')"></label></div><button class='primary recordbtn' onclick='recordBedSession()'>Record Session</button><button class='showSessionsBtn' onclick='showTodaysSessions()'>Show Today’s Sessions</button><div id='sessionSuccess' class='successmsg'>Session recorded successfully.</div></div></div><div class='trackerpanel'><h2>Daily Performance Tracker</h2><div class='muted' id='trackerDate'></div><div class='metricgrid'><div class='metric'><div class='label'>Sessions Today</div><div class='value' id='metricSessions'>0</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value' id='metricMinutes'>0</div></div><div class='metric'><div class='label'>Total New Sign Ups</div><div class='value' id='metricSignups'>0</div></div><div class='metric'><div class='label'>Total Red Light Minutes Today</div><div class='value' id='metricRltMinutes'>0</div></div><div class='metric'><div class='label'>Total Hybrid Minutes Today</div><div class='value' id='metricHybridMinutes'>0</div></div><div class='metric'><div class='label'>Compared to Daily Average</div><div class='value' id='metricDailyAverage'>—</div><div class='kpiSub' id='metricDailyAverageDetail'></div></div><div class='metric kpiMetric'><div class='label'>Minutes Per Bed Per Hour</div><div class='value' id='metricKpi'>0.0</div><div class='kpiTargetLine' id='metricKpiTarget'>Target: not set</div><div class='kpiSub' id='metricKpiDetail'>Based on 4 beds and elapsed opening hours today.</div></div><div class='metric kpiMetric'><div class='label'>Month-to-Date Minutes Per Bed Per Hour</div><div class='value' id='metricMonthKpi'>0.0</div><div class='kpiSub' id='metricMonthKpiDetail'>Based on total minutes and opening hours so far this month.</div></div></div></div></div>
+<section id='bedtracker' class='page active'><div class='top'><div><h1>Log Session</h1><div class='muted'>Record and monitor sunbed and red light therapy sessions.</div></div></div><div class='trackergrid'><div class='trackerpanel recordSessionPanel'><h2>Record New Session</h2><div class='muted'>Enter the session details below.</div><div class='sessionform'><div><label>Session Date</label><div style='display:flex;gap:8px'><input id='sessionDateDisplay' readonly style='flex:1;cursor:pointer' onclick="openUniversalDatePicker('session')"><button type='button' onclick="openUniversalDatePicker('session')">📅</button></div><input id='sessionDate' type='hidden'></div><div><label>Customer <span class='muted'>(temporarily disabled for historic entry)</span></label><select id='sessionCustomer' disabled class='temporarilyDisabled'><option value=''>Historic session - no customer required</option></select></div><div id='sessionCustomerBalance' class='customerBalance' style='opacity:.55'>Customer linking temporarily disabled while historic sessions are loaded.</div><div><label>Session Length</label><input id='sessionLength' type='number' min='1' step='1' placeholder='Minutes'></div><div><label>Payment Type</label><select id='sessionPayment'><option value='Account Minutes' selected>Account Minutes</option><option value='PAYG - Cash'>PAYG - Cash</option><option value='PAYG - Card'>PAYG - Card</option></select></div><div class='sessionDetailsTitle'>Session Details</div><label class='fieldInlineCheck'><span>New Sign Up</span><input id='sessionSignup' type='checkbox' onchange='toggleBlockBookingQuestion()'></label><label id='blockBookingRow' class='fieldInlineCheck' style='display:none'><span>Purchased Block Booking?</span><input id='sessionBlockBooking' type='checkbox'></label><div class='sessionTypeChoices'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='sessionRlt' type='checkbox' onchange="exclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='sessionHybrid' type='checkbox' onchange="exclusiveSessionType('hybrid')"></label></div><button class='primary recordbtn' onclick='recordBedSession()'>Record Session</button><button class='showSessionsBtn' onclick='showTodaysSessions()'>Show Today’s Sessions</button><div id='sessionSuccess' class='successmsg'>Session recorded successfully.</div></div></div><div class='trackerpanel'><h2>Daily Performance Tracker</h2><div class='muted' id='trackerDate'></div><div class='metricgrid'><div class='metric'><div class='label'>Sessions Today</div><div class='value' id='metricSessions'>0</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value' id='metricMinutes'>0</div></div><div class='metric'><div class='label'>Total New Sign Ups</div><div class='value' id='metricSignups'>0</div></div><div class='metric'><div class='label'>Total Red Light Minutes Today</div><div class='value' id='metricRltMinutes'>0</div></div><div class='metric'><div class='label'>Total Hybrid Minutes Today</div><div class='value' id='metricHybridMinutes'>0</div></div><div class='metric'><div class='label'>Compared to Daily Average</div><div class='value' id='metricDailyAverage'>—</div><div class='kpiSub' id='metricDailyAverageDetail'></div></div><div class='metric kpiMetric'><div class='label'>Minutes Per Bed Per Hour</div><div class='value' id='metricKpi'>0.0</div><div class='kpiTargetLine' id='metricKpiTarget'>Target: not set</div><div class='kpiSub' id='metricKpiDetail'>Based on 4 beds and elapsed opening hours today.</div></div><div class='metric kpiMetric'><div class='label'>Month-to-Date Minutes Per Bed Per Hour</div><div class='value' id='metricMonthKpi'>0.0</div><div class='kpiSub' id='metricMonthKpiDetail'>Based on total minutes and opening hours so far this month.</div></div></div></div></div>
 <div class='card dailyTakingsPanel' style='margin-top:16px'>
   <h2 style='margin:0 0 6px'>Daily Takings</h2>
-  <div class='muted' id='dailyTakingsDateLabel' style='margin-bottom:14px'></div>
+  <div style='max-width:320px;margin-bottom:14px'><label>Takings Date</label><div style='display:flex;gap:8px'><input id='dailyTakingsDateDisplay' readonly style='flex:1;cursor:pointer' onclick="openUniversalDatePicker('takings')"><button type='button' onclick="openUniversalDatePicker('takings')">📅</button></div><input id='dailyTakingsDate' type='hidden'></div>
   <div class='formgrid' style='grid-template-columns:repeat(3,1fr)'>
     <div><label>Cash Taken (£)</label><input id='dailyCashTaken' type='number' min='0' step='0.01' oninput='updateDailyTakingsTotal()'></div>
     <div><label>Treatments Card Taken (£)</label><input id='dailyTreatmentsCardTaken' type='number' min='0' step='0.01' oninput='updateDailyTakingsTotal()'></div>
@@ -464,7 +459,7 @@ body.loading .app{visibility:hidden}
 
     <div id='orderError' class='loginError' style='margin-top:12px'></div>
     <div style='text-align:right;margin-top:18px'>
-      <button onclick='closeOrderModal()'>Cancel</button>
+      <button id='orderDeleteBtn' onclick='deleteOrder()'>Delete Order</button><button onclick='closeOrderModal()'>Cancel</button>
       <button class='primary' id='orderSaveBtn' onclick='saveOrder()'>Save Order</button>
     </div>
   </div>
@@ -479,7 +474,7 @@ body.loading .app{visibility:hidden}
 <div class='modal' id='purchaseModal'><div class='modalbox'><div class='top'><h1>Purchase Block Minutes</h1><button onclick="document.getElementById('purchaseModal').classList.remove('show')">✕</button></div><div id='purchaseSummary' class='warningBig'></div><div style='margin-top:14px'><label>Quantity</label><input id='purchaseQty' type='number' min='1' value='1' oninput='updatePurchaseSummary()'></div><div style='text-align:right;margin-top:18px'><button onclick="document.getElementById('purchaseModal').classList.remove('show')">Cancel</button><button class='primary' onclick='completeBlockPurchase()'>Complete Purchase</button></div></div></div>
 
 <div class='modal' id='tanningProductModal'><div class='modalbox'><div class='top'><h1 id='tanningProductTitle'>New Product</h1><button onclick="document.getElementById('tanningProductModal').classList.remove('show')">✕</button></div>
-<label>Product Type</label><div class='checkrow' id='productTypeButtons'></div><div class='formgrid' style='margin-top:14px'><div><label>Product Title</label><input id='tpTitle'></div><div><label>Price (£)</label><input id='tpPrice' type='number' min='0' step='.01'></div><div id='tpMinutesWrap'><label>Minute Amount</label><input id='tpMinutes' type='number' min='0'></div><div id='tpStockWrap'><label>Current Stock Level</label><input id='tpStock' type='number' min='0'></div><div style='grid-column:1/-1'><label>Description</label><input id='tpDescription'></div></div><div style='text-align:right;margin-top:16px'><button class='primary' onclick='saveTanningProduct()'>Save Product</button></div></div></div>
+<label>Product Type</label><div class='checkrow' id='productTypeButtons'></div><div class='formgrid' style='margin-top:14px'><div><label>Product Title</label><input id='tpTitle'></div><div><label>Price (£)</label><input id='tpPrice' type='number' min='0' step='.01'></div><div id='tpMinutesWrap'><label>Minute Amount</label><input id='tpMinutes' type='number' min='0'></div><div id='tpStockWrap'><label>Current Stock Level</label><input id='tpStock' type='number' min='0'></div><div style='grid-column:1/-1'><label>Description</label><input id='tpDescription'></div></div><div style='display:flex;justify-content:space-between;margin-top:16px'><button id='deleteTanningProductBtn' onclick='deleteTanningProduct()'>Delete Product</button><button class='primary' onclick='saveTanningProduct()'>Save Product</button></div></div></div>
 
 <div class='modal' id='insufficientMinutesModal'><div class='modalbox'><div class='top'><h1>Not Enough Account Minutes</h1><button onclick="document.getElementById('insufficientMinutesModal').classList.remove('show')">✕</button></div><div id='insufficientMessage' class='warningBig'></div><div class='actions' style='margin-top:18px'><button class='primary' onclick='purchaseMoreFromSession()'>Purchase More Minutes</button><button onclick='buyPaygRemainder()'>Buy PAYG</button></div></div></div>
 <div class='modal' id='userModal'>
@@ -570,7 +565,7 @@ body.loading .app{visibility:hidden}
       </div>
       <div id='holidayRotaConflict' class='holidayWarning' style='display:none'></div>
       <div id='holidayRequestError' class='loginError' style='margin-top:12px'></div>
-      <div style='margin-top:16px'><button class='primary' id='holidaySaveBtn' onclick='saveHolidayRequest()'>Save Request</button></div>
+      <div style='display:flex;justify-content:space-between;margin-top:16px'><button id='holidayDeleteBtn' onclick='deleteHolidayRequest()'>Delete Request</button><button class='primary' id='holidaySaveBtn' onclick='saveHolidayRequest()'>Save Request</button></div>
     </div>
 
     <div class='card' id='holidayApprovalPanel' style='display:none'>
@@ -607,7 +602,7 @@ body.loading .app{visibility:hidden}
     <div id='holidayPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div>
   </div>
 </div>
-<div class='modal' id='staffMemberCreateModal'><div class='modalbox' style='max-width:720px'><div class='top'><div><h1 id='staffMemberModalTitle'>Add Staff Member</h1><div class='muted' id='staffMemberModalSubtitle'>Create a staff record</div></div><button onclick='closeStaffMemberCreate()'>✕</button></div><div class='formgrid' style='grid-template-columns:repeat(2,1fr)'><div><label>Name</label><input id='staffName' placeholder='Full name'></div><div><label>Phone Number</label><input id='staffPhone' type='tel' placeholder='Phone number'></div><div style='grid-column:1 / -1'><label>Address</label><input id='staffAddress' placeholder='Address'></div><div><label>Date of Joining</label><div style='display:flex;gap:8px'><input id='staffJoinDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openStaffJoinCalendarPicker()'><button type='button' onclick='openStaffJoinCalendarPicker()'>📅</button></div><input id='staffJoinDate' type='hidden'></div><div><label>Holiday Entitlement This Year</label><input id='staffHolidayEntitlement' type='number' min='0' step='0.5' value='0' oninput='updateHolidayRemainingPreview()'><div class='menuRoleNote'>Admin controlled</div></div><div><label>Holidays Remaining</label><input id='staffHolidayRemaining' type='number' value='0' readonly><div class='menuRoleNote'>Calculated automatically</div></div><div><label>Staff Colour</label><input id='staffColour' type='color' value='#18d7e8' style='height:42px;padding:4px'></div></div><div id='staffCreateError' class='loginError' style='margin-top:12px'></div><div style='text-align:right;margin-top:18px'><button onclick='closeStaffMemberCreate()'>Cancel</button> <button class='primary' id='staffCreateSaveBtn' onclick='saveStaffMember()'>Create Staff Member</button></div></div></div>
+<div class='modal' id='staffMemberCreateModal'><div class='modalbox' style='max-width:720px'><div class='top'><div><h1 id='staffMemberModalTitle'>Add Staff Member</h1><div class='muted' id='staffMemberModalSubtitle'>Create a staff record</div></div><button onclick='closeStaffMemberCreate()'>✕</button></div><div class='formgrid' style='grid-template-columns:repeat(2,1fr)'><div><label>Name</label><input id='staffName' placeholder='Full name'></div><div><label>Phone Number</label><input id='staffPhone' type='tel' placeholder='Phone number'></div><div style='grid-column:1 / -1'><label>Address</label><input id='staffAddress' placeholder='Address'></div><div><label>Date of Joining</label><div style='display:flex;gap:8px'><input id='staffJoinDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openStaffJoinCalendarPicker()'><button type='button' onclick='openStaffJoinCalendarPicker()'>📅</button></div><input id='staffJoinDate' type='hidden'></div><div><label>Holiday Entitlement This Year</label><input id='staffHolidayEntitlement' type='number' min='0' step='0.5' value='0' oninput='updateHolidayRemainingPreview()'><div class='menuRoleNote'>Admin controlled</div></div><div><label>Holidays Remaining</label><input id='staffHolidayRemaining' type='number' value='0' readonly><div class='menuRoleNote'>Calculated automatically</div></div><div><label>Staff Colour</label><input id='staffColour' type='color' value='#18d7e8' style='height:42px;padding:4px'></div></div><div id='staffCreateError' class='loginError' style='margin-top:12px'></div><div style='display:flex;justify-content:space-between;margin-top:18px'><button id='deleteStaffBtn' onclick='deleteStaffMember()'>Delete Staff Member</button><div><button onclick='closeStaffMemberCreate()'>Cancel</button> <button class='primary' id='staffCreateSaveBtn' onclick='saveStaffMember()'>Create Staff Member</button></div></div></div></div>
 <div class='modal' id='staffShiftCreateModal'><div class='modalbox' style='max-width:720px'><div class='top'><div><h1>Create New Shift</h1><div class='muted'>Add a shift to the Staff Rota</div></div><button onclick='closeStaffShiftCreate()'>✕</button></div><div class='formgrid' style='grid-template-columns:repeat(2,1fr)'><div><label>Staff Member</label><select id='shiftStaff' onchange='updateShiftSummary()'></select></div><div><label>Date</label><div style='display:flex;gap:8px'><input id='shiftDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openShiftCalendarPicker()'><button type='button' onclick='openShiftCalendarPicker()'>📅</button></div><input id='shiftDate' type='hidden'></div><div><label>Start Time</label><select id='shiftStart' onchange='updateShiftSummary()'></select></div><div><label>End Time</label><select id='shiftEnd' onchange='updateShiftSummary()'></select></div></div><div class='staffWeekTotal'><div class='muted'>This Shift</div><div class='big' id='shiftHoursPreview'>0.00 hours</div><div class='muted' style='margin-top:10px'>Weekly Total Including This Shift</div><div class='big' id='shiftWeekTotalPreview'>0.00 hours</div><div class='muted' id='shiftWeekRange'></div></div><div id='shiftCreateError' class='loginError' style='margin-top:12px'></div><div style='text-align:right;margin-top:18px'><button onclick='closeStaffShiftCreate()'>Cancel</button> <button class='primary' id='shiftCreateSaveBtn' onclick='saveStaffShift()'>Create Shift</button></div></div></div>
 <div class='modal' id='staffJoinCalendarPickerModal'><div class='modalbox' style='max-width:420px'><div class='top'><div><h1>Select Date of Joining</h1><div class='muted'>Choose the staff member's start date</div></div><button onclick='closeStaffJoinCalendarPicker()'>✕</button></div><div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'><button type='button' onclick='changeStaffJoinPickerMonth(-1)'>←</button><strong id='staffJoinPickerMonthLabel'></strong><button type='button' onclick='changeStaffJoinPickerMonth(1)'>→</button></div><div id='staffJoinPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div></div></div>
 <div class='modal' id='shiftCalendarPickerModal'><div class='modalbox' style='max-width:420px'><div class='top'><div><h1>Select Shift Date</h1><div class='muted'>Choose the rota date</div></div><button onclick='closeShiftCalendarPicker()'>✕</button></div><div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'><button type='button' onclick='changeShiftPickerMonth(-1)'>←</button><strong id='shiftPickerMonthLabel'></strong><button type='button' onclick='changeShiftPickerMonth(1)'>→</button></div><div id='shiftPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div></div></div>
@@ -650,7 +645,7 @@ body.loading .app{visibility:hidden}
       <div><label>Email</label><input id='renterCreateEmail' type='email' placeholder='Optional'></div>
     </div>
     <div id='renterCreateError' class='loginError' style='margin-top:12px'></div>
-    <div style='text-align:right;margin-top:18px'><button onclick='closeRenterCreate()'>Cancel</button> <button class='primary' id='renterCreateSaveBtn' onclick='saveNewRenter()'>Create Clinician</button></div>
+    <div style='display:flex;justify-content:space-between;margin-top:18px'><button id='deleteRenterBtn' onclick='deleteRenter()'>Delete Clinician</button><div><button onclick='closeRenterCreate()'>Cancel</button> <button class='primary' id='renterCreateSaveBtn' onclick='saveNewRenter()'>Create Clinician</button></div></div>
   </div>
 </div>
 
@@ -664,7 +659,7 @@ body.loading .app{visibility:hidden}
       <div><label>Price (£)</label><input id='treatmentCreatePrice' type='number' min='0' step='0.01' value='0.00'></div>
     </div>
     <div id='treatmentCreateError' class='loginError' style='margin-top:12px'></div>
-    <div style='text-align:right;margin-top:18px'><button onclick='closeTreatmentCreate()'>Cancel</button> <button class='primary' id='treatmentCreateSaveBtn' onclick='saveNewTreatment()'>Create Session Type</button></div>
+    <div style='display:flex;justify-content:space-between;margin-top:18px'><button id='deleteTreatmentBtn' onclick='deleteTreatment()'>Delete Session Type</button><div><button onclick='closeTreatmentCreate()'>Cancel</button> <button class='primary' id='treatmentCreateSaveBtn' onclick='saveNewTreatment()'>Create Session Type</button></div></div>
   </div>
 </div>
 
@@ -1228,7 +1223,7 @@ function openOrderCreate(){
   document.getElementById('orderStaffMember').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
   document.getElementById('orderError').style.display='none';
   document.getElementById('orderSaveBtn').textContent='Save Order';
-  document.getElementById('orderModal').classList.add('show');
+  document.getElementById('orderDeleteBtn').style.display='none';document.getElementById('orderModal').classList.add('show');
 }
 
 function openOrderEdit(id){
@@ -1246,6 +1241,7 @@ function openOrderEdit(id){
   document.getElementById('orderModal').classList.add('show');
 }
 
+async function deleteOrder(){if(!editingOrderId)return alert('Save the order first.');if(!confirm('Delete this order?'))return;let {error}=await sb.from('orders').delete().eq('id',editingOrderId);if(error)return alert(error.message);closeOrderModal();await loadLiveData();renderFinance();renderOrders()}
 function closeOrderModal(){document.getElementById('orderModal').classList.remove('show');editingOrderId=null}
 
 async function saveOrder(){
@@ -1293,9 +1289,9 @@ function renderUsers(){
         <td>${u.email}</td>
         <td><span class='userRoleBadge'>${REVIBE_ROLE_LABELS[u.role]||u.role}</span></td>
         <td>${u.role==='renter'?(clinician?.name||'Not linked'):''}</td>
-        <td>${u.active?'Active':'Inactive'}</td>
+        <td>${u.active?'Active':'Inactive'}</td><td><button onclick="event.stopPropagation();manageUser('resend_invite','${u.id}','${u.email}')">Resend Invite</button> <button onclick="event.stopPropagation();manageUser('password_reset','${u.id}','${u.email}')">Reset Password</button> <button onclick="event.stopPropagation();manageUser('delete','${u.id}','${u.email}')">Delete</button></td>
       </tr>`;
-    }).join(''):`<tr><td colspan='5' class='muted'>No users found.</td></tr>`);
+    }).join(''):`<tr><td colspan='6' class='muted'>No users found.</td></tr>`);
 }
 
 function populateUserClinicians(){
@@ -1406,6 +1402,7 @@ function holidayDateKeys(startKey,endKey){
   if(!startKey||!endKey)return [];
   return dateRangeKeys(parseLocalDateKey(startKey),parseLocalDateKey(endKey));
 }
+function holidayChargeDays(calendarDays){return calendarDays>0?Math.ceil((calendarDays*5/7)*2)/2:0}
 function holidayDaysInclusive(startKey,endKey){
   if(!startKey||!endKey)return 0;
   let s=parseLocalDateKey(startKey),e=parseLocalDateKey(endKey);
@@ -1452,7 +1449,7 @@ function openHolidayRequestCreate(){
   document.getElementById('holidayRequestError').style.display='none';
   document.getElementById('holidayRotaConflict').style.display='none';
   updateHolidayRequestSummary();
-  document.getElementById('holidayRequestModal').classList.add('show');
+  document.getElementById('holidayDeleteBtn').style.display='none';document.getElementById('holidayRequestModal').classList.add('show');
 }
 function openHolidayRequest(id){
   let h=data.holidayRequests.find(x=>x.id===id);if(!h)return;
@@ -1478,16 +1475,18 @@ function openHolidayRequest(id){
   updateHolidayRequestSummary();
   document.getElementById('holidayRequestModal').classList.add('show');
 }
+async function deleteHolidayRequest(){if(!editingHolidayRequestId)return alert('Save the request first.');if(!confirm('Delete this holiday request?'))return;let h=data.holidayRequests.find(x=>x.id===editingHolidayRequestId),{error}=await sb.from('holiday_requests').delete().eq('id',editingHolidayRequestId);if(error)return alert(error.message);if(h?.status==='Approved'){let rpc=await sb.rpc('recalculate_staff_holiday_remaining',{p_staff_member_id:h.staffId});if(rpc.error)return alert(rpc.error.message)}closeHolidayRequestModal();await loadLiveData();renderAll()}
 function closeHolidayRequestModal(){document.getElementById('holidayRequestModal').classList.remove('show');editingHolidayRequestId=null}
 function updateHolidayRequestSummary(){
   let staffId=document.getElementById('holidayStaff').value,
       staff=data.staffMembers.find(s=>s.id===staffId),
       start=document.getElementById('holidayStart').value,
       end=document.getElementById('holidayEnd').value,
-      days=holidayDaysInclusive(start,end);
+      calendarDays=holidayDaysInclusive(start,end),
+      days=holidayChargeDays(calendarDays);
 
   document.getElementById('holidayRemainingDisplay').textContent=staff?`${Number(staff.holidaysRemaining).toFixed(1)} days remaining this year`:'';
-  document.getElementById('holidayDaysTotal').value=days?`${days} day${days===1?'':'s'}`:'';
+  document.getElementById('holidayDaysTotal').value=days?`${days} day${days===1?'':'s'} holiday (${calendarDays} calendar day${calendarDays===1?'':'s'})`:'';
 
   let conflicts=staffHolidayRotaConflicts(staffId,start,end),
       box=document.getElementById('holidayRotaConflict');
@@ -1500,7 +1499,7 @@ function updateHolidayRequestSummary(){
 async function saveHolidayRequest(){
   if(currentProfile?.role!=='admin')return;
   let staffId=document.getElementById('holidayStaff').value,start=document.getElementById('holidayStart').value,end=document.getElementById('holidayEnd').value,
-      days=holidayDaysInclusive(start,end),err=document.getElementById('holidayRequestError'),btn=document.getElementById('holidaySaveBtn');
+      calendarDays=holidayDaysInclusive(start,end),days=holidayChargeDays(calendarDays),err=document.getElementById('holidayRequestError'),btn=document.getElementById('holidaySaveBtn');
   err.style.display='none';
   if(!staffId||!start||!end||days<=0){err.textContent='Please enter valid holiday dates.';err.style.display='block';return;}
 
@@ -1580,15 +1579,16 @@ function renderHolidayDatePicker(){
   grid.innerHTML=heads+cells;
 }
 function renderStaffMembers(){let t=document.getElementById('staffMembersTable');if(!t)return;t.innerHTML='<tr><th>Name</th><th>Phone</th><th>Address</th><th>Date Joined</th><th>Holiday Entitlement</th><th>Holidays Remaining</th><th>Colour</th></tr>'+(data.staffMembers.length?data.staffMembers.map(s=>`<tr class='clinicRow' onclick="openStaffMemberEdit('${s.id}')"><td><b>${s.name}</b></td><td>${s.phone||''}</td><td>${s.address||''}</td><td>${s.dateOfJoining?formatSunbedDisplayDate(s.dateOfJoining):''}</td><td>${s.holidayEntitlement}</td><td>${s.holidaysRemaining}</td><td><span style='display:inline-block;width:28px;height:18px;border-radius:5px;background:${s.colour};border:1px solid #555'></span></td></tr>`).join(''):`<tr><td colspan='7' class='muted'>No staff members configured yet.</td></tr>`)}
+let staffRotaDays=7;function changeStaffRotaRange(){staffRotaDays=+document.getElementById('staffRotaRange').value||7;renderStaffRota()}
 function renderStaffRota(){
   let wrap=document.getElementById('staffRotaCalendar');if(!wrap)return;
-  let end=new Date(staffRotaWeekStart);end.setDate(end.getDate()+6);
+  let end=new Date(staffRotaWeekStart);end.setDate(end.getDate()+staffRotaDays-1);
   document.getElementById('staffRotaWeekLabel').textContent=`${nice(staffRotaWeekStart)} – ${nice(end)}`;
 
   const startMin=8*60+45,endMin=20*60+15,rowStep=15,totalRows=(endMin-startMin)/rowStep;
-  let html=`<div class='staffRotaMatrix'><div class='staffRotaHead'>Time</div>`;
+  let html=`<div class='staffRotaMatrix' style='grid-template-columns:72px repeat(${staffRotaDays},minmax(150px,1fr));min-width:${72+staffRotaDays*150}px'><div class='staffRotaHead'>Time</div>`;
   let dayKeys=[];
-  for(let i=0;i<7;i++){
+  for(let i=0;i<staffRotaDays;i++){
     let d=new Date(staffRotaWeekStart);d.setDate(d.getDate()+i);dayKeys.push(iso(d));
     html+=`<div class='staffRotaHead'>${nice(d)}</div>`;
   }
@@ -1597,7 +1597,7 @@ function renderStaffRota(){
     let mins=startMin+r*rowStep,hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0'),
         label=(mins===startMin||mins===endMin-rowStep||mm==='00'||mm==='30')?`${hh}:${mm}`:'';
     html+=`<div class='staffRotaTime'>${label}</div>`;
-    for(let d=0;d<7;d++){
+    for(let d=0;d<staffRotaDays;d++){
       let edge=mins<9*60||mins>=20*60?' edge':'';
       let holidayNames=(data.holidayRequests||[]).filter(h=>h.status==='Approved'&&dayKeys[d]>=h.startDate&&dayKeys[d]<=h.endDate).map(h=>data.staffMembers.find(s=>s.id===h.staffId)?.name).filter(Boolean);
       let holidayClass=holidayNames.length?' holidayRotaShade':'';
@@ -1639,8 +1639,8 @@ function renderStaffRota(){
   scheduled.forEach(s=>{totals[s.staffId]=(totals[s.staffId]||0)+(+s.hours||0)});
   let rows=Object.entries(totals).map(([staffId,hours])=>({staff:data.staffMembers.find(m=>m.id===staffId),hours})).filter(x=>x.staff);
   document.getElementById('staffRotaSummary').innerHTML=rows.length
-    ?`<h3 style='margin-top:0'>Weekly Scheduled Hours</h3><table class='table'><tr><th>Staff Member</th><th>Total Scheduled Hours</th></tr>${rows.sort((a,b)=>a.staff.name.localeCompare(b.staff.name)).map(x=>`<tr><td><span class='staffColourDot' style='background:${x.staff.colour}'></span><b>${x.staff.name}</b></td><td>${x.hours.toFixed(2)} hours</td></tr>`).join('')}</table>`
-    :`<h3 style='margin-top:0'>Weekly Scheduled Hours</h3><div class='muted'>No staff scheduled this week.</div>`;
+    ?`<h3 style='margin-top:0'>${staffRotaDays===14?'Fortnight':'Weekly'} Scheduled Hours</h3><table class='table'><tr><th>Staff Member</th><th>Total Scheduled Hours</th></tr>${rows.sort((a,b)=>a.staff.name.localeCompare(b.staff.name)).map(x=>`<tr><td><span class='staffColourDot' style='background:${x.staff.colour}'></span><b>${x.staff.name}</b></td><td>${x.hours.toFixed(2)} hours</td></tr>`).join('')}</table>`
+    :`<h3 style='margin-top:0'>${staffRotaDays===14?'Fortnight':'Weekly'} Scheduled Hours</h3><div class='muted'>No staff scheduled this week.</div>`;
 }function openStaffMemberCreate(){
   editingStaffId=null;let today=localDateKey();
   document.getElementById('staffMemberModalTitle').textContent='Add Staff Member';document.getElementById('staffMemberModalSubtitle').textContent='Create a staff record';
@@ -1649,7 +1649,7 @@ function renderStaffRota(){
   document.getElementById('staffHolidayEntitlement').value='0';document.getElementById('staffHolidayRemaining').value='0';document.getElementById('staffColour').value='#18d7e8';
   document.getElementById('staffCreateSaveBtn').textContent='Create Staff Member';document.getElementById('staffCreateError').style.display='none';
   let isAdmin=currentProfile?.role==='admin';document.getElementById('staffHolidayEntitlement').readOnly=!isAdmin;document.getElementById('staffHolidayRemaining').readOnly=true;
-  document.getElementById('staffMemberCreateModal').classList.add('show');
+  document.getElementById('deleteStaffBtn').style.display='none';document.getElementById('staffMemberCreateModal').classList.add('show');
 }
 function openStaffMemberEdit(id){
   let s=data.staffMembers.find(x=>x.id===id);if(!s)return;editingStaffId=id;
@@ -1661,6 +1661,7 @@ function openStaffMemberEdit(id){
   let isAdmin=currentProfile?.role==='admin';document.getElementById('staffHolidayEntitlement').readOnly=!isAdmin;document.getElementById('staffHolidayRemaining').readOnly=true;
   document.getElementById('staffMemberCreateModal').classList.add('show');
 }
+async function deleteStaffMember(){if(!editingStaffId)return alert('Save the staff member first.');if(!confirm('Delete this staff member?'))return;let {error}=await sb.from('staff_members').delete().eq('id',editingStaffId);if(error)return alert('This staff member may still have shifts, holidays or orders linked. Delete those first.\n\n'+error.message);document.getElementById('staffMemberCreateModal').classList.remove('show');editingStaffId=null;await loadLiveData();renderAll()}
 function updateHolidayRemainingPreview(){
   let entitlement=+document.getElementById('staffHolidayEntitlement').value||0;
   document.getElementById('staffHolidayRemaining').value=entitlement.toFixed(1).replace('.0','');
@@ -1742,8 +1743,15 @@ function ageFromDob(dob){if(!dob)return null;let d=parseLocalDateKey(dob),n=new 
 function renderCustomers(){
  let t=document.getElementById('customerTable');if(!t)return;
  let rows=[...(data.customers||[])].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
- t.innerHTML="<tr><th>Account</th><th>Name</th><th>DOB</th><th>Phone</th><th>Minutes Left</th><th>ID Checked</th></tr>"+(rows.length?rows.map(c=>`<tr class='clinicRow' onclick="openCustomer('${c.id}')"><td>${c.accountNumber}</td><td><b>${c.firstName} ${c.lastName}</b></td><td>${formatSunbedDisplayDate(c.dob)}</td><td>${c.phone||''}</td><td><b>${c.minutesLeft}</b></td><td>${c.idChecked?'Yes':'No'}</td></tr>`).join(''):"<tr><td colspan='6' class='muted'>No customers yet.</td></tr>");
+ t.innerHTML="<tr><th>Account</th><th>Name</th><th>DOB</th><th>Phone</th><th>Minutes Left</th><th>ID Checked</th><th></th></tr>"+(rows.length?rows.map(c=>`<tr class='clinicRow' onclick="openCustomer('${c.id}')"><td>${c.accountNumber}</td><td><b>${c.firstName} ${c.lastName}</b></td><td>${formatSunbedDisplayDate(c.dob)}</td><td>${c.phone||''}</td><td><b>${c.minutesLeft}</b></td><td>${c.idChecked?'Yes':'No'}</td><td><button onclick="event.stopPropagation();deleteCustomer('${c.id}')">Delete</button></td></tr>`).join(''):"<tr><td colspan='7' class='muted'>No customers yet.</td></tr>");
  let sel=document.getElementById('sessionCustomer');if(sel){let v=sel.value;sel.innerHTML="<option value=''>Select customer...</option>"+rows.map(c=>`<option value='${c.id}'>${c.firstName} ${c.lastName} · ${c.accountNumber}</option>`).join('');sel.value=v}
+}
+async function deleteCustomer(id){
+ let c=data.customers.find(x=>x.id===id);if(!c)return;
+ if(!confirm(`Delete customer ${c.firstName} ${c.lastName}?`))return;
+ let {error}=await sb.from('customers').delete().eq('id',id);
+ if(error){alert('This customer cannot be deleted because they have linked session or payment history. Remove test history first, or keep the customer for the audit trail.\n\n'+error.message);return}
+ await loadLiveData();renderCustomers();
 }
 function openCustomerCreate(){editingCustomerId=null;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';['custFirst','custLast','custDob','custPhone','custAddress'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';document.getElementById('customerModal').classList.add('show')}
 function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);document.getElementById('customerModal').classList.add('show')}
@@ -1768,8 +1776,9 @@ function openBlockPurchase(id){purchaseProductId=id;document.getElementById('pur
 function updatePurchaseSummary(){let p=data.tanningProducts.find(x=>x.id===purchaseProductId),q=Math.max(1,+document.getElementById('purchaseQty').value||1);if(p)document.getElementById('purchaseSummary').textContent=`Purchasing ${q} × ${p.title} (${p.minutes*q} minutes) for £${(p.price*q).toFixed(2)}.`}
 async function completeBlockPurchase(){let q=Math.max(1,+document.getElementById('purchaseQty').value||1),{data:bal,error}=await sb.rpc('purchase_block_minutes',{p_customer:editingCustomerId,p_product:purchaseProductId,p_quantity:q});if(error)return alert(error.message);document.getElementById('purchaseModal').classList.remove('show');await loadLiveData();openCustomer(editingCustomerId);alert(`Purchase complete. ${bal} minutes left on account.`)}
 function renderTanningProducts(){let t=document.getElementById('tanningProductsTable');if(!t)return;let rows=data.tanningProducts||[];t.innerHTML="<tr><th>Type</th><th>Product</th><th>Minutes</th><th>Price</th><th>Stock</th></tr>"+rows.map(p=>`<tr class='clinicRow' onclick="openTanningProduct('${p.id}')"><td>${p.type}</td><td><b>${p.title}</b></td><td>${p.minutes??'—'}</td><td>£${p.price.toFixed(2)}</td><td>${p.stock??'—'}</td></tr>`).join('')}
-function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('tanningProductModal').classList.add('show')}
-function selectTanningProductType(t){document.getElementById('tanningProductModal').dataset.type=t;openTanningProduct(editingTanningProductId);document.getElementById('tanningProductModal').dataset.type=t;updateTanningProductFields()}
+function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('deleteTanningProductBtn').style.display=p?'inline-block':'none';document.getElementById('tanningProductModal').classList.add('show')}
+async function deleteTanningProduct(){if(!editingTanningProductId)return alert('Save the product before it can be deleted.');if(!confirm('Delete this product?'))return;let {error}=await sb.from('tanning_rlt_products').delete().eq('id',editingTanningProductId);if(error)return alert(error.message);document.getElementById('tanningProductModal').classList.remove('show');await loadLiveData();renderTanningProducts()}
+function selectTanningProductType(t){let modal=document.getElementById('tanningProductModal');modal.dataset.type=t;document.getElementById('productTypeButtons').querySelectorAll('button').forEach(b=>b.classList.toggle('primary',b.textContent===t));updateTanningProductFields()}
 function updateTanningProductFields(){let t=document.getElementById('tanningProductModal').dataset.type;document.getElementById('tpMinutesWrap').style.display=['PAYG Minutes','Block Minutes'].includes(t)?'block':'none';document.getElementById('tpStockWrap').style.display=t==='Tangible'?'block':'none'}
 async function saveTanningProduct(){let type=document.getElementById('tanningProductModal').dataset.type,title=document.getElementById('tpTitle').value.trim(),price=+document.getElementById('tpPrice').value,minutes=+document.getElementById('tpMinutes').value||null,stock=+document.getElementById('tpStock').value||null,description=document.getElementById('tpDescription').value.trim();if(!title||!Number.isFinite(price))return alert('Enter a title and valid price.');let payload={product_type:type,title,description:description||null,minute_amount:['PAYG Minutes','Block Minutes'].includes(type)?minutes:null,price,current_stock_level:type==='Tangible'?stock:null,updated_at:new Date().toISOString()},error;if(editingTanningProductId)({error}=await sb.from('tanning_rlt_products').update(payload).eq('id',editingTanningProductId));else({error}=await sb.from('tanning_rlt_products').insert(payload));if(error)return alert(error.message);document.getElementById('tanningProductModal').classList.remove('show');await loadLiveData();renderTanningProducts()}
 function sessionCustomerChanged(){let c=data.customers.find(x=>x.id===document.getElementById('sessionCustomer').value);document.getElementById('sessionCustomerBalance').textContent=c?`${c.minutesLeft} minutes left on account.`:'Select a customer to see account minutes.'}
@@ -1791,6 +1800,7 @@ function addProduct(){
   document.getElementById('createProductSaveBtn').textContent='Create Treatment Type';
   document.getElementById('productCreateModal').classList.add('show');
 }
+async function deleteCurrentProduct(){let p=data.products.find(x=>x.id===currentProduct);if(!p)return;if(!confirm(`Delete Treatment Type ${p.name}?`))return;let {error}=await sb.from('products').delete().eq('id',p.id);if(error)return alert('This Treatment Type may still have Session Types, Clinicians or bookings linked to it. Delete those linked records first.\n\n'+error.message);await loadLiveData();backToProducts();renderProducts()}
 function editCurrentProduct(){
   let p=data.products.find(x=>x.id===currentProduct);if(!p)return;
   editingProductId=p.id;
@@ -1829,7 +1839,7 @@ function addTreatmentToCurrentProduct(){
   document.getElementById('treatmentCreatePrice').value='0.00';
   document.getElementById('treatmentCreateSaveBtn').textContent='Create Session Type';
   document.getElementById('treatmentCreateError').style.display='none';
-  document.getElementById('treatmentCreateModal').classList.add('show');
+  document.getElementById('deleteTreatmentBtn').style.display='none';document.getElementById('treatmentCreateModal').classList.add('show');
 }
 function openTreatmentEdit(id){
   let t=data.treatments.find(x=>x.id===id);if(!t)return;
@@ -1843,8 +1853,10 @@ function openTreatmentEdit(id){
   document.getElementById('treatmentCreatePrice').value=(+t.price||0).toFixed(2);
   document.getElementById('treatmentCreateSaveBtn').textContent='Save Changes';
   document.getElementById('treatmentCreateError').style.display='none';
+  document.getElementById('deleteTreatmentBtn').style.display='inline-block';
   document.getElementById('treatmentCreateModal').classList.add('show');
 }
+async function deleteTreatment(){if(!editingTreatmentId)return alert('Save the Session Type first.');if(!confirm('Delete this Session Type?'))return;let {error}=await sb.from('treatments').delete().eq('id',editingTreatmentId);if(error)return alert(error.message);document.getElementById('treatmentCreateModal').classList.remove('show');editingTreatmentId=null;await loadLiveData();renderAll();if(currentProduct)openProduct(currentProduct)}
 function closeTreatmentCreate(){document.getElementById('treatmentCreateModal').classList.remove('show');editingTreatmentId=null}
 async function saveNewTreatment(){
   let p=data.products.find(x=>x.id===currentProduct),name=document.getElementById('treatmentCreateName').value.trim(),
@@ -1868,14 +1880,15 @@ async function saveNewTreatment(){
   finally{btn.disabled=false;btn.textContent='Create Session Type';}
 }
 function showTreatmentCreateError(msg){let el=document.getElementById('treatmentCreateError');el.textContent=msg;el.style.display='block'}
-function goToPage(pageId){document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders()}
+function resetPageScroll(){window.scrollTo({top:0,left:0,behavior:'instant'});document.querySelector('.main')?.scrollTo?.({top:0,left:0,behavior:'instant'})}
+function goToPage(pageId){resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders()}
 function makeTablesSortable(){
  document.querySelectorAll('table.table').forEach(table=>table.querySelectorAll('th').forEach((th,i)=>{
   if(th.dataset.sortReady)return;th.dataset.sortReady='1';th.classList.add('sortable');th.innerHTML+=`<span class='sortIcon'>↕</span>`;
   th.onclick=()=>{let rows=[...table.querySelectorAll('tr')].slice(1),asc=th.dataset.asc!=='true';rows.sort((a,b)=>{let av=a.children[i]?.innerText.trim()||'',bv=b.children[i]?.innerText.trim()||'',an=parseFloat(av.replace(/[£,%]/g,'')),bn=parseFloat(bv.replace(/[£,%]/g,''));return ((!isNaN(an)&&!isNaN(bn))?an-bn:av.localeCompare(bv,undefined,{numeric:true}))*(asc?1:-1)});rows.forEach(r=>table.appendChild(r));th.dataset.asc=String(asc)}
  }))
 }
-function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderFinance();renderOrders();renderCustomers();renderTanningProducts();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting();setTimeout(makeTablesSortable,0);}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-7);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+7);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
+function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderFinance();renderOrders();renderCustomers();renderTanningProducts();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting();setTimeout(makeTablesSortable,0);}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-staffRotaDays);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+staffRotaDays);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
 
 const SUNBEDS=[
   {name:'Bed 1',type:'Stand Up'},
@@ -2291,7 +2304,7 @@ function openMonthlyTargetCreate(){
   document.getElementById('monthlyNewReviewsTarget').value='';document.getElementById('monthlyRltCaseStudiesTarget').value='';['bonus1Kpi','bonus1Amount','bonus2Kpi','bonus2Amount','bonus3Kpi','bonus3Amount'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('monthlyTargetModalTitle').textContent='Create Monthly Target Stack';
   document.getElementById('monthlyTargetError').style.display='none';
-  document.getElementById('monthlyTargetModal').classList.add('show');
+  document.getElementById('monthlyTargetDeleteButton').style.display='none';document.getElementById('monthlyTargetModal').classList.add('show');
 }
 function openMonthlyTargetEdit(id){
   if(currentProfile?.role!=='admin')return;
@@ -2312,6 +2325,7 @@ function openMonthlyTargetEdit(id){
   document.getElementById('monthlyTargetError').style.display='none';
   document.getElementById('monthlyTargetModal').classList.add('show');
 }
+async function deleteMonthlyTargetStack(){if(!editingMonthlyTargetId)return alert('Save the Target Stack first.');if(!confirm('Delete this monthly Target Stack?'))return;let {error}=await sb.from('monthly_targets').delete().eq('id',editingMonthlyTargetId);if(error)return alert(error.message);closeMonthlyTargetModal();await loadLiveData();renderMonthlyTargets();renderPerformanceReporting()}
 function closeMonthlyTargetModal(){
   document.getElementById('monthlyTargetModal').classList.remove('show');
   editingMonthlyTargetId=null;
@@ -2658,31 +2672,15 @@ function updateDailyTakingsTotal(){
   let total=(+document.getElementById('dailyCashTaken').value||0)+(+document.getElementById('dailyTreatmentsCardTaken').value||0)+(+document.getElementById('dailyBedCardTaken').value||0);
   document.getElementById('dailyTakingsTotal').textContent=`£${total.toFixed(2)}`;
 }
+function setDailyTakingsDate(key){document.getElementById('dailyTakingsDate').value=key;document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(key);renderDailyTakings()}
 function renderDailyTakings(){
-  let el=document.getElementById('dailyTakingsDateLabel');if(!el)return;
-  let today=localDateKey(),row=getDailyTakings(today);
-  el.textContent=formatSunbedDisplayDate(today);
-  document.getElementById('dailyCashTaken').value=(+row?.cash||0).toFixed(2);
-  document.getElementById('dailyTreatmentsCardTaken').value=(+row?.treatmentsCard||0).toFixed(2);
-  document.getElementById('dailyBedCardTaken').value=(+row?.bedCard||0).toFixed(2);
-  updateDailyTakingsTotal();
-  let canEdit=currentProfile?.role==='admin'||currentProfile?.role==='shop_manager';
-  ['dailyCashTaken','dailyTreatmentsCardTaken','dailyBedCardTaken'].forEach(id=>document.getElementById(id).readOnly=!canEdit);
-  document.getElementById('saveDailyTakingsBtn').style.display=canEdit?'inline-block':'none';
+  let hidden=document.getElementById('dailyTakingsDate');if(!hidden)return;
+  if(!hidden.value)hidden.value=localDateKey();let key=hidden.value,row=getDailyTakings(key);
+  document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(key);
+  document.getElementById('dailyCashTaken').value=(+row?.cash||0).toFixed(2);document.getElementById('dailyTreatmentsCardTaken').value=(+row?.treatmentsCard||0).toFixed(2);document.getElementById('dailyBedCardTaken').value=(+row?.bedCard||0).toFixed(2);updateDailyTakingsTotal();
+  let canEdit=currentProfile?.role==='admin'||currentProfile?.role==='shop_manager';['dailyCashTaken','dailyTreatmentsCardTaken','dailyBedCardTaken'].forEach(id=>document.getElementById(id).readOnly=!canEdit);document.getElementById('saveDailyTakingsBtn').style.display=canEdit?'inline-block':'none';
 }
-async function saveDailyTakings(){
-  let cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,
-      err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');
-  err.style.display='none';
-  if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}
-  btn.disabled=true;btn.textContent='Saving...';
-  try{
-    let {error}=await sb.from('daily_takings').upsert({takings_date:localDateKey(),cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,updated_at:new Date().toISOString()},{onConflict:'takings_date'});
-    if(error)throw error;
-    await loadLiveData();renderDailyTakings();renderPerformanceReporting();
-  }catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}
-  finally{btn.disabled=false;btn.textContent='Save Daily Takings'}
-}
+async function saveDailyTakings(){let key=document.getElementById('dailyTakingsDate').value||localDateKey(),cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');err.style.display='none';if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}btn.disabled=true;btn.textContent='Saving...';try{let {error}=await sb.from('daily_takings').upsert({takings_date:key,cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,updated_at:new Date().toISOString()},{onConflict:'takings_date'});if(error)throw error;await loadLiveData();renderDailyTakings();renderPerformanceReporting()}catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Save Daily Takings'}}
 function periodRevenue(keys){
   let rows=(data.dailyTakings||[]).filter(x=>keys.includes(x.date)),
       cash=rows.reduce((s,x)=>s+(+x.cash||0),0),
@@ -2701,6 +2699,8 @@ function renderDailyAverageComparison(){
 function renderBedTracker(){
   if(!data.bedSessions)data.bedSessions=[];
   if(!data.sunbedBookings)data.sunbedBookings=[];
+  let sd=document.getElementById('sessionDate');if(sd&&!sd.value){sd.value=localDateKey();document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(sd.value)}
+  let td=document.getElementById('dailyTakingsDate');if(td&&!td.value){td.value=localDateKey();document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(td.value)}
 
   let today=localDateKey(),
       rows=data.bedSessions.filter(x=>x.date===today),
@@ -2982,7 +2982,7 @@ body.loading .app{visibility:hidden}
 .sortable{cursor:pointer;user-select:none}.sortIcon{opacity:.55;margin-left:5px}
 @media(max-width:650px){.globalNewCustomer{position:static;float:right;margin-bottom:12px}.bonusRow{grid-template-columns:1fr}}
 
-.appTopBar{
+.appTopBar{display:none!important;
   position:fixed;
   top:0;
   left:0;
@@ -3001,20 +3001,14 @@ body.loading .app{visibility:hidden}
   position:static!important;
   margin:0!important;
 }
-.app aside{
-  padding-top:58px;
-  box-sizing:border-box;
-}
-.main{
-  padding-top:78px!important;
-}
+.app aside{box-sizing:border-box}.main{padding-top:20px!important}
 .topCustomerNav{
   margin-top:0!important;
   margin-bottom:18px!important;
   font-weight:800!important;
 }
 @media(max-width:700px){
-  .appTopBar{height:54px;padding:0 10px}
+  .appTopBar{display:none!important;height:54px;padding:0 10px}
   .app aside{padding-top:54px}
   .main{padding-top:72px!important}
 }
@@ -3023,21 +3017,11 @@ body.loading .app{visibility:hidden}
 }
 function toggleBlockBookingQuestion(){let signup=document.getElementById('sessionSignup').checked,row=document.getElementById('blockBookingRow'),block=document.getElementById('sessionBlockBooking');row.style.display=signup?'flex':'none';if(!signup)block.checked=false}
 async function recordBedSession(){
- let customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),length=+document.getElementById('sessionLength').value,payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
- if(!c)return alert('Please select an existing Customer.');
- if(!Number.isInteger(length)||length<1)return alert('Please enter a valid Session Length.');
- if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
- let age=ageFromDob(c.dob);
- if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');
- if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');
- let accountUsed=0,payg=0;
- if(payment==='Account Minutes'){
-   if(length>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${length} minutes.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}
-   accountUsed=length;
- }else if(pendingPaygSplit){accountUsed=pendingPaygSplit.account;payg=pendingPaygSplit.payg;}else payg=length;
- let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg});
- if(error)return alert(error.message);
- pendingPaygSplit=null;await loadLiveData();renderBedTracker();renderCustomers();sessionCustomerChanged();alert(`Session recorded. ${bal} minutes left on account.`);
+ let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),length=+document.getElementById('sessionLength').value,payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
+ if(!Number.isInteger(length)||length<1)return alert('Please enter a valid Session Length.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
+ if(!c){let {error}=await sb.from('bed_sessions').insert({session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:payment==='Account Minutes'?0:length});if(error)return alert(error.message);await loadLiveData();renderBedTracker();alert(`Historic session recorded for ${formatSunbedDisplayDate(date)}.`);return}
+ let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');let accountUsed=0,payg=0;if(payment==='Account Minutes'){if(length>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${length} minutes.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}accountUsed=length}else if(pendingPaygSplit){accountUsed=pendingPaygSplit.account;payg=pendingPaygSplit.payg}else payg=length;
+ let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg,p_session_date:date});if(error)return alert(error.message);pendingPaygSplit=null;await loadLiveData();renderBedTracker();renderCustomers();sessionCustomerChanged();alert(`Session recorded. ${bal} minutes left on account.`);
 }
 function addRenter(){
   if(!data.products.length)return alert('Create at least one Treatment Type before creating a Clinician.');
@@ -3048,7 +3032,7 @@ function addRenter(){
   document.getElementById('renterCreateProduct').innerHTML=data.products.filter(p=>p.active!==false).map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
   document.getElementById('renterCreateSaveBtn').textContent='Create Clinician';
   document.getElementById('renterCreateError').style.display='none';
-  document.getElementById('renterCreateModal').classList.add('show');
+  document.getElementById('deleteRenterBtn').style.display='none';document.getElementById('renterCreateModal').classList.add('show');
 }
 function openRenterEdit(id){
   let r=data.renters.find(x=>x.id===id);if(!r)return;
@@ -3060,8 +3044,10 @@ function openRenterEdit(id){
   document.getElementById('renterCreateProduct').value=r.productId||'';
   document.getElementById('renterCreateSaveBtn').textContent='Save Changes';
   document.getElementById('renterCreateError').style.display='none';
+  document.getElementById('deleteRenterBtn').style.display='inline-block';
   document.getElementById('renterCreateModal').classList.add('show');
 }
+async function deleteRenter(){if(!editingRenterId)return alert('Save the clinician first.');if(!confirm('Delete this clinician?'))return;let link=await sb.from('renter_products').delete().eq('renter_id',editingRenterId);if(link.error)return alert(link.error.message);let {error}=await sb.from('renters').delete().eq('id',editingRenterId);if(error)return alert('This clinician may still have Clinic Days or bookings linked. Delete those first.\n\n'+error.message);document.getElementById('renterCreateModal').classList.remove('show');editingRenterId=null;await loadLiveData();renderAll()}
 function closeRenterCreate(){document.getElementById('renterCreateModal').classList.remove('show');editingRenterId=null}
 async function saveNewRenter(){
   let name=document.getElementById('renterCreateName').value.trim(),phone=document.getElementById('renterCreatePhone').value.trim(),
@@ -3098,8 +3084,9 @@ function openUniversalDatePicker(target){
     key=document.getElementById('clinicCopyDate').value;
     subtitle='Copied Clinic Day';
   }else if(target==='order'){
-    key=document.getElementById('orderDate').value;
-    subtitle='Order Date';
+    key=document.getElementById('orderDate').value;subtitle='Order Date';
+  }else if(target==='session'){key=document.getElementById('sessionDate').value||localDateKey();subtitle='Session Date';
+  }else if(target==='takings'){key=document.getElementById('dailyTakingsDate').value||localDateKey();subtitle='Takings Date';
   }else{
     return;
   }
@@ -3123,9 +3110,9 @@ function selectUniversalDate(key){
   }else if(universalDatePickerTarget==='clinicCopy'){
     document.getElementById('clinicCopyDate').value=key;
     document.getElementById('clinicCopyDateDisplay').value=formatSunbedDisplayDate(key);
-  }else if(universalDatePickerTarget==='order'){
-    document.getElementById('orderDate').value=key;
-    document.getElementById('orderDateDisplay').value=formatSunbedDisplayDate(key);
+  }else if(universalDatePickerTarget==='order'){document.getElementById('orderDate').value=key;document.getElementById('orderDateDisplay').value=formatSunbedDisplayDate(key);
+  }else if(universalDatePickerTarget==='session'){document.getElementById('sessionDate').value=key;document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(key);
+  }else if(universalDatePickerTarget==='takings'){setDailyTakingsDate(key);
   }
   closeUniversalDatePicker();
 }
@@ -3150,7 +3137,7 @@ function renderUniversalDatePicker(){
       ?document.getElementById('clinicCreateDate').value
       :universalDatePickerTarget==='clinicCopy'
         ?document.getElementById('clinicCopyDate').value
-        :document.getElementById('orderDate').value;
+        :universalDatePickerTarget==='order'?document.getElementById('orderDate').value:universalDatePickerTarget==='session'?document.getElementById('sessionDate').value:document.getElementById('dailyTakingsDate').value;
 
   for(let d=1;d<=days;d++){
     let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,
