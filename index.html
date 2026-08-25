@@ -1,0 +1,2691 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>REVIBE Shop Management</title><style>
+:root{--bg:#0d0f12;--panel:#171a1f;--panel2:#20242b;--text:#f5f5f7;--muted:#9da3ad;--pink:#ff2d78;--line:#30353d;--green:#2bd576;--amber:#f2b84b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Segoe UI,Arial,sans-serif}.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}aside{background:#111318;border-right:1px solid var(--line);padding:54px 14px 22px}.logo{font-size:23px;font-weight:800;letter-spacing:1px;margin:0 10px 28px}.logo span{color:var(--pink)}nav button{display:block;width:100%;text-align:left;background:none;border:0;color:#bbb;padding:12px 14px;border-radius:8px;margin:3px 0;cursor:pointer;font-weight:600}nav button.active,nav button:hover{background:#242830;color:white}.main{padding:26px;overflow:auto}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}h1{margin:0;font-size:25px}.actions{display:flex;gap:8px}button,.btn{border:1px solid var(--line);background:#252932;color:#fff;padding:9px 12px;border-radius:7px;cursor:pointer}.primary{background:var(--pink);border-color:var(--pink);font-weight:700}.grid{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:8px}.day{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:650px;overflow:hidden}.dayhead{padding:13px;border-bottom:1px solid var(--line);min-height:105px}.date{font-weight:800}.clinic{margin-top:8px;font-size:12px;color:#ddd}.clinic strong{color:#fff}.slot{border-bottom:1px solid #252a31;padding:8px 9px;min-height:52px;cursor:pointer}.slot:hover{background:#20242a}.time{color:var(--muted);font-size:11px}.appt{margin-top:3px;background:#262b33;border-left:3px solid var(--pink);padding:6px;border-radius:4px}.available{color:#7f8791;font-size:11px;margin-top:4px}.page{display:none}.page.active{display:block}.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:14px}.formgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}label{display:block;color:#bbb;font-size:12px;margin-bottom:5px}input,select{width:100%;background:#111318;border:1px solid #363b44;color:white;padding:9px;border-radius:6px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid var(--line);padding:10px}.clinicRow{cursor:pointer}.clinicRow:hover{background:#20242a}.table th{color:#aaa;font-size:12px}.pill{display:inline-block;padding:3px 7px;border-radius:12px;background:#29302d;color:var(--green);font-size:11px}.modal{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;z-index:10}.modal.show{display:flex}.modalbox{width:min(620px,92vw);background:#181b20;border:1px solid #3a3f48;border-radius:12px;padding:20px}.treatments{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.treat{padding:12px 14px;background:#272c34;border:1px solid #3a404a;border-radius:8px}.treat:hover{border-color:var(--pink)}.productgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.producttile{background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);border-radius:12px;padding:20px;min-height:150px;cursor:pointer;transition:.15s;position:relative}.producttile:hover{transform:translateY(-2px);border-color:#555c67}.producttile h3{margin:0 0 8px;font-size:20px}.producttile .count{color:var(--muted);font-size:12px}.producttile .openhint{position:absolute;right:16px;bottom:14px;color:var(--pink);font-weight:700;font-size:12px}.producttile.new{border-style:dashed;display:flex;align-items:center;justify-content:center;text-align:center;color:#bbb}.producttile.new strong{font-size:30px;display:block;color:var(--pink);margin-bottom:6px}.muted{color:var(--muted)}.trackergrid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.trackerpanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}.trackerpanel h2{margin:0 0 6px;font-size:19px}.sessionform{display:grid;gap:14px;margin-top:20px}.sessionform label{font-size:13px;color:#d5d7dc}.sessionform input,.sessionform select{font-size:15px;padding:12px}.checkrow{display:flex;gap:10px;flex-wrap:wrap}.checkchoice{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:12px 14px;cursor:pointer;min-width:150px}.checkchoice input{width:18px;height:18px;margin:0;accent-color:var(--pink)}.checkchoice:has(input:checked){border-color:var(--pink);box-shadow:0 0 0 1px var(--pink) inset}.kpiMetric{grid-column:1/-1}.kpiMetric .value{font-size:34px}.kpiSub{font-size:12px;color:var(--muted);margin-top:4px}.recordbtn{width:100%;padding:15px;font-size:16px;margin-top:5px}.metricgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.metric{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:16px}#bedtracker .trackergrid>.trackerpanel:first-child .metric{background:#3a351d;border-color:#6a6030}.metric .value{font-size:27px;font-weight:800;margin-top:5px}.metric .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}#bedtracker .trackergrid>.trackerpanel:first-child .metric .value{font-size:34px}#bedtracker .trackergrid>.trackerpanel:first-child .metric .label{font-size:13px;line-height:1.35}.recentSessions{margin-top:18px}.sessionrow{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.sessiontag{font-size:11px;background:#292e36;border-radius:10px;padding:4px 7px;color:#ddd}.successmsg{display:none;margin-top:10px;padding:10px 12px;background:#173323;border:1px solid #285d3d;color:#81e9aa;border-radius:7px}.successmsg.show{display:block}.navtitle{font-size:13px!important;color:var(--pink)!important;font-weight:800!important;letter-spacing:.8px!important;text-transform:uppercase!important;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#6f7680;font-weight:800;margin:18px 14px 7px}.navtitle:first-of-type{margin-top:0}.performanceButtons{display:grid;grid-template-columns:1fr;gap:9px;margin-top:18px}.performanceButtons button{padding:12px;text-align:left;font-weight:800;background:#18d7e8;color:#071014;border-color:#18d7e8}.performanceButtons button:hover{filter:brightness(1.08)}.performanceButtons button span{float:right;color:#071014}.perfOverlay{display:none;position:fixed;inset:0;background:#000b;z-index:30;padding:28px;overflow:auto}.perfOverlay.show{display:block}.perfBox{max-width:1150px;margin:0 auto;background:#15181d;border:1px solid #3a3f48;border-radius:14px;padding:22px}.perfHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px}.perfHeader h2{margin:0 0 5px}.perfMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.perfTableWrap{overflow:auto}.chartCard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin:14px 0}.chartCard h3{margin:0 0 12px}.chartWrap{height:300px;overflow-x:auto}.chartCanvas{width:100%;height:280px;display:block}.fieldInlineCheck{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:12px 14px;cursor:pointer}.fieldInlineCheck span{font-size:13px;color:#d5d7dc;font-weight:600}.fieldInlineCheck input{width:18px;height:18px;margin:0;accent-color:var(--pink);flex:0 0 auto}.fieldInlineCheck:has(input:checked){border-color:var(--pink);box-shadow:0 0 0 1px var(--pink) inset}.sessionDetailsTitle{font-size:13px;color:#d5d7dc;margin-top:2px;margin-bottom:-4px}.sessionTypeChoices{display:grid;gap:9px}.sessionTypeChoices .fieldInlineCheck{width:100%}@media(max-width:850px){.perfMetrics{grid-template-columns:1fr 1fr}}@media(max-width:900px){.trackergrid{grid-template-columns:1fr}}@media(max-width:1000px){.app{grid-template-columns:70px 1fr}.logo{font-size:0}.logo span{font-size:22px}nav button{font-size:0}nav button:before{content:'•';font-size:22px}.grid{grid-template-columns:repeat(3,minmax(180px,1fr))}.formgrid{grid-template-columns:1fr 1fr}}@media(max-width:650px){.app{display:block}aside{display:none}.main{padding:14px}.grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}}
+.diaryRange{min-width:150px}.showSessionsBtn{width:100%;padding:13px;font-weight:800;margin-top:4px;background:#252a31;border-color:#3b424d}.showSessionsBtn:hover{background:#303640}
+.sunbedTop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+
+.sunbedWeek{overflow:auto;padding-bottom:8px}
+.sunbedMatrix{display:grid;grid-template-columns:150px repeat(4,minmax(220px,1fr));gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:1050px}
+.sunbedMatrixHead{background:#1c2026;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px;font-weight:800}
+.sunbedMatrixHead.bed{display:flex;flex-direction:column;gap:3px}
+.sunbedMatrixDate{background:#181b20;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px;font-weight:800}
+.sunbedMatrixCell{background:var(--panel);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;min-height:120px}
+.sunbedMatrixCell:nth-child(5n){border-right:0}
+.sunbedBooking{padding:8px 9px;background:#252a31;border-left:3px solid #18d7e8;border-radius:5px;font-size:11px;margin-top:6px;cursor:pointer}
+.sunbedBooking b{display:block;margin-bottom:3px;font-size:12px}
+.sunbedBooking .muted{font-size:10px}
+.sunbedEmpty{padding:7px 2px;color:#646c77;font-size:10px}
+.bedTypeTag{font-size:9px;color:#9aa2ad;text-transform:uppercase;letter-spacing:.5px}
+.bedPill,.sessionPill{display:inline-block;margin-top:5px;margin-right:4px;padding:2px 6px;border-radius:8px;background:#303741;color:#dce1e7;font-size:9px}
+.sunbedSessionChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:5px}
+.sunbedSessionChoice{border:1px solid var(--line);background:#191c21;border-radius:7px;padding:10px 8px;text-align:center;cursor:pointer;font-size:12px;color:#cdd2d8}
+.sunbedSessionChoice.active{border-color:#18d7e8;background:#12343a;color:#fff;box-shadow:0 0 0 1px #18d7e8 inset}
+@media(max-width:900px){.sunbedSessionChoices{grid-template-columns:1fr}}
+}
+
+.bookingSteps{display:grid;gap:18px}
+.bookingStep{border-top:1px solid var(--line);padding-top:14px}
+.bookingStep:first-child{border-top:0;padding-top:0}
+.bookingStepTitle{font-size:12px;color:#aeb5be;text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:9px}
+.choiceGrid{display:flex;flex-wrap:wrap;gap:8px}
+.choiceBtn{padding:10px 12px;text-align:left;background:#1d2127;border:1px solid #363c46;border-radius:7px;color:#fff;cursor:pointer}
+.choiceBtn.active{border-color:#18d7e8;background:#12343a;box-shadow:0 0 0 1px #18d7e8 inset}
+.choiceBtn.full{opacity:.55;cursor:not-allowed}
+.choiceBtn .small{display:block;color:#9ba3ad;font-size:10px;margin-top:3px}
+.bookingNotice{padding:10px 12px;border-radius:7px;background:#2b2616;border:1px solid #665a25;color:#eadb91;font-size:12px}
+
+.loginGate{position:fixed;inset:0;z-index:1000;background:#0d0f12;display:flex;align-items:center;justify-content:center;padding:20px}
+.loginCard{width:min(430px,94vw);background:#171a1f;border:1px solid #30353d;border-radius:14px;padding:28px}
+.loginBrand{font-size:30px;font-weight:900;letter-spacing:1.5px;margin-bottom:6px}
+.loginCard input{font-size:15px;padding:12px;margin-bottom:12px}
+.loginCard .primary{width:100%;padding:12px}
+.loginError{display:none;margin-top:12px;padding:10px;background:#321a20;border:1px solid #6d2d3d;border-radius:7px;color:#ffb8c8}
+.userBar{position:fixed;right:18px;bottom:16px;z-index:8;background:#171a1f;border:1px solid #30353d;border-radius:9px;padding:8px 10px;font-size:11px;color:#bbb}
+body.loading .app{visibility:hidden}
+
+.debugPanel{position:fixed;right:18px;top:18px;z-index:1200;width:min(420px,90vw);background:#171a1f;border:1px solid #3b414b;border-radius:10px;padding:14px;display:none}
+.debugPanel h3{margin:0 0 8px;font-size:15px}
+.debugPanel pre{white-space:pre-wrap;word-break:break-word;background:#0f1115;border:1px solid #30353d;border-radius:7px;padding:10px;color:#d7dbe1;font-size:11px;max-height:320px;overflow:auto}
+ .staffShift{margin-top:6px;background:#262b33;border-left:3px solid #18d7e8;padding:7px;border-radius:5px;font-size:11px}.staffShift b{display:block;margin-bottom:2px}.staffWeekTotal{margin-top:14px;padding:12px;border-radius:8px;background:#252a31;border:1px solid #3a414b}.staffWeekTotal .big{font-size:24px;font-weight:800;margin-top:4px}.staffRotaDay .dayhead{min-height:72px}
+.staffRotaMatrixWrap{overflow:auto}
+.staffRotaMatrix{position:relative;display:grid;grid-template-columns:72px repeat(7,minmax(150px,1fr));min-width:1150px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.staffRotaHead{background:#1c2026;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:11px;font-weight:800;text-align:center}
+.staffRotaTime{position:relative;background:#15181d;border-right:1px solid var(--line);border-bottom:1px solid #252a31;color:#9da3ad;font-size:10px;padding:4px 6px;text-align:right}
+.staffRotaCell{position:relative;border-right:1px solid var(--line);border-bottom:1px solid #252a31;min-height:28px;background:#171a1f}
+.staffRotaCell.edge{background:#1a1d22}
+.staffRotaShiftLayer{position:absolute;inset:0;pointer-events:none}
+.staffRotaShiftBlock{position:absolute;left:5px;right:5px;border-left:4px solid;border-radius:6px;padding:5px 7px;font-size:10px;overflow:hidden;pointer-events:auto;box-shadow:0 2px 8px #0005}
+.staffRotaShiftBlock b{display:block;font-size:11px;margin-bottom:2px}
+.staffRotaLegend{margin-top:12px;color:var(--muted);font-size:11px}
+.menuRoleNote{font-size:10px;color:#888;margin-top:4px}
+
+.sunbedSettingsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.sunbedSettingsTile{background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);border-radius:12px;padding:20px;cursor:pointer;min-height:130px}
+.sunbedSettingsTile:hover{border-color:#555c67;transform:translateY(-1px)}
+.sunbedSettingsTile h3{margin:0 0 8px;font-size:19px}
+.kpiAboveTarget{background:rgba(34,197,94,.28)!important;border-color:#36e26d!important;box-shadow:0 0 0 1px rgba(54,226,109,.25) inset}
+.kpiBelowTarget{background:rgba(190,70,70,.12)!important;border-color:rgba(220,90,90,.28)!important}
+.kpiTargetLine{margin-top:6px;font-size:11px;color:#d4d7dc}
+.staffWeekSummary{margin-top:16px}
+.staffColourDot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:7px;border:1px solid #555}
+
+.targetStoryModal{align-items:stretch!important;justify-content:stretch!important;padding:22px}
+.targetStoryModal .modalbox{width:100%!important;max-width:none!important;height:calc(100vh - 44px);overflow:auto;border-radius:14px}
+.targetStoryGrid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:16px;margin-top:18px}
+.targetStoryCard{background:#20242b;border:1px solid var(--line);border-radius:12px;padding:20px}
+.targetStoryCard .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.targetStoryCard .value{font-size:38px;font-weight:900;margin-top:8px}
+.targetActualGood{background:rgba(34,197,94,.20)!important;border-color:#3be06f!important}
+.targetActualBad{background:rgba(190,70,70,.14)!important;border-color:rgba(220,90,90,.45)!important}
+.targetStorySub{margin-top:7px;color:#aeb4bd;font-size:12px}
+@media(max-width:760px){.targetStoryGrid{grid-template-columns:1fr}}
+
+.performanceReportGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.performanceReportCard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.performanceReportCard h3{margin:0 0 14px;font-size:16px}
+.performanceReportNumbers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.performanceNumber{background:#20242b;border:1px solid #30353d;border-radius:8px;padding:12px}
+.performanceNumber .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.performanceNumber .value{font-size:25px;font-weight:850;margin-top:5px}
+.performanceNumber.actualGood{background:rgba(34,197,94,.22);border-color:#3be06f}
+.performanceNumber.actualBad{background:rgba(190,70,70,.14);border-color:rgba(220,90,90,.45)}
+.performanceReportFormula{margin-top:11px;color:#9da3ad;font-size:11px;line-height:1.5}
+.performanceReportEmpty{padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--muted)}
+@media(max-width:720px){.performanceReportNumbers{grid-template-columns:1fr}}
+
+.performanceSectionTitle{font-size:18px;font-weight:850;margin:0 0 12px}
+.performanceHistory{margin-top:24px}
+.performanceHistoryRow{cursor:pointer}
+.performanceHistoryRow:hover{background:#20242a}
+.historyStatusGood{color:#55e58a;font-weight:800}
+.historyStatusBad{color:#ff8c9d;font-weight:800}
+.historyModal{align-items:stretch!important;justify-content:stretch!important;padding:22px}
+.historyModal .modalbox{width:100%!important;max-width:none!important;height:calc(100vh - 44px);overflow:auto}
+
+.recordSessionPanel{background:rgba(194,145,45,.34)!important;border-color:rgba(234,188,74,.52)!important}
+.currentMonthPerformanceStrip{background:rgba(129,92,246,.10);border:1px solid rgba(155,120,255,.20);border-radius:12px;padding:18px;margin-bottom:22px}
+.holidayStatus{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:800}
+.holidayPending{background:rgba(242,184,75,.16);color:#f2c86e}
+.holidayApproved{background:rgba(43,213,118,.15);color:#61e899}
+.holidayRejected,.holidayCancelled{background:rgba(190,80,80,.14);color:#ff9baa}
+.holidayRotaShade{background:rgba(160,164,172,.12)!important}
+.holidayRotaLabel{position:absolute;left:4px;right:4px;top:3px;padding:3px 5px;background:rgba(120,125,135,.20);border:1px dashed rgba(170,175,185,.35);border-radius:4px;color:#bfc4cc;font-size:9px;text-align:center;z-index:1}
+.holidayWarning{margin-top:12px;padding:11px 12px;background:rgba(242,184,75,.12);border:1px solid rgba(242,184,75,.35);border-radius:8px;color:#e7c46f}
+
+.userRoleBadge{display:inline-block;padding:4px 8px;border-radius:12px;background:#292e37;border:1px solid #3b424e;font-size:10px;font-weight:800}
+.userInactive{opacity:.55}
+.userEditRow{cursor:pointer}
+.userEditRow:hover{background:#20242a}
+
+.roleTile{cursor:pointer}
+.roleTile.locked{border-color:#ff2d78}
+.permissionsTable th:not(:first-child),.permissionsTable td:not(:first-child){text-align:center;width:130px}
+.permissionCheck{width:20px;height:20px;accent-color:var(--pink)}
+.permissionGroupRow td{background:#14171b;color:var(--pink);font-weight:850;text-transform:uppercase;letter-spacing:.6px;font-size:11px}
+.permissionDisabled{opacity:.55}
+.permissionNote{font-size:10px;color:#8d949e;margin-top:4px}
+</style></head><body class='loading'>
+<div id='loginGate' class='loginGate'>
+  <div class='loginCard'>
+    <div class='loginBrand'>REVIBE</div>
+    <div class='muted' style='margin-bottom:22px'>Shop Management</div>
+    <label>Email</label><input id='loginEmail' type='email' autocomplete='username' placeholder='you@revibe...'>
+    <label>Password</label><input id='loginPassword' type='password' autocomplete='current-password' placeholder='Password'>
+    <button class='primary' onclick='loginRevibe()'>Sign In</button>
+    <div id='loginError' class='loginError'></div>
+  </div>
+</div>
+<div id='debugPanel' class='debugPanel'>
+  <div style='display:flex;justify-content:space-between;align-items:center;gap:10px'>
+    <h3>Supabase Auth Debug</h3>
+    <button onclick="document.getElementById('debugPanel').style.display='none'">✕</button>
+  </div>
+  <pre id='debugOutput'>Waiting...</pre>
+</div>
+<div id='userBar' class='userBar' style='display:none'></div>
+<div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><div class='navtitle'>Sunbed Performance</div><button data-page='bedtracker' class='active'>Daily Session Tracker</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
+
+
+<section id='performancereporting' class='page'>
+  <div class='top'>
+    <div>
+      <h1>Performance Reporting</h1>
+      <div class='muted' id='performanceReportingPeriod'>Current month performance against target.</div>
+    </div>
+  </div>
+  <div class='performanceButtons' style='grid-template-columns:repeat(3,minmax(180px,1fr));margin:0 0 20px'>
+    <button onclick="openPerformance('week')">This Week In Detail <span>→</span></button>
+    <button onclick="openPerformance('month')">This Month In Detail <span>→</span></button>
+    <button onclick="openPerformance('charts')">Performance Charts <span>→</span></button>
+  </div>
+  <div id='performanceReportingContent'></div>
+</section>
+<section id='sunbedsettings' class='page'>
+  <div class='top'><div><h1>Sunbed Performance Settings</h1><div class='muted'>Configure performance and operational settings.</div></div></div>
+  <div class='sunbedSettingsGrid'>
+    <div class='sunbedSettingsTile' onclick="goToPage('openinghours')"><h3>Opening Hours</h3><div class='muted'>Set standard shop opening and closing times.</div></div>
+    <div class='sunbedSettingsTile' onclick="goToPage('monthlytargets')"><h3>Monthly Targets</h3><div class='muted'>Set monthly performance targets.</div></div>
+  </div>
+</section>
+
+<section id='monthlytargets' class='page'>
+  <div class='top'>
+    <div><h1>Monthly Targets</h1><div class='muted'>Create one target stack for each calendar month and retain the history.</div></div>
+    <button class='primary' id='createMonthlyTargetBtn' onclick='openMonthlyTargetCreate()'>+ Create Target Stack</button>
+  </div>
+  <div class='card'>
+    <table class='table' id='monthlyTargetsTable'></table>
+  </div>
+</section>
+<section id='openinghours' class='page'><div class='top'><div><h1>Opening Hours</h1><div class='muted'>Set the standard opening and closing time for each day. Changes apply from today forward; historic KPI calculations keep the hours that applied on that date.</div></div></div><div class='card' style='max-width:760px'><table class='table' id='openingHoursTable'></table><div style='margin-top:18px'><button class='primary' onclick='saveOpeningHours()'>Save Opening Hours</button></div></div></section>
+
+<section id='sunbedbookings' class='page'>
+  <div class='sunbedTop'>
+    <div><h1>Sunbed Bookings</h1><div class='muted' id='sunbedWeekLabel'>Weekly booking diary</div></div>
+    <div class='actions'>
+      <button id='sunbedPrev'>←</button>
+      <button id='sunbedToday'>Today</button>
+      <button id='sunbedNext'>→</button>
+      <button class='primary' onclick='openSunbedBooking()'>+ Book Sunbed</button>
+    </div>
+  </div>
+  <div id='sunbedCalendar' class='sunbedWeek'></div>
+</section>
+<section id='diary' class='page'><div class='top'><div><h1>Treatment Room Diary</h1><div class='muted' id='weekLabel'></div></div><div class='actions'><select id='diaryRange' class='diaryRange' onchange='changeDiaryRange()'><option value='7' selected>Weekly</option><option value='14'>Next 2 Weeks</option><option value='30'>Next 30 Days</option></select><button id='prev'>←</button><button id='today'>Today</button><button id='next'>→</button><button class='primary' onclick='openBooking()'>+ New Booking</button></div></div><div id='calendar' class='grid'></div></section>
+<section id='clinic' class='page'><div class='top'><h1>Clinic Days</h1><button type='button' class='primary' onclick='addClinic()'>+ Add Clinic Day</button></div><div class='card'><table class='table' id='clinicTable'></table></div></section>
+
+<section id='treatmentsettings' class='page'>
+  <div class='top'>
+    <div><h1>Treatment Booking Settings</h1><div class='muted'>Configure treatment types, customers and clinicians.</div></div>
+  </div>
+  <div class='sunbedSettingsGrid'>
+    <div class='sunbedSettingsTile' onclick="goToPage('products')">
+      <h3>Treatment Types</h3>
+      <div class='muted'>Create Treatment Types and configure their Session Types.</div>
+    </div>
+    <div class='sunbedSettingsTile' onclick="goToPage('customers')">
+      <h3>Customers</h3>
+      <div class='muted'>View customers created from Treatment Room bookings.</div>
+    </div>
+    <div class='sunbedSettingsTile' onclick="goToPage('renters')">
+      <h3>Clinicians</h3>
+      <div class='muted'>Manage treatment-room clinicians and their Treatment Types.</div>
+    </div>
+  </div>
+</section>
+<section id='products' class='page'><div id='productListView'><div class='top'><div><h1>Treatment Types</h1><div class='muted'>Create a Treatment Type, then configure the Session Types available within it.</div></div><button class='primary' onclick='addProduct()'>+ Create Session Type Type</button></div><div id='productTiles' class='productgrid'></div></div><div id='productDetailView' style='display:none'><div class='top'><div><button onclick='backToProducts()'>← Treatment Types</button><h1 id='productTitle' style='margin-top:12px'></h1><div class='muted' id='productSub'></div></div><button class='primary' onclick='addTreatmentToCurrentProduct()'>+ Add Session Type</button></div><div class='card'><table class='table' id='productTreatmentTable'></table></div></div></section>
+<section id='customers' class='page'><div class='top'><div><h1>Customers</h1><div class='muted'>Customers are created automatically when a Treatment Room booking is made.</div></div></div><div class='card'><table class='table' id='customerTable'></table></div></section>
+<section id='renters' class='page'><div class='top'><h1>Clinicians</h1><button class='primary' onclick='addRenter()'>+ Add Clinician</button></div><div class='card'><table class='table' id='renterTable'></table></div></section>
+<section id='staffmembers' class='page'><div class='top'><div><h1>Staff Members</h1><div class='muted'>Manage Revibe staff details and holiday entitlement.</div></div><button class='primary' id='addStaffMemberBtn' onclick='openStaffMemberCreate()'>+ Add Staff Member</button></div><div class='card'><table class='table' id='staffMembersTable'></table></div></section>
+<section id='staffrota' class='page'><div class='top'><div><h1>Staff Rota</h1><div class='muted' id='staffRotaWeekLabel'></div></div><div class='actions'><button id='staffRotaPrev'>←</button><button id='staffRotaToday'>Today</button><button id='staffRotaNext'>→</button><button class='primary' onclick='openStaffShiftCreate()'>+ Create New Shift</button></div></div><div id='staffRotaCalendar' class='staffRotaMatrixWrap'></div><div id='staffRotaSummary' class='card staffWeekSummary'></div></section>
+
+<section id='holidayrequests' class='page'>
+  <div class='top'>
+    <div><h1>Holiday Requests</h1><div class='muted'>Create, review and approve staff holiday requests.</div></div>
+    <button class='primary' id='createHolidayRequestBtn' onclick='openHolidayRequestCreate()'>+ New Holiday Request</button>
+  </div>
+  <div class='card'>
+    <table class='table' id='holidayRequestsTable'></table>
+  </div>
+</section>
+<section id='bedtracker' class='page active'><div class='top'><div><h1>Daily Session Tracker</h1><div class='muted'>Record and monitor sunbed and red light therapy sessions.</div></div></div><div class='trackergrid'><div class='trackerpanel recordSessionPanel'><h2>Record New Session</h2><div class='muted'>Enter the session details below.</div><div class='sessionform'><div><label>Session Length</label><input id='sessionLength' type='number' min='1' step='1' placeholder='Minutes'></div><div><label>Payment Type</label><select id='sessionPayment'><option value='Account Minutes' selected>Account Minutes</option><option value='PAYG - Cash'>PAYG - Cash</option><option value='PAYG - Card'>PAYG - Card</option></select></div><div class='sessionDetailsTitle'>Session Details</div><label class='fieldInlineCheck'><span>New Sign Up</span><input id='sessionSignup' type='checkbox' onchange='toggleBlockBookingQuestion()'></label><label id='blockBookingRow' class='fieldInlineCheck' style='display:none'><span>Purchased Block Booking?</span><input id='sessionBlockBooking' type='checkbox'></label><div class='sessionTypeChoices'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='sessionRlt' type='checkbox' onchange="exclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='sessionHybrid' type='checkbox' onchange="exclusiveSessionType('hybrid')"></label></div><button class='primary recordbtn' onclick='recordBedSession()'>Record Session</button><button class='showSessionsBtn' onclick='showTodaysSessions()'>Show Today’s Sessions</button><div id='sessionSuccess' class='successmsg'>Session recorded successfully.</div></div></div><div class='trackerpanel'><h2>Daily Performance Tracker</h2><div class='muted' id='trackerDate'></div><div class='metricgrid'><div class='metric'><div class='label'>Sessions Today</div><div class='value' id='metricSessions'>0</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value' id='metricMinutes'>0</div></div><div class='metric'><div class='label'>Total New Sign Ups</div><div class='value' id='metricSignups'>0</div></div><div class='metric'><div class='label'>Total Red Light Minutes Today</div><div class='value' id='metricRltMinutes'>0</div></div><div class='metric'><div class='label'>Total Hybrid Minutes Today</div><div class='value' id='metricHybridMinutes'>0</div></div><div class='metric kpiMetric'><div class='label'>Minutes Per Bed Per Hour</div><div class='value' id='metricKpi'>0.0</div><div class='kpiTargetLine' id='metricKpiTarget'>Target: not set</div><div class='kpiSub' id='metricKpiDetail'>Based on 4 beds and elapsed opening hours today.</div></div><div class='metric kpiMetric'><div class='label'>Month-to-Date Minutes Per Bed Per Hour</div><div class='value' id='metricMonthKpi'>0.0</div><div class='kpiSub' id='metricMonthKpiDetail'>Based on total minutes and opening hours so far this month.</div></div></div></div></div>
+<div id='monthlyReviewsRecorder' class='card' style='display:none;max-width:720px;margin-top:16px'>
+  <h2 style='margin:0 0 6px'>Monthly Reviews Recorder</h2>
+  <div class='muted' style='margin-bottom:16px'>As it's the end of the month, please record the reviews we have.</div>
+  <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
+    <div><label>Facebook Reviews</label><input id='monthEndFacebookReviews' type='number' min='0' step='1'></div>
+    <div><label>Google Reviews</label><input id='monthEndGoogleReviews' type='number' min='0' step='1'></div>
+  </div>
+  <div id='monthEndReviewError' class='loginError' style='margin-top:12px'></div>
+  <div style='margin-top:16px'><button class='primary' id='monthEndReviewSaveBtn' onclick='saveMonthEndReviews()'>Record Review Totals</button></div>
+</div>
+</section>
+
+<section id='users' class='page'>
+  <div class='top'>
+    <div>
+      <h1>Users</h1>
+      <div class='muted'>Manage who can sign in to REVIBE and their access role.</div>
+    </div>
+    <button class='primary' onclick='openCreateUserModal()'>+ Create User</button>
+  </div>
+  <div class='card'>
+    <table class='table' id='usersTable'></table>
+  </div>
+</section>
+
+<section id='rolespermissions' class='page'>
+  <div class='top'>
+    <div>
+      <h1>Roles & Permissions</h1>
+      <div class='muted'>Choose a role, then control what that role can view, edit and approve.</div>
+    </div>
+  </div>
+
+  <div id='rolePermissionTiles' class='productgrid'></div>
+
+  <div id='rolePermissionDetail' style='display:none;margin-top:18px'>
+    <div class='top'>
+      <div>
+        <button onclick='closeRolePermissionDetail()'>← Roles</button>
+        <h1 id='rolePermissionTitle' style='margin-top:12px'></h1>
+        <div class='muted' id='rolePermissionSubtitle'></div>
+      </div>
+      <div class='actions'>
+        <button id='copyPermissionsBtn' onclick='openCopyPermissions()'>Copy Permissions</button>
+        <button class='primary' id='savePermissionsBtn' onclick='saveRolePermissions()'>Save Permissions</button>
+      </div>
+    </div>
+
+    <div class='card'>
+      <table class='table permissionsTable' id='permissionsMatrixTable'></table>
+    </div>
+  </div>
+</section>
+<section id='settings' class='page'><div class='top'><h1>Settings</h1></div><div class='card'><h3>REVIBE Shop Management</h3><p class='muted'>Live system connected to Supabase. Data is shared across signed-in devices.</p></div></section>
+</main></div><div id='performanceOverlay' class='perfOverlay'><div class='perfBox'><div class='perfHeader'><div><h2 id='perfTitle'>Performance</h2><div class='muted' id='perfSubtitle'></div></div><button onclick='closePerformance()'>✕ Close</button></div><div id='perfContent'></div></div></div>
+
+<div class='modal historyModal' id='historicalPerformanceModal'>
+  <div class='modalbox'>
+    <div class='top'>
+      <div><h1 id='historicalPerformanceTitle'>Historical Performance</h1><div class='muted' id='historicalPerformanceSubtitle'></div></div>
+      <button onclick='closeHistoricalPerformance()'>✕ Close</button>
+    </div>
+    <div id='historicalPerformanceContent'></div>
+  </div>
+</div>
+
+
+
+<div class='modal' id='copyPermissionsModal'>
+  <div class='modalbox' style='max-width:520px'>
+    <div class='top'>
+      <div>
+        <h1>Copy Permissions</h1>
+        <div class='muted'>Copy another role's permissions into this role.</div>
+      </div>
+      <button onclick='closeCopyPermissions()'>✕</button>
+    </div>
+
+    <label>Copy From</label>
+    <select id='copyPermissionsSource'></select>
+
+    <div style='text-align:right;margin-top:18px'>
+      <button onclick='closeCopyPermissions()'>Cancel</button>
+      <button class='primary' onclick='applyCopiedPermissions()'>Copy</button>
+    </div>
+  </div>
+</div>
+<div class='modal' id='userModal'>
+  <div class='modalbox' style='max-width:720px'>
+    <div class='top'>
+      <div>
+        <h1 id='userModalTitle'>Create User</h1>
+        <div class='muted' id='userModalSubtitle'>Send an invitation to a new REVIBE user.</div>
+      </div>
+      <button onclick='closeUserModal()'>✕</button>
+    </div>
+
+    <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
+      <div>
+        <label>Name</label>
+        <input id='userFullName' placeholder='Full name'>
+      </div>
+      <div>
+        <label>Email / Login</label>
+        <input id='userEmail' type='email' placeholder='name@example.com'>
+      </div>
+      <div>
+        <label>Access Level</label>
+        <select id='userRole' onchange='updateUserRoleFields()'>
+          <option value='admin'>Admin</option>
+          <option value='shop_manager'>Shop Manager</option>
+          <option value='staff'>Staff</option>
+          <option value='renter'>Clinician</option>
+          <option value='customer'>Customer</option>
+        </select>
+      </div>
+      <div id='userClinicianLinkWrap' style='display:none'>
+        <label>Linked Clinician</label>
+        <select id='userClinicianLink'></select>
+      </div>
+      <div id='userActiveWrap' style='display:none'>
+        <label class='fieldInlineCheck'>
+          <span>Active User</span>
+          <input id='userActive' type='checkbox' checked>
+        </label>
+      </div>
+    </div>
+
+    <div id='userRoleDescription' class='card' style='margin-top:16px'></div>
+    <div id='userFormError' class='loginError' style='margin-top:12px'></div>
+
+    <div style='display:flex;justify-content:flex-end;gap:8px;margin-top:18px'>
+      <button onclick='closeUserModal()'>Cancel</button>
+      <button class='primary' id='userSaveButton' onclick='saveUser()'>Send Invitation</button>
+    </div>
+  </div>
+</div>
+<div class='modal' id='holidayRequestModal'>
+  <div class='modalbox' style='max-width:780px'>
+    <div class='top'>
+      <div><h1 id='holidayRequestModalTitle'>New Holiday Request</h1><div class='muted'>Request details and approval</div></div>
+      <button onclick='closeHolidayRequestModal()'>✕</button>
+    </div>
+
+    <div class='card'>
+      <h3 style='margin-top:0'>Holiday Request</h3>
+      <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
+        <div>
+          <label>Staff Member</label>
+          <select id='holidayStaff' onchange='updateHolidayRequestSummary()'></select>
+          <div class='muted' id='holidayRemainingDisplay' style='margin-top:6px'></div>
+        </div>
+        <div>
+          <label>Start Date</label>
+          <div style='display:flex;gap:8px'>
+            <input id='holidayStartDisplay' readonly onclick="openHolidayDatePicker('start')" style='cursor:pointer'>
+            <button type='button' onclick="openHolidayDatePicker('start')">📅</button>
+          </div>
+          <input id='holidayStart' type='hidden'>
+        </div>
+        <div>
+          <label>End Date</label>
+          <div style='display:flex;gap:8px'>
+            <input id='holidayEndDisplay' readonly onclick="openHolidayDatePicker('end')" style='cursor:pointer'>
+            <button type='button' onclick="openHolidayDatePicker('end')">📅</button>
+          </div>
+          <input id='holidayEnd' type='hidden'>
+        </div>
+        <div style='grid-column:1 / -1'>
+          <label>Total Days (auto calculated)</label>
+          <input id='holidayDaysTotal' readonly>
+        </div>
+      </div>
+      <div id='holidayRotaConflict' class='holidayWarning' style='display:none'></div>
+      <div id='holidayRequestError' class='loginError' style='margin-top:12px'></div>
+      <div style='margin-top:16px'><button class='primary' id='holidaySaveBtn' onclick='saveHolidayRequest()'>Save Request</button></div>
+    </div>
+
+    <div class='card' id='holidayApprovalPanel' style='display:none'>
+      <h3 style='margin-top:0'>Approval</h3>
+      <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
+        <div>
+          <label>Approved By</label>
+          <select id='holidayApprovedBy'></select>
+        </div>
+        <div>
+          <label>Approved Date</label>
+          <input id='holidayApprovedDate' readonly>
+        </div>
+      </div>
+      <div id='holidayApprovalError' class='loginError' style='margin-top:12px'></div>
+      <div style='margin-top:16px'>
+        <button class='primary' id='holidayApproveBtn' onclick='approveHolidayRequest()'>Approve</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='modal' id='holidayDatePickerModal'>
+  <div class='modalbox' style='max-width:420px'>
+    <div class='top'>
+      <div><h1>Select Holiday Date</h1><div class='muted' id='holidayDatePickerModeLabel'></div></div>
+      <button onclick='closeHolidayDatePicker()'>✕</button>
+    </div>
+    <div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'>
+      <button type='button' onclick='changeHolidayPickerMonth(-1)'>←</button>
+      <strong id='holidayPickerMonthLabel'></strong>
+      <button type='button' onclick='changeHolidayPickerMonth(1)'>→</button>
+    </div>
+    <div id='holidayPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div>
+  </div>
+</div>
+<div class='modal' id='staffMemberCreateModal'><div class='modalbox' style='max-width:720px'><div class='top'><div><h1>Add Staff Member</h1><div class='muted'>Create a staff record</div></div><button onclick='closeStaffMemberCreate()'>✕</button></div><div class='formgrid' style='grid-template-columns:repeat(2,1fr)'><div><label>Name</label><input id='staffName' placeholder='Full name'></div><div><label>Phone Number</label><input id='staffPhone' type='tel' placeholder='Phone number'></div><div style='grid-column:1 / -1'><label>Address</label><input id='staffAddress' placeholder='Address'></div><div><label>Date of Joining</label><div style='display:flex;gap:8px'><input id='staffJoinDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openStaffJoinCalendarPicker()'><button type='button' onclick='openStaffJoinCalendarPicker()'>📅</button></div><input id='staffJoinDate' type='hidden'></div><div><label>Holiday Entitlement This Year</label><input id='staffHolidayEntitlement' type='number' min='0' step='0.5' value='0' oninput='updateHolidayRemainingPreview()'><div class='menuRoleNote'>Admin controlled</div></div><div><label>Holidays Remaining</label><input id='staffHolidayRemaining' type='number' value='0' readonly><div class='menuRoleNote'>Calculated automatically</div></div><div><label>Staff Colour</label><input id='staffColour' type='color' value='#18d7e8' style='height:42px;padding:4px'></div></div><div id='staffCreateError' class='loginError' style='margin-top:12px'></div><div style='text-align:right;margin-top:18px'><button onclick='closeStaffMemberCreate()'>Cancel</button> <button class='primary' id='staffCreateSaveBtn' onclick='saveStaffMember()'>Create Staff Member</button></div></div></div>
+<div class='modal' id='staffShiftCreateModal'><div class='modalbox' style='max-width:720px'><div class='top'><div><h1>Create New Shift</h1><div class='muted'>Add a shift to the Staff Rota</div></div><button onclick='closeStaffShiftCreate()'>✕</button></div><div class='formgrid' style='grid-template-columns:repeat(2,1fr)'><div><label>Staff Member</label><select id='shiftStaff' onchange='updateShiftSummary()'></select></div><div><label>Date</label><div style='display:flex;gap:8px'><input id='shiftDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openShiftCalendarPicker()'><button type='button' onclick='openShiftCalendarPicker()'>📅</button></div><input id='shiftDate' type='hidden'></div><div><label>Start Time</label><select id='shiftStart' onchange='updateShiftSummary()'></select></div><div><label>End Time</label><select id='shiftEnd' onchange='updateShiftSummary()'></select></div></div><div class='staffWeekTotal'><div class='muted'>This Shift</div><div class='big' id='shiftHoursPreview'>0.00 hours</div><div class='muted' style='margin-top:10px'>Weekly Total Including This Shift</div><div class='big' id='shiftWeekTotalPreview'>0.00 hours</div><div class='muted' id='shiftWeekRange'></div></div><div id='shiftCreateError' class='loginError' style='margin-top:12px'></div><div style='text-align:right;margin-top:18px'><button onclick='closeStaffShiftCreate()'>Cancel</button> <button class='primary' id='shiftCreateSaveBtn' onclick='saveStaffShift()'>Create Shift</button></div></div></div>
+<div class='modal' id='staffJoinCalendarPickerModal'><div class='modalbox' style='max-width:420px'><div class='top'><div><h1>Select Date of Joining</h1><div class='muted'>Choose the staff member's start date</div></div><button onclick='closeStaffJoinCalendarPicker()'>✕</button></div><div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'><button type='button' onclick='changeStaffJoinPickerMonth(-1)'>←</button><strong id='staffJoinPickerMonthLabel'></strong><button type='button' onclick='changeStaffJoinPickerMonth(1)'>→</button></div><div id='staffJoinPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div></div></div>
+<div class='modal' id='shiftCalendarPickerModal'><div class='modalbox' style='max-width:420px'><div class='top'><div><h1>Select Shift Date</h1><div class='muted'>Choose the rota date</div></div><button onclick='closeShiftCalendarPicker()'>✕</button></div><div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'><button type='button' onclick='changeShiftPickerMonth(-1)'>←</button><strong id='shiftPickerMonthLabel'></strong><button type='button' onclick='changeShiftPickerMonth(1)'>→</button></div><div id='shiftPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div></div></div>
+<div class='modal targetStoryModal' id='monthlyTargetModal'>
+  <div class='modalbox'>
+    <div class='top'>
+      <div><h1 id='monthlyTargetModalTitle'>Create Monthly Target Stack</h1><div class='muted'>One record is allowed for each Month + Year.</div></div>
+      <button onclick='closeMonthlyTargetModal()'>✕</button>
+    </div>
+    <div class='card' style='margin:0 0 18px;padding:16px'>
+      <div class='bookingStepTitle'>Target Period</div>
+      <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
+        <div><label>Month</label><select id='targetMonthNumber'></select></div>
+        <div><label>Year</label><input id='targetYear' type='number' min='2020' max='2100' step='1'></div>
+      </div>
+    </div>
+    <div class='card' style='margin:0;padding:16px'>
+      <h3 style='margin:0 0 14px'>Set Targets for Month</h3>
+      <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
+        <div><label>Mins Per Bed Per Hour Target</label><input id='monthlyKpiTarget' type='number' min='0' step='0.1' placeholder='e.g. 10.0'></div>
+        <div><label>Number of New Sign Ups</label><input id='monthlySignupTarget' type='number' min='0' step='1' placeholder='e.g. 120'></div>
+        <div><label>Number of Red Light Therapy Only Sessions</label><input id='monthlyRltSessionsTarget' type='number' min='0' step='1' placeholder='e.g. 80'></div>
+        <div><label>Total Minutes Used</label><input id='monthlyTotalMinutesTarget' type='number' min='0' step='1' placeholder='e.g. 18000'></div><div><label>Number of New Reviews</label><input id='monthlyNewReviewsTarget' type='number' min='0' step='1' placeholder='e.g. 25'></div>
+      </div>
+    </div>
+    <div id='monthlyTargetError' class='loginError' style='margin-top:12px'></div>
+    <div style='text-align:right;margin-top:18px'>
+      <button onclick='closeMonthlyTargetModal()'>Cancel</button>
+      <button class='primary' id='monthlyTargetSaveBtn' onclick='saveMonthlyTarget()'>Save Target Stack</button>
+    </div>
+  </div>
+</div>
+<div class='modal' id='renterCreateModal'>
+  <div class='modalbox' style='max-width:560px'>
+    <div class='top'><div><h1>Add Clinician</h1><div class='muted'>Create a treatment-room clinician and link their Product.</div></div><button onclick='closeRenterCreate()'>✕</button></div>
+    <div class='formgrid' style='grid-template-columns:1fr 1fr'>
+      <div><label>Name</label><input id='renterCreateName' placeholder='Clinician name'></div>
+      <div><label>Treatment Type</label><select id='renterCreateProduct'></select></div>
+      <div><label>Phone</label><input id='renterCreatePhone' type='tel' placeholder='Optional'></div>
+      <div><label>Email</label><input id='renterCreateEmail' type='email' placeholder='Optional'></div>
+    </div>
+    <div id='renterCreateError' class='loginError' style='margin-top:12px'></div>
+    <div style='text-align:right;margin-top:18px'><button onclick='closeRenterCreate()'>Cancel</button> <button class='primary' id='renterCreateSaveBtn' onclick='saveNewRenter()'>Create Clinician</button></div>
+  </div>
+</div>
+
+<div class='modal' id='treatmentCreateModal'>
+  <div class='modalbox' style='max-width:650px'>
+    <div class='top'><div><h1>Add Session Type</h1><div class='muted' id='treatmentCreateProductLabel'></div></div><button onclick='closeTreatmentCreate()'>✕</button></div>
+    <div class='formgrid'>
+      <div><label>Session Type Name</label><input id='treatmentCreateName' placeholder='e.g. Botox'></div>
+      <div><label>Duration (mins)</label><input id='treatmentCreateDuration' type='number' min='1' step='1' value='30'></div>
+      <div><label>Buffer (mins)</label><input id='treatmentCreateBuffer' type='number' min='0' step='1' value='0'></div>
+      <div><label>Price (£)</label><input id='treatmentCreatePrice' type='number' min='0' step='0.01' value='0.00'></div>
+    </div>
+    <div id='treatmentCreateError' class='loginError' style='margin-top:12px'></div>
+    <div style='text-align:right;margin-top:18px'><button onclick='closeTreatmentCreate()'>Cancel</button> <button class='primary' id='treatmentCreateSaveBtn' onclick='saveNewTreatment()'>Create Session Type</button></div>
+  </div>
+</div>
+
+<div class='modal' id='productCreateModal'>
+  <div class='modalbox' style='max-width:500px'>
+    <div class='top'>
+      <div><h1>Create Session Type Type</h1><div class='muted'>Examples: Aesthetics, Nails, Lashes, Massage</div></div>
+      <button onclick='closeProductCreate()'>✕</button>
+    </div>
+    <label>Treatment Type Name</label>
+    <input id='newProductName' placeholder='e.g. Aesthetics'>
+    <div id='productCreateError' class='loginError' style='margin-top:12px'></div>
+    <div style='text-align:right;margin-top:18px'>
+      <button onclick='closeProductCreate()'>Cancel</button>
+      <button class='primary' id='createProductSaveBtn' onclick='saveNewProduct()'>Create Session Type Type</button>
+    </div>
+  </div>
+</div>
+<div class='modal' id='clinicCreateModal'>
+  <div class='modalbox' style='max-width:680px'>
+    <div class='top'>
+      <div><h1>Add Clinic Day</h1><div class='muted'>Create a treatment room clinic day</div></div>
+      <button onclick='closeClinicCreate()'>✕</button>
+    </div>
+    <div class='formgrid'>
+      <div><label>Date</label><input id='clinicCreateDate' type='date'></div>
+      <div><label>Clinician</label><select id='clinicCreateRenter'></select></div>
+      <div><label>Start Time</label><input id='clinicCreateStart' type='time' value='09:00'></div>
+      <div><label>End Time</label><input id='clinicCreateEnd' type='time' value='18:00'></div>
+      <div><label>Provided Discount %</label><input id='clinicCreateDiscount' type='number' min='0' max='100' step='1' value='0'></div>
+      <div><label>Rental Charge (£)</label><input id='clinicCreateRental' type='number' min='0' step='0.01' value='0.00'></div>
+    </div>
+    <div id='clinicCreateError' class='loginError' style='margin-top:12px'></div><button type='button' id='clinicCreateRenterShortcut' style='display:none;margin-top:10px' onclick="closeClinicCreate();addRenter()">+ Create Clinician</button>
+    <div style='text-align:right;margin-top:18px'>
+      <button onclick='closeClinicCreate()'>Cancel</button>
+      <button class='primary' id='clinicCreateSaveBtn' onclick='saveNewClinicDay()'>Create Clinic Day</button>
+    </div>
+  </div>
+</div>
+<div class='modal' id='clinicEditModal'>
+  <div class='modalbox' style='max-width:620px'>
+    <div class='top'><div><h1>Edit Clinic Day</h1><div class='muted' id='clinicEditSubtitle'></div></div><button onclick='closeClinicEdit()'>✕</button></div>
+    <div class='formgrid'>
+      <div><label>Date</label><input id='clinicEditDate' readonly></div>
+      <div><label>Clinician</label><select id='clinicEditRenter'></select></div>
+      <div><label>Start Time</label><input id='clinicEditStart' type='time'></div>
+      <div><label>End Time</label><input id='clinicEditEnd' type='time'></div>
+      <div><label>Provided Discount %</label><input id='clinicEditDiscount' type='number' min='0' max='100' step='1'></div><div><label>Rental Charge (£)</label><input id='clinicEditRentalCharge' type='number' min='0' step='0.01' placeholder='0.00'></div>
+    </div>
+    <div style='display:flex;justify-content:space-between;gap:10px;margin-top:20px'>
+      <button onclick='deleteClinicDay()'>Delete Clinic Day</button>
+      <div><button onclick='closeClinicEdit()'>Cancel</button> <button class='primary' onclick='saveClinicDayEdits()'>Save Changes</button></div>
+    </div>
+  </div>
+</div>
+<div class='modal' id='bookingModal'>
+  <div class='modalbox' style='max-width:820px'>
+    <div class='top'><div><h1>New Treatment Room Booking</h1><div class='muted' id='bookingWhen'>Choose a Treatment Type to begin</div></div><button onclick='closeBooking()'>✕</button></div>
+    <div class='bookingSteps'>
+      <div class='bookingStep'>
+        <div class='bookingStepTitle'>1. Treatment Type</div>
+        <div id='bookingProductChoices' class='choiceGrid'></div>
+      </div>
+      <div class='bookingStep' id='bookingClinicStep' style='display:none'>
+        <div class='bookingStepTitle'>2. Available Clinic Days</div>
+        <div id='bookingClinicChoices' class='choiceGrid'></div>
+        <div id='bookingClinicNotice' class='bookingNotice' style='display:none;margin-top:10px'></div>
+      </div>
+      <div class='bookingStep' id='bookingTreatmentStep' style='display:none'>
+        <div class='bookingStepTitle'>3. Session Type</div>
+        <div id='treatmentButtons' class='choiceGrid'></div>
+      </div>
+      <div class='bookingStep' id='bookingDetailsStep' style='display:none'>
+        <div class='bookingStepTitle'>4. Customer & Time</div>
+        <div class='formgrid'>
+          <div><label>Name</label><input id='bookName' placeholder='Customer name'></div>
+          <div><label>Phone Number</label><input id='bookPhone' type='tel' placeholder='e.g. 07...'></div>
+          <div><label>Available Start Time</label><select id='bookTime'></select><div class='muted' style='font-size:10px;margin-top:4px'>Only times that fit the full treatment duration are shown.</div></div>
+          <div><label>Duration</label><input id='bookDuration' readonly></div>
+          <div><label>Price</label><input id='bookPrice' readonly></div><div><label>Clinic Discount % (if any)</label><input id='bookClinicDiscount' readonly></div><div><label>Amount Payable</label><input id='bookAmountPayable' readonly></div>
+        </div>
+        <p><label>Notes</label><input id='bookNotes' placeholder='Optional booking notes'></p>
+        <div id='bookingTimeNotice' class='bookingNotice' style='display:none'></div>
+      </div>
+    </div>
+    <div style='text-align:right;margin-top:20px'><button onclick='closeBooking()'>Cancel</button> <button class='primary' id='saveTreatmentBookingBtn' onclick='saveBooking()' disabled>Book Appointment</button></div>
+  </div>
+</div>
+
+<div class='modal' id='sunbedBookingModal'>
+  <div class='modalbox'>
+    <div class='top'><div><h1>Book Sunbed</h1><div class='muted'>A 4-minute turnaround is added automatically to the session.</div></div><button onclick='closeSunbedBooking()'>✕</button></div>
+    <div class='formgrid'>
+      <div><label>Name</label><input id='sunbedName' placeholder='Customer name'></div>
+      <div><label>Phone Number</label><input id='sunbedPhone' type='tel' placeholder='e.g. 07...'></div>
+      <div><label>Date</label><div style='display:flex;gap:8px'><input id='sunbedDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openSunbedCalendarPicker()'><button type='button' onclick='openSunbedCalendarPicker()' style='padding:0 14px'>📅</button></div><input id='sunbedDate' type='hidden'></div>
+      <div><label>Start Time</label><select id='sunbedTime'></select></div>
+      <div><label>Session Length</label><input id='sunbedLength' type='number' min='1' step='1' placeholder='Minutes'></div>
+      <div><label>Bed Type</label><select id='sunbedBedType' onchange='updatePreferredBedOptions()'><option value='Any'>No Preference</option><option value='Stand Up'>Stand Up</option><option value='Lie Down'>Lie Down</option></select></div>
+      <div><label>Preferred Bed</label><select id='sunbedBed'></select></div>
+      <div><label>Total Diary Time</label><input id='sunbedTotalTime' readonly placeholder='Session + 4 mins'></div>
+    </div>
+    <div style='margin-top:16px'><label>Session Type</label><div class='sunbedSessionChoices' style='grid-template-columns:repeat(2,1fr)'>
+      <button type='button' id='sunTypeRlt' class='sunbedSessionChoice active' onclick="chooseSunbedSessionType('Red Light Therapy')">Red Light Therapy</button>
+      <button type='button' id='sunTypeHybrid' class='sunbedSessionChoice' onclick="chooseSunbedSessionType('Hybrid')">Hybrid</button>
+    </div></div>
+    <div style='text-align:right;margin-top:18px'><button onclick='closeSunbedBooking()'>Cancel</button> <button class='primary' onclick='saveSunbedBooking()'>Book Sunbed</button></div>
+  </div>
+</div>
+
+
+<div class='modal' id='sunbedCalendarPickerModal'>
+  <div class='modalbox' style='max-width:420px'>
+    <div class='top'><div><h1>Select Date</h1><div class='muted'>Choose the booking date</div></div><button onclick='closeSunbedCalendarPicker()'>✕</button></div>
+    <div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'>
+      <button type='button' onclick='changeSunbedPickerMonth(-1)'>←</button>
+      <strong id='sunbedPickerMonthLabel'></strong>
+      <button type='button' onclick='changeSunbedPickerMonth(1)'>→</button>
+    </div>
+    <div id='sunbedPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div>
+  </div>
+</div>
+<div class='modal' id='sunbedConflictModal'>
+  <div class='modalbox' style='max-width:520px'>
+    <div class='top'>
+      <div><h1 id='sunbedConflictTitle'>Bed Unavailable</h1><div class='muted' id='sunbedConflictMessage'></div></div>
+    </div>
+    <div id='sunbedConflictActions' style='display:flex;justify-content:flex-end;gap:10px;margin-top:22px'></div>
+  </div>
+</div>
+<script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script><script>
+const SUPABASE_URL='https://fjryihtrtqygpozkirqp.supabase.co';
+const SUPABASE_KEY='sb_publishable_ciDrF9_Fo5_tVL9E9m8EZw_R0QStFpc';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null,currentProfile=null;let editingUserId=null;let revibeUsers=[];let revibeRolePermissions=[];let editingPermissionRole=null;let workingRolePermissions={};let editingMonthlyTargetId=null;let editingHolidayRequestId=null;let holidayPickerMode='start';let holidayPickerMonth=new Date();
+let data={products:[],renters:[],treatments:[],customers:[],clinicDays:[],appointments:[],bedSessions:[],sunbedBookings:[],staffMembers:[],staffShifts:[],monthlyTargets:[],monthlyReviewCounts:[],holidayRequests:[],openingHours:null,openingHoursHistory:[]};
+let booking={date:null,treatment:null,product:null,clinicId:null};let currentProduct=null;let editingClinicId=null;
+let weekStart=startMonday(new Date());let staffRotaWeekStart=startMonday(new Date());let shiftPickerMonth=new Date();let staffJoinPickerMonth=new Date();let sunbedWeekStart=startMonday(new Date());let sunbedSessionType='Red Light Therapy';let pendingSunbedBooking=null;let sunbedPickerMonth=new Date();let displayDays=7;
+const DEFAULT_OPENING_HOURS={0:{open:'09:00',close:'21:00'},1:{open:'09:00',close:'21:00'},2:{open:'09:00',close:'21:00'},3:{open:'09:00',close:'21:00'},4:{open:'09:00',close:'21:00'},5:{open:'09:00',close:'21:00'},6:{open:'09:00',close:'21:00'}};
+if(!data.openingHours)data.openingHours=structuredClone(DEFAULT_OPENING_HOURS);
+if(!data.openingHoursHistory)data.openingHoursHistory=[];
+
+async function save(){await loadLiveData();renderAll()}
+function startMonday(d){d=new Date(d);let day=d.getDay()||7;d.setDate(d.getDate()-day+1);d.setHours(0,0,0,0);return d}
+function iso(d){return d.toISOString().slice(0,10)}
+function nice(d){return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}
+function renderCalendar(){let cal=document.getElementById('calendar');cal.innerHTML='';let end=new Date(weekStart);end.setDate(end.getDate()+displayDays-1);let rangeName=displayDays===7?'Week':displayDays===14?'Next 2 Weeks':'Next 30 Days';document.getElementById('weekLabel').textContent=`${rangeName} · ${nice(weekStart)} – ${nice(end)}`;for(let i=0;i<displayDays;i++){let d=new Date(weekStart);d.setDate(d.getDate()+i);let ds=iso(d),clinic=data.clinicDays.find(x=>x.date===ds),r=clinic&&data.renters.find(x=>x.id===clinic.renterId);let el=document.createElement('div');el.className='day';el.innerHTML=`<div class='dayhead'><div class='date'>${nice(d)}</div>${clinic?`<div class='clinic'><strong>${clinic.product}</strong><br>${r?.name||''}<br>${clinic.start}–${clinic.end}</div>`:`<div class='clinic muted'>No clinic planned</div>`}</div>`;if(clinic){let startHour=parseInt(clinic.start.split(':')[0],10)||9,endHour=parseInt(clinic.end.split(':')[0],10)||18;for(let h=startHour;h<endHour;h++){['00','30'].forEach(m=>{let t=String(h).padStart(2,'0')+':'+m;let ap=data.appointments.find(a=>a.date===ds&&a.time===t);let slot=document.createElement('div');slot.className='slot';slot.onclick=()=>openBooking(ds,t);slot.innerHTML=`<div class='time'>${t}</div>`+(ap?apptHtml(ap):`<div class='available'>Available</div>`);el.appendChild(slot)})}}cal.appendChild(el)}}function apptHtml(a){let tr=data.treatments.find(x=>x.id===a.treatmentId),c=data.customers.find(x=>x.id===a.customerId),name=a.customerName||c?.name||'Customer';return `<div class='appt'><strong>${tr?.name||'Treatment'}</strong><br>${name} · ${tr?.duration||''}m</div>`}
+function renderProducts(){if(!data.products){let names=[...new Set(data.treatments.map(t=>t.product))];data.products=names.map((name,i)=>({id:i+1,name,active:true}))}let tiles=document.getElementById('productTiles');if(!tiles)return;tiles.innerHTML=data.products.map(p=>{let count=data.treatments.filter(t=>t.product===p.name).length;return `<div class='producttile' onclick="openProduct(\'${p.id}\')"><h3>${p.name}</h3><div class='count'>${count} Session Type${count===1?'':'s'} configured</div><div class='openhint'>Open →</div></div>`}).join('')+`<div class='producttile new' onclick='addProduct()'><div><strong>+</strong>Create new Product</div></div>`}
+function renderProductDetail(){if(!currentProduct)return;let p=data.products.find(x=>x.id===currentProduct);if(!p)return;document.getElementById('productTitle').textContent=p.name;let rows=data.treatments.filter(x=>x.product===p.name);document.getElementById('productSub').textContent=`${rows.length} session type${rows.length===1?'':'s'} configured`;document.getElementById('productTreatmentTable').innerHTML='<tr><th>Session Type</th><th>Duration</th><th>Buffer</th><th>Price</th><th>Status</th></tr>'+rows.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.duration} min</td><td>${x.buffer} min</td><td>£${x.price}</td><td><span class=pill>Active</span></td></tr>`).join('')}
+function hexToRgba(hex,alpha){let h=(hex||'#18d7e8').replace('#','');if(h.length!==6)return `rgba(24,215,232,${alpha})`;let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgba(${r},${g},${b},${alpha})`}
+
+
+
+const REVIBE_PERMISSION_AREAS=[
+  {group:'Sunbed Performance',key:'daily_session_tracker',label:'Daily Session Tracker',approve:false},
+  {group:'Sunbed Performance',key:'sunbed_bookings',label:'Sunbed Bookings',approve:false},
+  {group:'Sunbed Performance',key:'performance_reporting',label:'Performance Reporting',approve:false},
+  {group:'Sunbed Performance',key:'sunbed_settings',label:'Sunbed Settings',approve:false},
+
+  {group:'Treatment Bookings',key:'treatment_room_diary',label:'Treatment Room Diary',approve:false},
+  {group:'Treatment Bookings',key:'clinic_days',label:'Clinic Days',approve:false},
+  {group:'Treatment Bookings',key:'treatment_booking_settings',label:'Treatment Booking Settings',approve:false},
+
+  {group:'Staff',key:'staff_members',label:'Staff Members',approve:false},
+  {group:'Staff',key:'staff_rota',label:'Staff Rota',approve:false},
+  {group:'Staff',key:'holiday_requests',label:'Holiday Requests',approve:true},
+
+  {group:'Admin',key:'users',label:'Users',approve:false},
+  {group:'Admin',key:'roles_permissions',label:'Roles & Permissions',approve:false},
+];
+
+const REVIBE_PAGE_PERMISSION_MAP={
+  bedtracker:'daily_session_tracker',
+  sunbedbookings:'sunbed_bookings',
+  performancereporting:'performance_reporting',
+  sunbedsettings:'sunbed_settings',
+  openinghours:'sunbed_settings',
+  monthlytargets:'sunbed_settings',
+
+  diary:'treatment_room_diary',
+  clinic:'clinic_days',
+  treatmentsettings:'treatment_booking_settings',
+  products:'treatment_booking_settings',
+  customers:'treatment_booking_settings',
+  renters:'treatment_booking_settings',
+
+  staffmembers:'staff_members',
+  staffrota:'staff_rota',
+  holidayrequests:'holiday_requests',
+
+  users:'users',
+  rolespermissions:'roles_permissions',
+};
+
+async function loadRolePermissions(){
+  let {data,error}=await sb.from('role_permissions').select('*');
+  if(error)throw error;
+
+  revibeRolePermissions=(data||[]).map(x=>({
+    role:x.role,
+    key:x.permission_key,
+    view:!!x.can_view,
+    edit:!!x.can_edit,
+    approve:!!x.can_approve
+  }));
+}
+
+function hasRolePermission(key,action='view'){
+  if(currentProfile?.role==='admin')return true;
+  let p=revibeRolePermissions.find(x=>x.role===currentProfile?.role&&x.key===key);
+  if(!p)return false;
+  return action==='edit'?p.edit:action==='approve'?p.approve:p.view;
+}
+
+function applyPermissionBasedNavigation(){
+  document.querySelectorAll('#nav button[data-page]').forEach(btn=>{
+    let page=btn.dataset.page,
+        key=REVIBE_PAGE_PERMISSION_MAP[page];
+
+    // General Settings is kept Admin-only for now.
+    if(page==='settings'){
+      btn.style.display=currentProfile?.role==='admin'?'block':'none';
+      return;
+    }
+
+    if(!key)return;
+    btn.style.display=hasRolePermission(key,'view')?'block':'none';
+  });
+
+  // Hide empty section headings automatically.
+  document.querySelectorAll('#nav .navtitle').forEach(title=>{
+    if(title.id==='adminNavTitle'){
+      let visible=[...document.querySelectorAll('#usersNavButton,#rolesPermissionsNavButton')]
+        .some(x=>x.style.display!=='none');
+      title.style.display=visible?'block':'none';
+      return;
+    }
+
+    let next=title.nextElementSibling,hasVisible=false;
+    while(next && !next.classList.contains('navtitle')){
+      if(next.tagName==='BUTTON' && next.style.display!=='none'){hasVisible=true;break;}
+      next=next.nextElementSibling;
+    }
+    title.style.display=hasVisible?'block':'none';
+  });
+
+  // If the current visible page is not allowed, move to the first permitted menu page.
+  let activePage=document.querySelector('.page.active');
+  if(activePage){
+    let key=REVIBE_PAGE_PERMISSION_MAP[activePage.id];
+    if(key && !hasRolePermission(key,'view')){
+      let first=[...document.querySelectorAll('#nav button[data-page]')]
+        .find(x=>x.style.display!=='none');
+      if(first)goToPage(first.dataset.page);
+    }
+  }
+}
+
+function renderRolePermissionTiles(){
+  let host=document.getElementById('rolePermissionTiles');if(!host)return;
+
+  let roles=['admin','shop_manager','staff','renter','customer'];
+
+  host.innerHTML=roles.map(role=>{
+    let label=REVIBE_ROLE_LABELS[role]||role,
+        count=REVIBE_PERMISSION_AREAS.filter(a=>{
+          let p=revibeRolePermissions.find(x=>x.role===role&&x.key===a.key);
+          return role==='admin'||p?.view;
+        }).length;
+
+    return `<div class='producttile roleTile ${role==='admin'?'locked':''}' onclick="openRolePermissionDetail('${role}')">
+      <h3>${label}</h3>
+      <div class='count'>${role==='admin'?'Full Access — Locked':`${count} areas visible`}</div>
+      <div class='openhint'>Configure →</div>
+    </div>`;
+  }).join('');
+}
+
+function renderRolesPermissions(){
+  renderRolePermissionTiles();
+}
+
+function openRolePermissionDetail(role){
+  editingPermissionRole=role;
+  workingRolePermissions={};
+
+  REVIBE_PERMISSION_AREAS.forEach(area=>{
+    let saved=revibeRolePermissions.find(x=>x.role===role&&x.key===area.key);
+    workingRolePermissions[area.key]={
+      view:role==='admin'?true:!!saved?.view,
+      edit:role==='admin'?true:!!saved?.edit,
+      approve:role==='admin'?true:!!saved?.approve
+    };
+  });
+
+  document.getElementById('rolePermissionTiles').style.display='none';
+  document.getElementById('rolePermissionDetail').style.display='block';
+
+  document.getElementById('rolePermissionTitle').textContent=
+    `${REVIBE_ROLE_LABELS[role]||role} Permissions`;
+
+  document.getElementById('rolePermissionSubtitle').textContent=
+    role==='admin'
+      ?'Admin always has full access. These permissions are locked.'
+      :'Tick what this role can view, create/edit and approve.';
+
+  document.getElementById('savePermissionsBtn').style.display=
+    role==='admin'?'none':'inline-block';
+
+  document.getElementById('copyPermissionsBtn').style.display=
+    role==='admin'?'none':'inline-block';
+
+  renderPermissionsMatrix();
+}
+
+function closeRolePermissionDetail(){
+  editingPermissionRole=null;
+  workingRolePermissions={};
+  document.getElementById('rolePermissionDetail').style.display='none';
+  document.getElementById('rolePermissionTiles').style.display='grid';
+  renderRolePermissionTiles();
+}
+
+function renderPermissionsMatrix(){
+  let t=document.getElementById('permissionsMatrixTable');if(!t)return;
+
+  let html=`<tr><th>Area / Function</th><th>View</th><th>Create / Edit</th><th>Approve</th></tr>`,
+      currentGroup=null,
+      locked=editingPermissionRole==='admin';
+
+  REVIBE_PERMISSION_AREAS.forEach(area=>{
+    if(area.group!==currentGroup){
+      currentGroup=area.group;
+      html+=`<tr class='permissionGroupRow'><td colspan='4'>${area.group}</td></tr>`;
+    }
+
+    let p=workingRolePermissions[area.key]||{view:false,edit:false,approve:false};
+
+    html+=`<tr class='${locked?'permissionDisabled':''}'>
+      <td>
+        <b>${area.label}</b>
+        ${area.key==='roles_permissions'?`<div class='permissionNote'>Admin access control configuration</div>`:''}
+      </td>
+      <td><input class='permissionCheck' type='checkbox' ${p.view?'checked':''} ${locked?'disabled':''} onchange="changeWorkingPermission('${area.key}','view',this.checked)"></td>
+      <td><input class='permissionCheck' type='checkbox' ${p.edit?'checked':''} ${locked?'disabled':''} onchange="changeWorkingPermission('${area.key}','edit',this.checked)"></td>
+      <td>${area.approve
+        ?`<input class='permissionCheck' type='checkbox' ${p.approve?'checked':''} ${locked?'disabled':''} onchange="changeWorkingPermission('${area.key}','approve',this.checked)">`
+        :'—'
+      }</td>
+    </tr>`;
+  });
+
+  t.innerHTML=html;
+}
+
+function changeWorkingPermission(key,action,value){
+  let p=workingRolePermissions[key]||(workingRolePermissions[key]={view:false,edit:false,approve:false});
+
+  p[action]=value;
+
+  // Edit/Approve implies View.
+  if((action==='edit'||action==='approve')&&value)p.view=true;
+
+  // Removing View removes Edit + Approve.
+  if(action==='view'&&!value){
+    p.edit=false;
+    p.approve=false;
+  }
+
+  renderPermissionsMatrix();
+}
+
+async function saveRolePermissions(){
+  if(currentProfile?.role!=='admin'||!editingPermissionRole||editingPermissionRole==='admin')return;
+
+  let btn=document.getElementById('savePermissionsBtn');
+  btn.disabled=true;btn.textContent='Saving...';
+
+  try{
+    for(let area of REVIBE_PERMISSION_AREAS){
+      let p=workingRolePermissions[area.key]||{view:false,edit:false,approve:false};
+
+      let {error}=await sb.rpc('revibe_save_role_permission',{
+        p_role:editingPermissionRole,
+        p_permission_key:area.key,
+        p_can_view:!!p.view,
+        p_can_edit:!!p.edit,
+        p_can_approve:!!p.approve
+      });
+
+      if(error)throw error;
+    }
+
+    await loadRolePermissions();
+    renderRolePermissionTiles();
+    alert('Permissions saved.');
+  }catch(e){
+    alert('Could not save permissions: '+(e.message||e));
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Save Permissions';
+  }
+}
+
+function openCopyPermissions(){
+  if(!editingPermissionRole||editingPermissionRole==='admin')return;
+
+  let roles=['admin','shop_manager','staff','renter','customer']
+    .filter(r=>r!==editingPermissionRole);
+
+  document.getElementById('copyPermissionsSource').innerHTML=
+    roles.map(r=>`<option value='${r}'>${REVIBE_ROLE_LABELS[r]||r}</option>`).join('');
+
+  document.getElementById('copyPermissionsModal').classList.add('show');
+}
+
+function closeCopyPermissions(){
+  document.getElementById('copyPermissionsModal').classList.remove('show');
+}
+
+function applyCopiedPermissions(){
+  let source=document.getElementById('copyPermissionsSource').value;
+
+  REVIBE_PERMISSION_AREAS.forEach(area=>{
+    let saved=revibeRolePermissions.find(x=>x.role===source&&x.key===area.key);
+
+    workingRolePermissions[area.key]={
+      view:source==='admin'?true:!!saved?.view,
+      edit:source==='admin'?true:!!saved?.edit,
+      approve:source==='admin'?true:!!saved?.approve
+    };
+  });
+
+  closeCopyPermissions();
+  renderPermissionsMatrix();
+}
+const REVIBE_ROLE_LABELS={
+  admin:'Admin',
+  shop_manager:'Shop Manager',
+  staff:'Staff',
+  renter:'Clinician',
+  customer:'Customer'
+};
+
+const REVIBE_ROLE_DESCRIPTIONS={
+  admin:'Full system owner. User/security administration plus all operational areas.',
+  shop_manager:'Operational management role. Access is controlled from Admin → Roles & Permissions.',
+  staff:'Internal shop user. Access is controlled from Admin → Roles & Permissions.',
+  renter:'Clinician login. Access is controlled from Admin → Roles & Permissions; record-level clinic restrictions still apply.',
+  customer:'Customer portal login. Access is controlled from Admin → Roles & Permissions.'
+};
+
+function updateUserRoleFields(){
+  let role=document.getElementById('userRole').value,
+      wrap=document.getElementById('userClinicianLinkWrap');
+  wrap.style.display=role==='renter'?'block':'none';
+  document.getElementById('userRoleDescription').innerHTML=
+    `<b>${REVIBE_ROLE_LABELS[role]}</b><div class='muted' style='margin-top:6px'>${REVIBE_ROLE_DESCRIPTIONS[role]}</div>`;
+}
+
+async function loadRevibeUsers(){
+  if(currentProfile?.role!=='admin'){revibeUsers=[];return;}
+  let {data,error}=await sb.rpc('revibe_list_users');
+  if(error)throw error;
+  revibeUsers=(data||[]).map(x=>({
+    id:x.id,
+    email:x.email||'',
+    fullName:x.full_name||'',
+    role:x.role,
+    active:x.active,
+    clinicianId:x.renter_id||null,
+    createdAt:x.created_at
+  }));
+}
+
+function renderUsers(){
+  let table=document.getElementById('usersTable');if(!table)return;
+  if(currentProfile?.role!=='admin'){
+    table.innerHTML=`<tr><td class='muted'>Admin access required.</td></tr>`;
+    return;
+  }
+
+  table.innerHTML=`<tr><th>Name</th><th>Email / Login</th><th>Access Level</th><th>Linked Record</th><th>Status</th></tr>`+
+    (revibeUsers.length?revibeUsers.map(u=>{
+      let clinician=data.renters.find(r=>r.id===u.clinicianId);
+      return `<tr class='userEditRow ${u.active?'':'userInactive'}' onclick="openEditUserModal('${u.id}')">
+        <td><b>${u.fullName||''}</b></td>
+        <td>${u.email}</td>
+        <td><span class='userRoleBadge'>${REVIBE_ROLE_LABELS[u.role]||u.role}</span></td>
+        <td>${u.role==='renter'?(clinician?.name||'Not linked'):''}</td>
+        <td>${u.active?'Active':'Inactive'}</td>
+      </tr>`;
+    }).join(''):`<tr><td colspan='5' class='muted'>No users found.</td></tr>`);
+}
+
+function populateUserClinicians(){
+  document.getElementById('userClinicianLink').innerHTML=
+    `<option value=''>Select clinician</option>`+
+    (data.renters||[]).map(r=>`<option value='${r.id}'>${r.name}</option>`).join('');
+}
+
+function openCreateUserModal(){
+  if(currentProfile?.role!=='admin')return;
+  editingUserId=null;
+  populateUserClinicians();
+  document.getElementById('userModalTitle').textContent='Create User';
+  document.getElementById('userModalSubtitle').textContent='Send an invitation so the user can set their own password.';
+  document.getElementById('userFullName').value='';
+  document.getElementById('userEmail').value='';
+  document.getElementById('userEmail').readOnly=false;
+  document.getElementById('userRole').value='staff';
+  document.getElementById('userActiveWrap').style.display='none';
+  document.getElementById('userSaveButton').textContent='Send Invitation';
+  document.getElementById('userFormError').style.display='none';
+  updateUserRoleFields();
+  document.getElementById('userModal').classList.add('show');
+}
+
+function openEditUserModal(id){
+  if(currentProfile?.role!=='admin')return;
+  let u=revibeUsers.find(x=>x.id===id);if(!u)return;
+  editingUserId=id;
+  populateUserClinicians();
+  document.getElementById('userModalTitle').textContent='Edit User';
+  document.getElementById('userModalSubtitle').textContent='Change the user’s REVIBE role or active status.';
+  document.getElementById('userFullName').value=u.fullName||'';
+  document.getElementById('userEmail').value=u.email||'';
+  document.getElementById('userEmail').readOnly=true;
+  document.getElementById('userRole').value=u.role;
+  document.getElementById('userClinicianLink').value=u.clinicianId||'';
+  document.getElementById('userActive').checked=!!u.active;
+  document.getElementById('userActiveWrap').style.display='block';
+  document.getElementById('userSaveButton').textContent='Save Changes';
+  document.getElementById('userFormError').style.display='none';
+  updateUserRoleFields();
+  document.getElementById('userModal').classList.add('show');
+}
+
+function closeUserModal(){
+  document.getElementById('userModal').classList.remove('show');
+  editingUserId=null;
+}
+
+async function saveUser(){
+  if(currentProfile?.role!=='admin')return;
+  let name=document.getElementById('userFullName').value.trim(),
+      email=document.getElementById('userEmail').value.trim(),
+      role=document.getElementById('userRole').value,
+      clinicianId=role==='renter'?(document.getElementById('userClinicianLink').value||null):null,
+      err=document.getElementById('userFormError'),
+      btn=document.getElementById('userSaveButton');
+
+  err.style.display='none';
+  if(!name){err.textContent='Please enter a name.';err.style.display='block';return;}
+  if(!email){err.textContent='Please enter an email address.';err.style.display='block';return;}
+  if(role==='renter'&&!clinicianId){err.textContent='Please link this Clinician login to a Clinician record.';err.style.display='block';return;}
+
+  btn.disabled=true;
+  btn.textContent=editingUserId?'Saving...':'Sending Invitation...';
+
+  try{
+    if(editingUserId){
+      let {error}=await sb.rpc('revibe_admin_update_user',{
+        p_user_id:editingUserId,
+        p_full_name:name,
+        p_role:role,
+        p_active:document.getElementById('userActive').checked,
+        p_renter_id:clinicianId
+      });
+      if(error)throw error;
+    }else{
+      // Secure server-side invitation. Requires the create-revibe-user Edge Function.
+      let {data,error}=await sb.functions.invoke('create-revibe-user',{
+        body:{
+          email,
+          full_name:name,
+          role,
+          renter_id:clinicianId
+        }
+      });
+      if(error)throw error;
+      if(data?.error)throw new Error(data.error);
+    }
+
+    await loadRevibeUsers();
+    renderUsers();
+    closeUserModal();
+  }catch(e){
+    let message=e?.message||'Could not save user.';
+    if(message.includes('Failed to send a request')){
+      message='The secure Create User function has not been deployed yet. Use the supplied Edge Function file when we configure user invitations.';
+    }
+    err.textContent=message;
+    err.style.display='block';
+  }finally{
+    btn.disabled=false;
+    btn.textContent=editingUserId?'Save Changes':'Send Invitation';
+  }
+}
+function holidayDateKeys(startKey,endKey){
+  if(!startKey||!endKey)return [];
+  return dateRangeKeys(parseLocalDateKey(startKey),parseLocalDateKey(endKey));
+}
+function holidayDaysInclusive(startKey,endKey){
+  if(!startKey||!endKey)return 0;
+  let s=parseLocalDateKey(startKey),e=parseLocalDateKey(endKey);
+  if(e<s)return 0;
+  return Math.round((e-s)/86400000)+1;
+}
+function getApprovedHolidayForStaffDate(staffId,dateKey){
+  return (data.holidayRequests||[]).find(h=>h.staffId===staffId&&h.status==='Approved'&&dateKey>=h.startDate&&dateKey<=h.endDate)||null;
+}
+function staffHolidayRotaConflicts(staffId,startKey,endKey){
+  let keys=holidayDateKeys(startKey,endKey);
+  return (data.staffShifts||[]).filter(s=>s.staffId===staffId&&keys.includes(s.date));
+}
+function renderHolidayRequests(){
+  let t=document.getElementById('holidayRequestsTable');if(!t)return;
+  let rows=[...(data.holidayRequests||[])].sort((a,b)=>b.startDate.localeCompare(a.startDate));
+  t.innerHTML=`<tr><th>Staff Member</th><th>Dates</th><th>Days</th><th>Status</th><th>Approved By</th><th>Approved Date</th></tr>`+
+    (rows.length?rows.map(h=>{
+      let staff=data.staffMembers.find(s=>s.id===h.staffId),approver=data.staffMembers.find(s=>s.id===h.approvedById),
+          cls=h.status==='Approved'?'holidayApproved':h.status==='Pending'?'holidayPending':h.status==='Rejected'?'holidayRejected':'holidayCancelled';
+      return `<tr class='clinicRow' onclick="openHolidayRequest('${h.id}')">
+        <td><b>${staff?.name||''}</b></td>
+        <td>${formatSunbedDisplayDate(h.startDate)} – ${formatSunbedDisplayDate(h.endDate)}</td>
+        <td>${h.daysTotal}</td>
+        <td><span class='holidayStatus ${cls}'>${h.status}</span></td>
+        <td>${approver?.name||''}</td>
+        <td>${h.approvedDate?formatSunbedDisplayDate(h.approvedDate):''}</td>
+      </tr>`;
+    }).join(''):`<tr><td colspan='6' class='muted'>No holiday requests yet.</td></tr>`);
+}
+function openHolidayRequestCreate(){
+  if(!data.staffMembers.length)return alert('Create a Staff Member first.');
+  editingHolidayRequestId=null;
+  document.getElementById('holidayRequestModalTitle').textContent='New Holiday Request';
+  document.getElementById('holidayStaff').disabled=false;
+  document.getElementById('holidayStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  let today=localDateKey();
+  document.getElementById('holidayStart').value=today;
+  document.getElementById('holidayEnd').value=today;
+  document.getElementById('holidayStartDisplay').value=formatSunbedDisplayDate(today);
+  document.getElementById('holidayEndDisplay').value=formatSunbedDisplayDate(today);
+  document.getElementById('holidaySaveBtn').style.display=currentProfile?.role==='admin'?'inline-block':'none';
+  document.getElementById('holidayApprovalPanel').style.display='none';
+  document.getElementById('holidayRequestError').style.display='none';
+  document.getElementById('holidayRotaConflict').style.display='none';
+  updateHolidayRequestSummary();
+  document.getElementById('holidayRequestModal').classList.add('show');
+}
+function openHolidayRequest(id){
+  let h=data.holidayRequests.find(x=>x.id===id);if(!h)return;
+  editingHolidayRequestId=id;
+  document.getElementById('holidayRequestModalTitle').textContent='Holiday Request';
+  document.getElementById('holidayStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  document.getElementById('holidayStaff').value=h.staffId;
+  document.getElementById('holidayStaff').disabled=true;
+  document.getElementById('holidayStart').value=h.startDate;
+  document.getElementById('holidayEnd').value=h.endDate;
+  document.getElementById('holidayStartDisplay').value=formatSunbedDisplayDate(h.startDate);
+  document.getElementById('holidayEndDisplay').value=formatSunbedDisplayDate(h.endDate);
+  document.getElementById('holidaySaveBtn').style.display=h.status==='Pending'&&currentProfile?.role==='admin'?'inline-block':'none';
+  document.getElementById('holidayRequestError').style.display='none';
+
+  document.getElementById('holidayApprovalPanel').style.display='block';
+  document.getElementById('holidayApprovedBy').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  if(h.approvedById)document.getElementById('holidayApprovedBy').value=h.approvedById;
+  document.getElementById('holidayApprovedBy').disabled=h.status==='Approved';
+  document.getElementById('holidayApprovedDate').value=h.approvedDate?formatSunbedDisplayDate(h.approvedDate):'Will populate on approval';
+  document.getElementById('holidayApproveBtn').style.display=h.status==='Pending'&&currentProfile?.role==='admin'?'inline-block':'none';
+
+  updateHolidayRequestSummary();
+  document.getElementById('holidayRequestModal').classList.add('show');
+}
+function closeHolidayRequestModal(){document.getElementById('holidayRequestModal').classList.remove('show');editingHolidayRequestId=null}
+function updateHolidayRequestSummary(){
+  let staffId=document.getElementById('holidayStaff').value,
+      staff=data.staffMembers.find(s=>s.id===staffId),
+      start=document.getElementById('holidayStart').value,
+      end=document.getElementById('holidayEnd').value,
+      days=holidayDaysInclusive(start,end);
+
+  document.getElementById('holidayRemainingDisplay').textContent=staff?`${Number(staff.holidaysRemaining).toFixed(1)} days remaining this year`:'';
+  document.getElementById('holidayDaysTotal').value=days?`${days} day${days===1?'':'s'}`:'';
+
+  let conflicts=staffHolidayRotaConflicts(staffId,start,end),
+      box=document.getElementById('holidayRotaConflict');
+  if(conflicts.length){
+    let dates=[...new Set(conflicts.map(x=>x.date))].map(formatSunbedDisplayDate);
+    box.textContent=`Warning: ${staff?.name||'This staff member'} is currently scheduled on ${dates.join(', ')}. The holiday request can still be saved, but the rota will need updating before/when it is approved.`;
+    box.style.display='block';
+  }else box.style.display='none';
+}
+async function saveHolidayRequest(){
+  if(currentProfile?.role!=='admin')return;
+  let staffId=document.getElementById('holidayStaff').value,start=document.getElementById('holidayStart').value,end=document.getElementById('holidayEnd').value,
+      days=holidayDaysInclusive(start,end),err=document.getElementById('holidayRequestError'),btn=document.getElementById('holidaySaveBtn');
+  err.style.display='none';
+  if(!staffId||!start||!end||days<=0){err.textContent='Please enter valid holiday dates.';err.style.display='block';return;}
+
+  let staff=data.staffMembers.find(s=>s.id===staffId);
+  if(staff && days>(+staff.holidaysRemaining||0)){
+    alert(`${staff.name} only has ${Number(staff.holidaysRemaining).toFixed(1)} holiday days remaining. This request is for ${days} days and cannot be saved.`);
+    return;
+  }
+
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let error;
+    if(editingHolidayRequestId){
+      ({error}=await sb.from('holiday_requests').update({start_date:start,end_date:end,days_total:days,updated_at:new Date().toISOString()}).eq('id',editingHolidayRequestId));
+    }else{
+      ({error}=await sb.from('holiday_requests').insert({staff_member_id:staffId,start_date:start,end_date:end,days_total:days,status:'Pending'}));
+    }
+    if(error)throw error;
+    await loadLiveData();renderHolidayRequests();renderStaffRota();closeHolidayRequestModal();
+  }catch(e){err.textContent=e.message||'Could not save holiday request.';err.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='Save Request';}
+}
+async function approveHolidayRequest(){
+  if(currentProfile?.role!=='admin'||!editingHolidayRequestId)return;
+  let h=data.holidayRequests.find(x=>x.id===editingHolidayRequestId),approvedBy=document.getElementById('holidayApprovedBy').value,
+      err=document.getElementById('holidayApprovalError'),btn=document.getElementById('holidayApproveBtn');
+  err.style.display='none';
+  if(!approvedBy){err.textContent='Please select who approved the request.';err.style.display='block';return;}
+
+  let conflicts=staffHolidayRotaConflicts(h.staffId,h.startDate,h.endDate);
+  if(conflicts.length){
+    let staff=data.staffMembers.find(s=>s.id===h.staffId),
+        dates=[...new Set(conflicts.map(x=>x.date))].map(formatSunbedDisplayDate).join(', ');
+    if(!confirm(`${staff?.name||'This staff member'} is scheduled on ${dates}. Approve the holiday anyway? You will need to amend those rota shifts.`))return;
+  }
+
+  btn.disabled=true;btn.textContent='Approving...';
+  try{
+    let today=localDateKey(),
+        {error}=await sb.from('holiday_requests').update({status:'Approved',approved_by_staff_member_id:approvedBy,approved_date:today,updated_at:new Date().toISOString()}).eq('id',editingHolidayRequestId);
+    if(error)throw error;
+    let rpc=await sb.rpc('recalculate_staff_holiday_remaining',{p_staff_member_id:h.staffId});
+    if(rpc.error)throw rpc.error;
+    await loadLiveData();renderHolidayRequests();renderStaffMembers();renderStaffRota();closeHolidayRequestModal();
+  }catch(e){err.textContent=e.message||'Could not approve holiday.';err.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='Approve';}
+}
+function openHolidayDatePicker(mode){
+  holidayPickerMode=mode;
+  let key=document.getElementById(mode==='start'?'holidayStart':'holidayEnd').value;
+  holidayPickerMonth=key?parseLocalDateKey(key):new Date();
+  document.getElementById('holidayDatePickerModeLabel').textContent=mode==='start'?'Start Date':'End Date';
+  renderHolidayDatePicker();
+  document.getElementById('holidayDatePickerModal').classList.add('show');
+}
+function closeHolidayDatePicker(){document.getElementById('holidayDatePickerModal').classList.remove('show')}
+function changeHolidayPickerMonth(delta){holidayPickerMonth=new Date(holidayPickerMonth.getFullYear(),holidayPickerMonth.getMonth()+delta,1);renderHolidayDatePicker()}
+function selectHolidayDate(key){
+  let hidden=document.getElementById(holidayPickerMode==='start'?'holidayStart':'holidayEnd'),
+      display=document.getElementById(holidayPickerMode==='start'?'holidayStartDisplay':'holidayEndDisplay');
+  hidden.value=key;display.value=formatSunbedDisplayDate(key);
+  if(holidayPickerMode==='start'&&document.getElementById('holidayEnd').value<key){
+    document.getElementById('holidayEnd').value=key;document.getElementById('holidayEndDisplay').value=formatSunbedDisplayDate(key);
+  }
+  closeHolidayDatePicker();updateHolidayRequestSummary();
+}
+function renderHolidayDatePicker(){
+  let grid=document.getElementById('holidayPickerGrid'),y=holidayPickerMonth.getFullYear(),m=holidayPickerMonth.getMonth();
+  document.getElementById('holidayPickerMonthLabel').textContent=new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let heads=['Mo','Tu','We','Th','Fr','Sa','Su'].map(x=>`<div style='color:#8f98a4;font-size:11px;padding:6px 0'>${x}</div>`).join(''),
+      first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),cells='';
+  for(let i=0;i<offset;i++)cells+='<div></div>';
+  for(let d=1;d<=days;d++){
+    let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    cells+=`<button type='button' onclick="selectHolidayDate('${key}')" style='padding:10px 4px'>${d}</button>`;
+  }
+  grid.innerHTML=heads+cells;
+}
+function renderStaffMembers(){let t=document.getElementById('staffMembersTable');if(!t)return;t.innerHTML='<tr><th>Name</th><th>Phone</th><th>Address</th><th>Date Joined</th><th>Holiday Entitlement</th><th>Holidays Remaining</th><th>Colour</th></tr>'+(data.staffMembers.length?data.staffMembers.map(s=>`<tr><td><b>${s.name}</b></td><td>${s.phone||''}</td><td>${s.address||''}</td><td>${s.dateOfJoining?formatSunbedDisplayDate(s.dateOfJoining):''}</td><td>${s.holidayEntitlement}</td><td>${s.holidaysRemaining}</td><td><span style='display:inline-block;width:28px;height:18px;border-radius:5px;background:${s.colour};border:1px solid #555'></span></td></tr>`).join(''):`<tr><td colspan='7' class='muted'>No staff members configured yet.</td></tr>`)}
+function renderStaffRota(){
+  let wrap=document.getElementById('staffRotaCalendar');if(!wrap)return;
+  let end=new Date(staffRotaWeekStart);end.setDate(end.getDate()+6);
+  document.getElementById('staffRotaWeekLabel').textContent=`${nice(staffRotaWeekStart)} – ${nice(end)}`;
+
+  const startMin=8*60+45,endMin=20*60+15,rowStep=15,totalRows=(endMin-startMin)/rowStep;
+  let html=`<div class='staffRotaMatrix'><div class='staffRotaHead'>Time</div>`;
+  let dayKeys=[];
+  for(let i=0;i<7;i++){
+    let d=new Date(staffRotaWeekStart);d.setDate(d.getDate()+i);dayKeys.push(iso(d));
+    html+=`<div class='staffRotaHead'>${nice(d)}</div>`;
+  }
+
+  for(let r=0;r<totalRows;r++){
+    let mins=startMin+r*rowStep,hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0'),
+        label=(mins===startMin||mins===endMin-rowStep||mm==='00'||mm==='30')?`${hh}:${mm}`:'';
+    html+=`<div class='staffRotaTime'>${label}</div>`;
+    for(let d=0;d<7;d++){
+      let edge=mins<9*60||mins>=20*60?' edge':'';
+      let holidayNames=(data.holidayRequests||[]).filter(h=>h.status==='Approved'&&dayKeys[d]>=h.startDate&&dayKeys[d]<=h.endDate).map(h=>data.staffMembers.find(s=>s.id===h.staffId)?.name).filter(Boolean);
+      let holidayClass=holidayNames.length?' holidayRotaShade':'';
+      html+=`<div class='staffRotaCell${edge}${holidayClass}' data-day='${dayKeys[d]}' data-row='${r}'>${r===0&&holidayNames.length?`<div class='holidayRotaLabel'>${holidayNames.join(', ')} on holiday</div>`:''}</div>`;
+    }
+  }
+  html+=`</div><div class='staffRotaLegend'>08:45–09:00 = pre-open preparation · 20:00–20:15 = post-close clean down</div>`;
+  wrap.innerHTML=html;
+
+  // Overlay shifts relative to each day's 15-minute grid.
+  let matrix=wrap.querySelector('.staffRotaMatrix');
+  let heads=1; // header row
+  dayKeys.forEach((key,dayIndex)=>{
+    let shifts=data.staffShifts.filter(s=>s.date===key);
+    shifts.forEach(s=>{
+      let staff=data.staffMembers.find(m=>m.id===s.staffId),sMin=minutesFromTime(s.start),eMin=minutesFromTime(s.end);
+      let clippedStart=Math.max(sMin,startMin),clippedEnd=Math.min(eMin,endMin);
+      if(clippedEnd<=clippedStart)return;
+      let firstCell=matrix.querySelector(`.staffRotaCell[data-day='${key}'][data-row='0']`);
+      let lastCell=matrix.querySelector(`.staffRotaCell[data-day='${key}'][data-row='${totalRows-1}']`);
+      if(!firstCell||!lastCell)return;
+      let layer=document.createElement('div');
+      let rect1=firstCell.getBoundingClientRect(),rectM=matrix.getBoundingClientRect(),cellH=firstCell.getBoundingClientRect().height;
+      layer.className='staffRotaShiftBlock';
+      layer.style.left=(rect1.left-rectM.left+5)+'px';
+      layer.style.width=(rect1.width-10)+'px';
+      layer.style.top=(rect1.top-rectM.top+((clippedStart-startMin)/rowStep)*cellH+2)+'px';
+      layer.style.height=Math.max(22,((clippedEnd-clippedStart)/rowStep)*cellH-4)+'px';
+      let col=staff?.colour||'#18d7e8';
+      layer.style.borderLeftColor=col;
+      layer.style.background=hexToRgba(col,0.22);
+      layer.innerHTML=`<b>${staff?.name||'Staff Member'}</b>${s.start}–${s.end}<br>${Number(s.hours).toFixed(2)} hrs`;
+      matrix.appendChild(layer);
+    });
+  });
+
+  let weekKeys=dayKeys,scheduled=data.staffShifts.filter(s=>weekKeys.includes(s.date));
+  let totals={};
+  scheduled.forEach(s=>{totals[s.staffId]=(totals[s.staffId]||0)+(+s.hours||0)});
+  let rows=Object.entries(totals).map(([staffId,hours])=>({staff:data.staffMembers.find(m=>m.id===staffId),hours})).filter(x=>x.staff);
+  document.getElementById('staffRotaSummary').innerHTML=rows.length
+    ?`<h3 style='margin-top:0'>Weekly Scheduled Hours</h3><table class='table'><tr><th>Staff Member</th><th>Total Scheduled Hours</th></tr>${rows.sort((a,b)=>a.staff.name.localeCompare(b.staff.name)).map(x=>`<tr><td><span class='staffColourDot' style='background:${x.staff.colour}'></span><b>${x.staff.name}</b></td><td>${x.hours.toFixed(2)} hours</td></tr>`).join('')}</table>`
+    :`<h3 style='margin-top:0'>Weekly Scheduled Hours</h3><div class='muted'>No staff scheduled this week.</div>`;
+}function openStaffMemberCreate(){
+  let today=localDateKey();
+  document.getElementById('staffName').value='';
+  document.getElementById('staffPhone').value='';
+  document.getElementById('staffAddress').value='';
+  document.getElementById('staffJoinDate').value=today;
+  document.getElementById('staffJoinDateDisplay').value=formatSunbedDisplayDate(today);
+  document.getElementById('staffHolidayEntitlement').value='0';
+  document.getElementById('staffHolidayRemaining').value='0';
+  document.getElementById('staffColour').value='#18d7e8';
+  document.getElementById('staffCreateError').style.display='none';
+
+  let isAdmin=currentProfile?.role==='admin';
+  document.getElementById('staffHolidayEntitlement').readOnly=!isAdmin;
+  document.getElementById('staffHolidayRemaining').readOnly=true;
+
+  document.getElementById('staffMemberCreateModal').classList.add('show');
+}function updateHolidayRemainingPreview(){
+  let entitlement=+document.getElementById('staffHolidayEntitlement').value||0;
+  document.getElementById('staffHolidayRemaining').value=entitlement.toFixed(1).replace('.0','');
+}
+function closeStaffMemberCreate(){document.getElementById('staffMemberCreateModal').classList.remove('show')}
+async function saveStaffMember(){let name=document.getElementById('staffName').value.trim(),address=document.getElementById('staffAddress').value.trim(),phone=document.getElementById('staffPhone').value.trim(),date=document.getElementById('staffJoinDate').value||null,entitlement=+document.getElementById('staffHolidayEntitlement').value||0,remaining=entitlement,colour=document.getElementById('staffColour').value||'#18d7e8',err=document.getElementById('staffCreateError'),btn=document.getElementById('staffCreateSaveBtn');err.style.display='none';if(!name){err.textContent='Please enter the staff member name.';err.style.display='block';return;}btn.disabled=true;btn.textContent='Creating...';try{let {error}=await sb.from('staff_members').insert({name,address:address||null,phone_number:phone||null,date_of_joining:date,holiday_entitlement_this_year:entitlement,holidays_remaining:remaining,rota_colour:colour,active:true});if(error)throw error;closeStaffMemberCreate();await loadLiveData();renderAll()}catch(e){err.textContent=e.message||'Could not create Staff Member.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Create Staff Member'}}
+function openStaffJoinCalendarPicker(){
+  let current=document.getElementById('staffJoinDate').value;
+  staffJoinPickerMonth=current?parseLocalDateKey(current):new Date();
+  renderStaffJoinCalendarPicker();
+  document.getElementById('staffJoinCalendarPickerModal').classList.add('show');
+}
+function closeStaffJoinCalendarPicker(){document.getElementById('staffJoinCalendarPickerModal').classList.remove('show')}
+function changeStaffJoinPickerMonth(delta){staffJoinPickerMonth=new Date(staffJoinPickerMonth.getFullYear(),staffJoinPickerMonth.getMonth()+delta,1);renderStaffJoinCalendarPicker()}
+function selectStaffJoinDate(key){
+  document.getElementById('staffJoinDate').value=key;
+  document.getElementById('staffJoinDateDisplay').value=formatSunbedDisplayDate(key);
+  closeStaffJoinCalendarPicker();
+}
+function renderStaffJoinCalendarPicker(){
+  let grid=document.getElementById('staffJoinPickerGrid'),y=staffJoinPickerMonth.getFullYear(),m=staffJoinPickerMonth.getMonth();
+  document.getElementById('staffJoinPickerMonthLabel').textContent=new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let heads=['Mo','Tu','We','Th','Fr','Sa','Su'].map(x=>`<div style='color:#8f98a4;font-size:11px;padding:6px 0'>${x}</div>`).join('');
+  let first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),cells='';
+  for(let i=0;i<offset;i++)cells+=`<div></div>`;
+  for(let d=1;d<=days;d++){
+    let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,selected=document.getElementById('staffJoinDate').value===key;
+    cells+=`<button type='button' onclick="selectStaffJoinDate('${key}')" style='padding:10px 4px;${selected?'border-color:#18d7e8;background:#12343a;color:white;':''}'>${d}</button>`;
+  }
+  grid.innerHTML=heads+cells;
+}
+function populateShiftTimes(){
+  let start=document.getElementById('shiftStart'),end=document.getElementById('shiftEnd'),opts=[];
+  for(let mins=8*60+45;mins<=20*60+15;mins+=15){
+    let h=String(Math.floor(mins/60)).padStart(2,'0'),m=String(mins%60).padStart(2,'0'),v=`${h}:${m}`;
+    opts.push(`<option value='${v}'>${v}</option>`);
+  }
+  start.innerHTML=opts.join('');end.innerHTML=opts.join('');
+  start.value='08:45';end.value='20:15';
+}function openStaffShiftCreate(){if(!data.staffMembers.length)return alert('Create a Staff Member first.');document.getElementById('shiftStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');document.getElementById('shiftDate').value=localDateKey();document.getElementById('shiftDateDisplay').value=formatSunbedDisplayDate(localDateKey());populateShiftTimes();document.getElementById('shiftCreateError').style.display='none';updateShiftSummary();document.getElementById('staffShiftCreateModal').classList.add('show')}
+function closeStaffShiftCreate(){document.getElementById('staffShiftCreateModal').classList.remove('show')}
+function shiftHours(start,end){let s=minutesFromTime(start),e=minutesFromTime(end);return e>s?(e-s)/60:0}
+function updateShiftSummary(){let staffId=document.getElementById('shiftStaff').value,date=document.getElementById('shiftDate').value,start=document.getElementById('shiftStart').value,end=document.getElementById('shiftEnd').value,hours=shiftHours(start,end);document.getElementById('shiftHoursPreview').textContent=`${hours.toFixed(2)} hours`;if(!date){document.getElementById('shiftWeekTotalPreview').textContent=`${hours.toFixed(2)} hours`;return;}let d=parseLocalDateKey(date),week=startMonday(d),weekEnd=new Date(week);weekEnd.setDate(weekEnd.getDate()+6);let keys=dateRangeKeys(week,weekEnd),existing=data.staffShifts.filter(s=>s.staffId===staffId&&keys.includes(s.date)).reduce((sum,s)=>sum+(+s.hours||0),0);document.getElementById('shiftWeekTotalPreview').textContent=`${(existing+hours).toFixed(2)} hours`;document.getElementById('shiftWeekRange').textContent=`${nice(week)} – ${nice(weekEnd)}`}
+function openShiftCalendarPicker(){let current=document.getElementById('shiftDate').value;shiftPickerMonth=current?parseLocalDateKey(current):new Date();renderShiftCalendarPicker();document.getElementById('shiftCalendarPickerModal').classList.add('show')}
+function closeShiftCalendarPicker(){document.getElementById('shiftCalendarPickerModal').classList.remove('show')}
+function changeShiftPickerMonth(delta){shiftPickerMonth=new Date(shiftPickerMonth.getFullYear(),shiftPickerMonth.getMonth()+delta,1);renderShiftCalendarPicker()}
+function selectShiftDate(key){document.getElementById('shiftDate').value=key;document.getElementById('shiftDateDisplay').value=formatSunbedDisplayDate(key);closeShiftCalendarPicker();updateShiftSummary()}
+function renderShiftCalendarPicker(){let grid=document.getElementById('shiftPickerGrid'),y=shiftPickerMonth.getFullYear(),m=shiftPickerMonth.getMonth();document.getElementById('shiftPickerMonthLabel').textContent=new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});let heads=['Mo','Tu','We','Th','Fr','Sa','Su'].map(x=>`<div style='color:#8f98a4;font-size:11px;padding:6px 0'>${x}</div>`).join(''),first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),cells='';for(let i=0;i<offset;i++)cells+=`<div></div>`;for(let d=1;d<=days;d++){let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,selected=document.getElementById('shiftDate').value===key;cells+=`<button type='button' onclick="selectShiftDate('${key}')" style='padding:10px 4px;${selected?'border-color:#18d7e8;background:#12343a;color:white;':''}'>${d}</button>`}grid.innerHTML=heads+cells}
+async function saveStaffShift(){let staffId=document.getElementById('shiftStaff').value,date=document.getElementById('shiftDate').value,start=document.getElementById('shiftStart').value,end=document.getElementById('shiftEnd').value,err=document.getElementById('shiftCreateError'),btn=document.getElementById('shiftCreateSaveBtn');err.style.display='none';if(!staffId||!date){err.textContent='Please select staff member and date.';err.style.display='block';return;}
+  let holiday=getApprovedHolidayForStaffDate(staffId,date);
+  if(holiday){
+    let staff=data.staffMembers.find(s=>s.id===staffId);
+    alert(`${staff?.name||'This staff member'} is on approved holiday on ${formatSunbedDisplayDate(date)} and cannot be scheduled.`);
+    return;
+  }
+  if(shiftHours(start,end)<=0){err.textContent='End time must be after start time.';err.style.display='block';return;}btn.disabled=true;btn.textContent='Creating...';try{let {error}=await sb.from('staff_shifts').insert({staff_member_id:staffId,shift_date:date,start_time:start,end_time:end});if(error)throw error;closeStaffShiftCreate();await loadLiveData();renderAll()}catch(e){err.textContent=e.message||'Could not create shift.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Create Shift'}}
+function renderTables(){
+  renderProducts();renderProductDetail();
+  let customerMap=new Map();data.appointments.forEach(a=>{let key=(a.customerPhone||a.customerName||'').toLowerCase();if(key&&!customerMap.has(key))customerMap.set(key,{name:a.customerName||'',phone:a.customerPhone||''})});
+  let customers=[...customerMap.values()];
+  document.getElementById('customerTable').innerHTML='<tr><th>Name</th><th>Phone</th></tr>'+(customers.length?customers.map(c=>`<tr><td><b>${c.name}</b></td><td>${c.phone}</td></tr>`).join(''):`<tr><td colspan='2' class='muted'>No Treatment Room customers yet.</td></tr>`);
+  document.getElementById('renterTable').innerHTML='<tr><th>Name</th><th>Treatment Type</th></tr>'+data.renters.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.product||''}</td></tr>`).join('');
+  document.getElementById('clinicTable').innerHTML='<tr><th>Date</th><th>Treatment Type</th><th>Clinician</th><th>Hours</th><th>Provided Discount</th><th>Rental Charge</th></tr>'+data.clinicDays.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{let r=data.renters.find(z=>z.id===x.renterId),d=parseLocalDateKey(x.date),label=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});return `<tr class='clinicRow' onclick="openClinicEdit('${x.id}')"><td><b>${label}</b></td><td>${x.product}</td><td>${r?.name||''}</td><td>${x.start}–${x.end}</td><td>${(+x.discountPercent||0)>0?`${+x.discountPercent}%`:'None'}</td><td>£${(+x.rentalCharge||0).toFixed(2)}</td></tr>`}).join('');
+}
+function openProduct(id){currentProduct=id;document.getElementById('productListView').style.display='none';document.getElementById('productDetailView').style.display='block';renderProductDetail()}
+function backToProducts(){currentProduct=null;document.getElementById('productDetailView').style.display='none';document.getElementById('productListView').style.display='block';renderProducts()}
+function addProduct(){
+  document.getElementById('newProductName').value='';
+  document.getElementById('productCreateError').style.display='none';
+  document.getElementById('productCreateModal').classList.add('show');
+  setTimeout(()=>document.getElementById('newProductName').focus(),50);
+}
+function closeProductCreate(){document.getElementById('productCreateModal').classList.remove('show')}
+async function saveNewProduct(){
+  let name=document.getElementById('newProductName').value.trim(),
+      errBox=document.getElementById('productCreateError'),
+      btn=document.getElementById('createProductSaveBtn');
+  errBox.style.display='none';
+  if(!name){errBox.textContent='Please enter a Treatment Type name.';errBox.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Creating...';
+  try{
+    let {error}=await sb.from('products').insert({name,active:true});
+    if(error)throw error;
+    await loadLiveData();
+    closeProductCreate();
+    renderAll();
+    let p=data.products.find(x=>x.name.toLowerCase()===name.toLowerCase());
+    if(p)openProduct(p.id);
+  }catch(e){
+    errBox.textContent=e.message||'Could not create Product.';
+    errBox.style.display='block';
+    document.getElementById('clinicCreateRenterShortcut').style.display='inline-block';
+  }finally{
+    btn.disabled=false;btn.textContent='Create Session Type Type';
+  }
+}
+function addTreatmentToCurrentProduct(){
+  let p=data.products.find(x=>x.id===currentProduct);if(!p)return;
+  document.getElementById('treatmentCreateProductLabel').textContent=`Treatment Type: ${p.name}`;
+  document.getElementById('treatmentCreateName').value='';
+  document.getElementById('treatmentCreateDuration').value='30';
+  document.getElementById('treatmentCreateBuffer').value='0';
+  document.getElementById('treatmentCreatePrice').value='0.00';
+  document.getElementById('treatmentCreateError').style.display='none';
+  document.getElementById('treatmentCreateModal').classList.add('show');
+}
+function closeTreatmentCreate(){document.getElementById('treatmentCreateModal').classList.remove('show')}
+async function saveNewTreatment(){
+  let p=data.products.find(x=>x.id===currentProduct),name=document.getElementById('treatmentCreateName').value.trim(),
+      duration=+document.getElementById('treatmentCreateDuration').value,buffer=+document.getElementById('treatmentCreateBuffer').value,
+      price=+document.getElementById('treatmentCreatePrice').value,err=document.getElementById('treatmentCreateError'),btn=document.getElementById('treatmentCreateSaveBtn');
+  err.style.display='none';
+  if(!p)return showTreatmentCreateError('Treatment Type could not be found.');
+  if(!name)return showTreatmentCreateError('Please enter a Session Type name.');
+  if(!duration||duration<1)return showTreatmentCreateError('Duration must be at least 1 minute.');
+  if(buffer<0||price<0)return showTreatmentCreateError('Buffer and Price cannot be negative.');
+  btn.disabled=true;btn.textContent='Creating...';
+  try{
+    let {error}=await sb.from('treatments').insert({product_id:p.id,name,price,duration_minutes:duration,buffer_minutes:buffer,active:true});
+    if(error)throw error;
+    closeTreatmentCreate();await loadLiveData();renderAll();openProduct(p.id);
+  }catch(e){showTreatmentCreateError(e.message||'Could not create Treatment.')}
+  finally{btn.disabled=false;btn.textContent='Create Session Type';}
+}
+function showTreatmentCreateError(msg){let el=document.getElementById('treatmentCreateError');el.textContent=msg;el.style.display='block'}
+function goToPage(pageId){document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers()}
+function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting()}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-7);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+7);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
+
+const SUNBEDS=[
+  {name:'Bed 1',type:'Stand Up'},
+  {name:'Bed 2',type:'Stand Up'},
+  {name:'Bed 3',type:'Lie Down'},
+  {name:'Bed 4',type:'Lie Down'}
+];
+function normalizeBookedBed(x){return SUNBEDS.some(b=>b.name===x.bed)?x.bed:'Unassigned'}
+function renderSunbedCalendar(){
+  let cal=document.getElementById('sunbedCalendar');if(!cal)return;
+  cal.innerHTML='';
+  let end=new Date(sunbedWeekStart);end.setDate(end.getDate()+6);
+  document.getElementById('sunbedWeekLabel').textContent=`${nice(sunbedWeekStart)} – ${nice(end)} · Beds across columns, dates down rows`;
+
+  let html=`<div class='sunbedMatrix'>
+    <div class='sunbedMatrixHead'>Date</div>
+    ${SUNBEDS.map(b=>`<div class='sunbedMatrixHead bed'><span>${b.name}</span><span class='bedTypeTag'>${b.type}</span></div>`).join('')}`;
+
+  for(let i=0;i<7;i++){
+    let d=new Date(sunbedWeekStart);d.setDate(d.getDate()+i);let key=iso(d);
+    let dayRows=(data.sunbedBookings||[]).filter(x=>x.date===key).sort((a,b)=>a.time.localeCompare(b.time));
+    html+=`<div class='sunbedMatrixDate'>${nice(d)}</div>`;
+    for(let b of SUNBEDS){
+      let rows=dayRows.filter(x=>normalizeBookedBed(x)===b.name);
+      html+=`<div class='sunbedMatrixCell'>${rows.length?rows.map(x=>`<div class='sunbedBooking'><b>${x.time} · ${x.name}</b>${x.phone?`<div class='muted'>${x.phone}</div>`:''}<div>${x.length} min + 4 min turnaround</div><span class='sessionPill'>${x.sessionType||'Red Light Therapy'}</span></div>`).join(''):`<div class='sunbedEmpty'>Available</div>`}</div>`;
+    }
+  }
+  html+=`</div>`;
+  cal.innerHTML=html;
+}
+function chooseSunbedSessionType(type){
+  sunbedSessionType=type;
+  [['Red Light Therapy','sunTypeRlt'],['Hybrid','sunTypeHybrid']].forEach(([t,id])=>document.getElementById(id)?.classList.toggle('active',t===type));
+}
+function updatePreferredBedOptions(){
+  let type=document.getElementById('sunbedBedType').value,select=document.getElementById('sunbedBed');
+  let beds=type==='Any'?SUNBEDS:SUNBEDS.filter(b=>b.type===type);
+  select.innerHTML=`<option value='Any'>No Preference / Auto Assign</option>`+beds.map(b=>`<option value='${b.name}'>${b.name} — ${b.type}</option>`).join('');
+}
+
+function formatSunbedDisplayDate(key){
+  if(!key)return '';
+  let [y,m,d]=key.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+function openSunbedCalendarPicker(){
+  let current=document.getElementById('sunbedDate').value;
+  sunbedPickerMonth=current?parseLocalDateKey(current):new Date();
+  renderSunbedCalendarPicker();
+  document.getElementById('sunbedCalendarPickerModal').classList.add('show');
+}
+function closeSunbedCalendarPicker(){document.getElementById('sunbedCalendarPickerModal').classList.remove('show')}
+function changeSunbedPickerMonth(delta){sunbedPickerMonth=new Date(sunbedPickerMonth.getFullYear(),sunbedPickerMonth.getMonth()+delta,1);renderSunbedCalendarPicker()}
+function selectSunbedPickerDate(key){
+  document.getElementById('sunbedDate').value=key;
+  document.getElementById('sunbedDateDisplay').value=formatSunbedDisplayDate(key);
+  populateSunbedTimeOptions();
+  closeSunbedCalendarPicker();
+}
+function renderSunbedCalendarPicker(){
+  let grid=document.getElementById('sunbedPickerGrid'),y=sunbedPickerMonth.getFullYear(),m=sunbedPickerMonth.getMonth();
+  document.getElementById('sunbedPickerMonthLabel').textContent=new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let heads=['Mo','Tu','We','Th','Fr','Sa','Su'].map(x=>`<div style='color:#8f98a4;font-size:11px;padding:6px 0'>${x}</div>`).join('');
+  let first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),cells='';
+  for(let i=0;i<offset;i++)cells+=`<div></div>`;
+  for(let d=1;d<=days;d++){
+    let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let selected=document.getElementById('sunbedDate').value===key;
+    cells+=`<button type='button' onclick="selectSunbedPickerDate('${key}')" style='padding:10px 4px;${selected?'border-color:#18d7e8;background:#12343a;color:white;':''}'>${d}</button>`;
+  }
+  grid.innerHTML=heads+cells;
+}
+function populateSunbedTimeOptions(selectedTime){
+  let select=document.getElementById('sunbedTime'),date=document.getElementById('sunbedDate').value||localDateKey();
+  let h=effectiveHoursForDate(date),start=timeToMinutes(h.open),end=timeToMinutes(h.close);
+  select.innerHTML='';
+  for(let mins=start;mins<end;mins+=5){
+    let hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0'),v=`${hh}:${mm}`;
+    let o=document.createElement('option');o.value=v;o.textContent=v;select.appendChild(o);
+  }
+  if(selectedTime&&[...select.options].some(o=>o.value===selectedTime))select.value=selectedTime;
+}
+function openSunbedBooking(date,time){
+  document.getElementById('sunbedBookingModal').classList.add('show');
+  document.getElementById('sunbedName').value='';
+  document.getElementById('sunbedPhone').value='';
+  document.getElementById('sunbedDate').value=date||localDateKey();
+  document.getElementById('sunbedDateDisplay').value=formatSunbedDisplayDate(document.getElementById('sunbedDate').value);
+  populateSunbedTimeOptions(time);
+  document.getElementById('sunbedLength').value='';
+  document.getElementById('sunbedBedType').value='Any';
+  updatePreferredBedOptions();
+  document.getElementById('sunbedBed').value='Any';
+  document.getElementById('sunbedTotalTime').value='';
+  chooseSunbedSessionType('Red Light Therapy');
+}
+function closeSunbedBooking(){document.getElementById('sunbedBookingModal').classList.remove('show')}
+function updateSunbedTotal(){let n=+document.getElementById('sunbedLength').value||0;document.getElementById('sunbedTotalTime').value=n?`${n+4} minutes`:''}
+function minutesFromTime(t){let [h,m]=t.split(':').map(Number);return h*60+m}
+function sunbedIsFree(bed,date,start,end){
+  return !(data.sunbedBookings||[]).some(x=>{
+    if(x.date!==date||normalizeBookedBed(x)!==bed)return false;
+    let xs=minutesFromTime(x.time),xe=xs+(+x.totalMinutes||(+x.length+4));
+    return start<xe&&end>xs;
+  });
+}
+function chooseAutomaticBed(date,start,end,bedType){
+  let candidates=bedType==='Any'?SUNBEDS:SUNBEDS.filter(b=>b.type===bedType);
+  return candidates.find(b=>sunbedIsFree(b.name,date,start,end))?.name||null;
+}
+
+function closeSunbedConflict(){
+  document.getElementById('sunbedConflictModal').classList.remove('show');
+  pendingSunbedBooking=null;
+}
+function showSunbedConflictAlternative(message,alternativeBed){
+  document.getElementById('sunbedConflictTitle').textContent='Preferred Bed Unavailable';
+  document.getElementById('sunbedConflictMessage').textContent=message;
+  document.getElementById('sunbedConflictActions').innerHTML=`<button onclick='closeSunbedConflict()'>No</button><button class='primary' onclick="confirmAlternativeSunbed('${alternativeBed}')">Yes — use ${alternativeBed}</button>`;
+  document.getElementById('sunbedConflictModal').classList.add('show');
+}
+function showSunbedUnavailable(message){
+  document.getElementById('sunbedConflictTitle').textContent='No Suitable Bed Available';
+  document.getElementById('sunbedConflictMessage').textContent=message;
+  document.getElementById('sunbedConflictActions').innerHTML=`<button class='primary' onclick='closeSunbedConflict()'>OK</button>`;
+  document.getElementById('sunbedConflictModal').classList.add('show');
+}
+async function completeSunbedBooking(payload){
+  let bedMeta=data.beds?.find(b=>b.name===payload.bed);
+  if(!bedMeta)return alert('Bed configuration could not be found.');
+  let {error}=await sb.from('sunbed_bookings').insert({
+    customer_name:payload.name,customer_phone:payload.phone||null,booking_date:payload.date,start_time:payload.time,
+    session_length_minutes:+payload.length,turnaround_minutes:4,bed_id:bedMeta.id,session_type:payload.sessionType,status:'Booked'
+  });
+  if(error)return showSunbedUnavailable(error.message);
+  pendingSunbedBooking=null;document.getElementById('sunbedConflictModal').classList.remove('show');closeSunbedBooking();
+  await loadLiveData();renderSunbedCalendar();
+}
+async function confirmAlternativeSunbed(alternativeBed){
+  if(!pendingSunbedBooking)return closeSunbedConflict();
+  let meta=SUNBEDS.find(b=>b.name===alternativeBed);
+  pendingSunbedBooking.bed=alternativeBed;
+  pendingSunbedBooking.bedType=meta?.type||pendingSunbedBooking.bedType;
+  await completeSunbedBooking(pendingSunbedBooking);
+}
+async function saveSunbedBooking(){
+  let name=document.getElementById('sunbedName').value.trim(),
+      phone=document.getElementById('sunbedPhone').value.trim(),
+      date=document.getElementById('sunbedDate').value,
+      time=document.getElementById('sunbedTime').value,
+      length=+document.getElementById('sunbedLength').value,
+      bedType=document.getElementById('sunbedBedType').value,
+      requestedBed=document.getElementById('sunbedBed').value;
+  if(!name)return alert('Please enter a name.');
+  if(!date||!time)return alert('Please select a date and start time.');
+  if(!length||length<1)return alert('Please enter the session length.');
+
+  let totalMinutes=length+4,start=minutesFromTime(time),end=start+totalMinutes,bed=requestedBed;
+
+  if(requestedBed==='Any'){
+    bed=chooseAutomaticBed(date,start,end,bedType);
+    if(!bed){
+      let msg=bedType==='Any'
+        ? `All four beds are unavailable for ${time} on ${date}.`
+        : `Both ${bedType.toLowerCase()} beds are unavailable for ${time} on ${date}.`;
+      return showSunbedUnavailable(msg);
+    }
+  } else if(!sunbedIsFree(requestedBed,date,start,end)){
+    let requestedMeta=SUNBEDS.find(b=>b.name===requestedBed);
+    let sameTypeBeds=SUNBEDS.filter(b=>b.type===requestedMeta?.type&&b.name!==requestedBed);
+    let alternative=sameTypeBeds.find(b=>sunbedIsFree(b.name,date,start,end));
+
+    if(alternative){
+      pendingSunbedBooking={
+        id:Date.now(),name,phone,date,time,length,totalMinutes,bed:requestedBed,
+        bedType:requestedMeta?.type||bedType,sessionType:sunbedSessionType
+      };
+      return showSunbedConflictAlternative(
+        `${requestedBed} is already booked for ${time} on ${date}. ${alternative.name} (${alternative.type}) is available for the full ${totalMinutes}-minute booking window. Would you like to proceed with ${alternative.name}?`,
+        alternative.name
+      );
+    } else {
+      return showSunbedUnavailable(
+        `Both ${requestedMeta?.type||'requested type'} beds are unavailable for ${time} on ${date}.`
+      );
+    }
+  }
+
+  let actualType=SUNBEDS.find(b=>b.name===bed)?.type||bedType;
+  await completeSunbedBooking({name,phone,date,time,length,totalMinutes,bed,bedType:actualType,sessionType:sunbedSessionType});
+}
+
+function treatmentReservedMinutes(t){
+  return (+t?.duration||0)+(+t?.buffer||0);
+}
+function appointmentReservedMinutes(a){
+  let t=data.treatments.find(x=>x.id===a.treatmentId);
+  return treatmentReservedMinutes(t);
+}
+function treatmentRoomIsFree(date,startMin,endMin){
+  return !(data.appointments||[]).some(a=>{
+    if(a.date!==date)return false;
+    let as=minutesFromTime(a.time),ae=as+appointmentReservedMinutes(a);
+    return startMin<ae&&endMin>as;
+  });
+}
+function clinicHasAnyCapacity(clinic){
+  let start=minutesFromTime(clinic.start),end=minutesFromTime(clinic.end);
+  for(let m=start;m<end;m+=5){
+    if(treatmentRoomIsFree(clinic.date,m,m+5))return true;
+  }
+  return false;
+}
+function clinicAvailableTimes(clinic,treatment){
+  let times=[],
+      duration=treatmentReservedMinutes(treatment),
+      start=minutesFromTime(clinic.start),
+      end=minutesFromTime(clinic.end);
+
+  // Offer customer-facing appointment start times on 15-minute boundaries.
+  // If a clinic starts off-boundary (e.g. 09:10), move to the next 15-minute slot.
+  let firstStart=Math.ceil(start/15)*15;
+
+  for(let m=firstStart;m+duration<=end;m+=15){
+    if(treatmentRoomIsFree(clinic.date,m,m+duration)){
+      let hh=String(Math.floor(m/60)).padStart(2,'0'),
+          mm=String(m%60).padStart(2,'0');
+      times.push(`${hh}:${mm}`);
+    }
+  }
+  return times;
+}
+function resetTreatmentBookingSteps(){
+  ['bookingClinicStep','bookingTreatmentStep','bookingDetailsStep'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('bookingClinicNotice').style.display='none';
+  document.getElementById('bookingTimeNotice').style.display='none';
+  document.getElementById('saveTreatmentBookingBtn').disabled=true;
+  document.getElementById('bookName').value='';
+  document.getElementById('bookPhone').value='';
+  document.getElementById('bookNotes').value='';
+  document.getElementById('bookDuration').value='';
+  document.getElementById('bookPrice').value='';document.getElementById('bookClinicDiscount').value='';document.getElementById('bookAmountPayable').value='';
+}
+function openBooking(date,time){
+  booking={date:null,treatment:null,product:null,clinicId:null,preferredTime:time||null};
+  document.getElementById('bookingModal').classList.add('show');
+  document.getElementById('bookingWhen').textContent='Choose a Treatment Type to begin';
+  resetTreatmentBookingSteps();
+
+  let products=(data.products||[]).filter(p=>p.active!==false&&data.treatments.some(t=>t.product===p.name));
+  document.getElementById('bookingProductChoices').innerHTML=products.map(p=>`<button class='choiceBtn' onclick="chooseBookingProduct(\'${p.id}\')"><b>${p.name}</b><span class='small'>${data.treatments.filter(t=>t.product===p.name).length} treatments</span></button>`).join('');
+
+  if(date){
+    let clinic=data.clinicDays.find(c=>c.date===date);
+    if(clinic){
+      let p=(data.products||[]).find(x=>x.name===clinic.product);
+      if(p){chooseBookingProduct(p.id);chooseBookingClinic(clinic.id);}
+    }
+  }
+}
+function closeBooking(){document.getElementById('bookingModal').classList.remove('show')}
+function chooseBookingProduct(productId){
+  let p=data.products.find(x=>x.id===productId);if(!p)return;
+  booking.product=p.name;booking.date=null;booking.treatment=null;booking.clinicId=null;
+  document.querySelectorAll('#bookingProductChoices .choiceBtn').forEach(b=>b.classList.remove('active'));
+  [...document.querySelectorAll('#bookingProductChoices .choiceBtn')].find(b=>b.textContent.trim().startsWith(p.name))?.classList.add('active');
+
+  let today=localDateKey();
+  let clinics=(data.clinicDays||[]).filter(c=>c.product===p.name&&c.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('bookingClinicStep').style.display='block';
+  document.getElementById('bookingTreatmentStep').style.display='none';
+  document.getElementById('bookingDetailsStep').style.display='none';
+  document.getElementById('saveTreatmentBookingBtn').disabled=true;
+
+  if(!clinics.length){
+    document.getElementById('bookingClinicChoices').innerHTML='';
+    let n=document.getElementById('bookingClinicNotice');n.style.display='block';n.textContent=`There are no upcoming ${p.name} clinic days configured.`;
+    return;
+  }
+  document.getElementById('bookingClinicNotice').style.display='none';
+  document.getElementById('bookingClinicChoices').innerHTML=clinics.map(c=>{
+    let full=!clinicHasAnyCapacity(c),r=data.renters.find(x=>x.id===c.renterId);
+    let label=parseLocalDateKey(c.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    return `<button class='choiceBtn ${full?'full':''}' ${full?'disabled':''} onclick="chooseBookingClinic(\'${c.id}\')"><b>${label}</b><span class='small'>${r?.name||''} · ${c.start}–${c.end}${(+c.discountPercent||0)>0?` · ${+c.discountPercent}% DISCOUNT`:''}${full?' · FULL':''}</span></button>`;
+  }).join('');
+}
+function chooseBookingClinic(clinicId){
+  let clinic=data.clinicDays.find(x=>x.id===clinicId);if(!clinic)return;
+  if(!clinicHasAnyCapacity(clinic))return;
+  booking.clinicId=clinicId;booking.date=clinic.date;booking.treatment=null;
+  document.querySelectorAll('#bookingClinicChoices .choiceBtn').forEach(b=>b.classList.remove('active'));
+  [...document.querySelectorAll('#bookingClinicChoices .choiceBtn')].filter(b=>!b.disabled).forEach(b=>{
+    if(b.textContent.includes(parseLocalDateKey(clinic.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})))b.classList.add('active');
+  });
+
+  let treatments=data.treatments.filter(t=>t.product===clinic.product);
+  document.getElementById('bookingTreatmentStep').style.display='block';
+  document.getElementById('bookingDetailsStep').style.display='none';
+  document.getElementById('saveTreatmentBookingBtn').disabled=true;
+  document.getElementById('treatmentButtons').innerHTML=treatments.map(t=>{
+    let available=clinicAvailableTimes(clinic,t).length>0;
+    return `<button class='choiceBtn ${available?'':'full'}' ${available?'':'disabled'} onclick="chooseTreatment(\'${t.id}\')"><b>${t.name}</b><span class='small'>${t.duration} min${t.buffer?` + ${t.buffer} min buffer`:''} · £${t.price}${available?'':' · NO SLOT AVAILABLE'}</span></button>`;
+  }).join('');
+  let r=data.renters.find(x=>x.id===clinic.renterId);
+  document.getElementById('bookingWhen').textContent=`${clinic.product} · ${formatSunbedDisplayDate(clinic.date)} · ${r?.name||''}`;
+}
+function chooseTreatment(id){
+  let t=data.treatments.find(x=>x.id===id),clinic=data.clinicDays.find(x=>x.id===booking.clinicId);
+  if(!t||!clinic)return;
+  let times=clinicAvailableTimes(clinic,t);
+  if(!times.length)return;
+  booking.treatment=id;
+  document.querySelectorAll('#treatmentButtons .choiceBtn').forEach(b=>b.classList.remove('active'));
+  [...document.querySelectorAll('#treatmentButtons .choiceBtn')].filter(b=>!b.disabled).forEach(b=>{if(b.textContent.trim().startsWith(t.name))b.classList.add('active')});
+
+  document.getElementById('bookingDetailsStep').style.display='block';
+  document.getElementById('bookDuration').value=`${t.duration} minutes${t.buffer?` + ${t.buffer} min buffer`:''}`;
+  let discount=Math.max(0,Math.min(100,+clinic.discountPercent||0)),
+      price=+t.price||0,
+      payable=price*(1-discount/100);
+  document.getElementById('bookPrice').value='£'+price.toFixed(2);
+  document.getElementById('bookClinicDiscount').value=discount?discount+'%':'0%';
+  document.getElementById('bookAmountPayable').value='£'+payable.toFixed(2);
+  let select=document.getElementById('bookTime');
+  select.innerHTML=times.map(v=>`<option value='${v}'>${v}</option>`).join('');
+  if(booking.preferredTime&&times.includes(booking.preferredTime))select.value=booking.preferredTime;
+  document.getElementById('bookingTimeNotice').style.display='none';
+  document.getElementById('saveTreatmentBookingBtn').disabled=false;
+}
+async function saveBooking(){
+  if(!booking.product||!booking.clinicId||!booking.treatment)return alert('Please complete the booking selections.');
+  let name=document.getElementById('bookName').value.trim(),phone=document.getElementById('bookPhone').value.trim(),time=document.getElementById('bookTime').value;
+  if(!name)return alert('Please enter the customer name.');
+  if(!phone)return alert('Please enter the customer phone number.');
+  let clinic=data.clinicDays.find(x=>x.id===booking.clinicId),t=data.treatments.find(x=>x.id===booking.treatment);
+  if(!clinic||!t)return alert('The selected clinic or treatment could not be found.');
+  let start=minutesFromTime(time),end=start+treatmentReservedMinutes(t);
+  if(!treatmentRoomIsFree(booking.date,start,end)){
+    let times=clinicAvailableTimes(clinic,t);
+    document.getElementById('bookTime').innerHTML=times.map(v=>`<option value='${v}'>${v}</option>`).join('');
+    let n=document.getElementById('bookingTimeNotice');n.style.display='block';n.textContent='That time has just become unavailable. Please choose another available start time.';
+    return;
+  }
+  let {error}=await sb.from('treatment_bookings').insert({
+    clinic_day_id:booking.clinicId,treatment_id:booking.treatment,customer_name:name,customer_phone:phone,
+    booking_date:booking.date,start_time:time,duration_minutes:+t.duration,buffer_minutes:+t.buffer||0,
+    price:+t.price||0,clinic_discount_percent:+clinic.discountPercent||0,amount_payable:(+t.price||0)*(1-(+clinic.discountPercent||0)/100),
+    notes:document.getElementById('bookNotes').value,status:'Booked'
+  });
+  if(error){let n=document.getElementById('bookingTimeNotice');n.style.display='block';n.textContent=error.message;return;}
+  closeBooking();await loadLiveData();renderAll();
+}
+function localDateKey(d=new Date()){let y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
+const BED_COUNT=4;
+const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function timeToMinutes(t){if(!t)return 0;let [h,m]=t.split(':').map(Number);return h*60+m}
+function hoursDuration(h){return Math.max(0,(timeToMinutes(h.close)-timeToMinutes(h.open))/60)}
+function effectiveHoursForDate(dateKey){
+  let d=parseLocalDateKey(dateKey),day=d.getDay(),history=data.openingHoursHistory||[];
+  let historic=history
+    .filter(x=>x.day===day&&x.effectiveFrom<=dateKey&&(!x.effectiveTo||x.effectiveTo>=dateKey))
+    .sort((a,b)=>b.effectiveFrom.localeCompare(a.effectiveFrom))[0];
+  if(historic)return {open:historic.open,close:historic.close};
+  return (data.openingHours||DEFAULT_OPENING_HOURS)[day]||DEFAULT_OPENING_HOURS[day];
+}
+function getElapsedOpeningHours(now=new Date()){
+  let key=localDateKey(now),h=effectiveHoursForDate(key),openMin=timeToMinutes(h.open),closeMin=timeToMinutes(h.close);
+  let nowMin=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+  if(nowMin<=openMin)return 0;
+  return Math.max(0,(Math.min(nowMin,closeMin)-openMin)/60);
+}
+
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function currentMonthIdentity(){
+  let d=new Date();
+  return {month:d.getMonth()+1,year:d.getFullYear()};
+}
+function getCurrentMonthlyTarget(){
+  let now=currentMonthIdentity();
+  return data.monthlyTargets.find(x=>x.monthNumber===now.month&&x.year===now.year)?.target ?? null;
+}
+
+function renderMonthlyTargets(){
+  let table=document.getElementById('monthlyTargetsTable');if(!table)return;
+  let isAdmin=currentProfile?.role==='admin',
+      createBtn=document.getElementById('createMonthlyTargetBtn');
+  if(createBtn)createBtn.style.display=isAdmin?'inline-block':'none';
+
+  let rows=[...(data.monthlyTargets||[])].sort((a,b)=>b.year-a.year||b.monthNumber-a.monthNumber);
+  table.innerHTML=`<tr><th>Month</th><th>Year</th><th>Mins / Bed / Hour</th><th>New Sign Ups</th><th>RLT Only Sessions</th><th>Total Minutes</th><th>New Reviews</th><th>Status</th></tr>`+
+    (rows.length?rows.map(x=>{
+      let current=currentMonthIdentity(),isCurrent=x.monthNumber===current.month&&x.year===current.year;
+      return `<tr ${isAdmin?`class='clinicRow' onclick="openMonthlyTargetEdit('${x.id}')"`:''}><td><b>${MONTH_NAMES[x.monthNumber-1]}</b></td><td>${x.year}</td><td>${Number(x.target).toFixed(1)}</td><td>${x.signupTarget}</td><td>${x.rltSessionsTarget}</td><td>${x.totalMinutesTarget}</td><td>${x.newReviewsTarget}</td><td>${isCurrent?`<span class='pill'>Current Month</span>`:''}</td></tr>`;
+    }).join(''):`<tr><td colspan='8' class='muted'>No monthly target stacks created yet.</td></tr>`);
+}
+function populateTargetMonthOptions(){
+  document.getElementById('targetMonthNumber').innerHTML=MONTH_NAMES.map((m,i)=>`<option value='${i+1}'>${m}</option>`).join('');
+}
+function openMonthlyTargetCreate(){
+  if(currentProfile?.role!=='admin')return;
+  editingMonthlyTargetId=null;
+  populateTargetMonthOptions();
+  let now=currentMonthIdentity();
+  document.getElementById('targetMonthNumber').value=String(now.month);
+  document.getElementById('targetYear').value=String(now.year);
+  document.getElementById('targetMonthNumber').disabled=false;
+  document.getElementById('targetYear').readOnly=false;
+  document.getElementById('monthlyKpiTarget').value='';
+  document.getElementById('monthlySignupTarget').value='';
+  document.getElementById('monthlyRltSessionsTarget').value='';
+  document.getElementById('monthlyTotalMinutesTarget').value='';
+  document.getElementById('monthlyNewReviewsTarget').value='';
+  document.getElementById('monthlyTargetModalTitle').textContent='Create Monthly Target Stack';
+  document.getElementById('monthlyTargetError').style.display='none';
+  document.getElementById('monthlyTargetModal').classList.add('show');
+}
+function openMonthlyTargetEdit(id){
+  if(currentProfile?.role!=='admin')return;
+  let row=data.monthlyTargets.find(x=>x.id===id);if(!row)return;
+  editingMonthlyTargetId=id;
+  populateTargetMonthOptions();
+  document.getElementById('targetMonthNumber').value=String(row.monthNumber);
+  document.getElementById('targetYear').value=String(row.year);
+  document.getElementById('monthlyKpiTarget').value=String(row.target);
+  document.getElementById('monthlySignupTarget').value=String(row.signupTarget);
+  document.getElementById('monthlyRltSessionsTarget').value=String(row.rltSessionsTarget);
+  document.getElementById('monthlyTotalMinutesTarget').value=String(row.totalMinutesTarget);
+  document.getElementById('monthlyNewReviewsTarget').value=String(row.newReviewsTarget);
+  // Month + Year are the immutable unique identity of a target stack.
+  document.getElementById('targetMonthNumber').disabled=true;
+  document.getElementById('targetYear').readOnly=true;
+  document.getElementById('monthlyTargetModalTitle').textContent=`${MONTH_NAMES[row.monthNumber-1]} ${row.year} Target Stack`;
+  document.getElementById('monthlyTargetError').style.display='none';
+  document.getElementById('monthlyTargetModal').classList.add('show');
+}
+function closeMonthlyTargetModal(){
+  document.getElementById('monthlyTargetModal').classList.remove('show');
+  editingMonthlyTargetId=null;
+}
+async function saveMonthlyTarget(){
+  if(currentProfile?.role!=='admin')return;
+  let monthNumber=+document.getElementById('targetMonthNumber').value,
+      year=+document.getElementById('targetYear').value,
+      target=+document.getElementById('monthlyKpiTarget').value,
+      signupTarget=+document.getElementById('monthlySignupTarget').value,
+      rltSessionsTarget=+document.getElementById('monthlyRltSessionsTarget').value,
+      totalMinutesTarget=+document.getElementById('monthlyTotalMinutesTarget').value,
+      newReviewsTarget=+document.getElementById('monthlyNewReviewsTarget').value,
+      err=document.getElementById('monthlyTargetError'),
+      btn=document.getElementById('monthlyTargetSaveBtn');
+  err.style.display='none';
+  if(monthNumber<1||monthNumber>12)return showMonthlyTargetError('Please select a valid month.');
+  if(!Number.isInteger(year)||year<2020||year>2100)return showMonthlyTargetError('Please enter a valid year.');
+  if(!Number.isFinite(target)||target<0)return showMonthlyTargetError('Please enter a valid Mins Per Bed Per Hour target.');
+  if(!Number.isInteger(signupTarget)||signupTarget<0)return showMonthlyTargetError('Please enter a valid New Sign Ups target.');
+  if(!Number.isInteger(rltSessionsTarget)||rltSessionsTarget<0)return showMonthlyTargetError('Please enter a valid Red Light Therapy Only Sessions target.');
+  if(!Number.isInteger(totalMinutesTarget)||totalMinutesTarget<0)return showMonthlyTargetError('Please enter a valid Total Minutes target.');
+  if(!Number.isInteger(newReviewsTarget)||newReviewsTarget<0)return showMonthlyTargetError('Please enter a valid New Reviews target.');
+
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let error;
+    if(editingMonthlyTargetId){
+      ({error}=await sb.from('monthly_targets')
+        .update({mins_per_bed_per_hour_target:target,new_sign_ups_target:signupTarget,rlt_only_sessions_target:rltSessionsTarget,total_minutes_target:totalMinutesTarget,new_reviews_target:newReviewsTarget,updated_at:new Date().toISOString()})
+        .eq('id',editingMonthlyTargetId));
+    }else{
+      // target_month retained for compatibility; Month + Year are the explicit unique identity.
+      let targetMonth=`${year}-${String(monthNumber).padStart(2,'0')}-01`;
+      ({error}=await sb.from('monthly_targets').insert({
+        target_month:targetMonth,
+        target_month_number:monthNumber,
+        target_year:year,
+        mins_per_bed_per_hour_target:target,
+        new_sign_ups_target:signupTarget,
+        rlt_only_sessions_target:rltSessionsTarget,
+        total_minutes_target:totalMinutesTarget,
+        new_reviews_target:newReviewsTarget
+      }));
+    }
+    if(error){
+      if(error.code==='23505')throw new Error(`A target stack already exists for ${MONTH_NAMES[monthNumber-1]} ${year}.`);
+      throw error;
+    }
+    closeMonthlyTargetModal();
+    await loadLiveData();
+    renderMonthlyTargets();
+    renderBedTracker();
+  }catch(e){showMonthlyTargetError(e.message||'Could not save target stack.');}
+  finally{btn.disabled=false;btn.textContent='Save Target Stack';}
+}
+function showMonthlyTargetError(message){
+  let err=document.getElementById('monthlyTargetError');
+  err.textContent=message;err.style.display='block';
+}
+
+function getTargetStackFor(monthNumber,year){
+  return (data.monthlyTargets||[]).find(x=>x.monthNumber===monthNumber&&x.year===year)||null;
+}
+function reportingMonthStatus(monthNumber,year){
+  let now=new Date(),monthStart=new Date(year,monthNumber-1,1),
+      monthEnd=new Date(year,monthNumber,0),
+      currentMonth=now.getFullYear()===year&&now.getMonth()+1===monthNumber,
+      historical=monthEnd<new Date(now.getFullYear(),now.getMonth(),now.getDate()),
+      future=monthStart>now;
+
+  let effectiveEnd=future?monthStart:(currentMonth?now:monthEnd),
+      daysInMonth=monthEnd.getDate(),
+      daysElapsed=future?0:(currentMonth?Math.min(now.getDate(),daysInMonth):daysInMonth);
+
+  return {now,monthStart,monthEnd,effectiveEnd,daysInMonth,daysElapsed,currentMonth,historical,future};
+}
+function monthPerformanceActuals(monthNumber,year){
+  let status=reportingMonthStatus(monthNumber,year);
+  if(status.future)return {minutes:0,hours:0,kpi:0,signups:0,rltSessions:0,daysElapsed:0,daysInMonth:status.daysInMonth};
+
+  let keys=dateRangeKeys(status.monthStart,status.effectiveEnd),
+      rows=(data.bedSessions||[]).filter(x=>keys.includes(x.date)),
+      minutes=rows.reduce((sum,x)=>sum+(+x.length||0),0),
+      signups=rows.filter(x=>x.newSignup===true||x.newSignup==='Yes').length,
+      rltSessions=rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').length,
+      hours=periodOpenHours(keys),
+      kpi=hours>0?minutes/BED_COUNT/hours:0;
+
+  return {minutes,hours,kpi,signups,rltSessions,daysElapsed:status.daysElapsed,daysInMonth:status.daysInMonth};
+}
+function onTrackTarget(fullTarget,daysElapsed,daysInMonth){
+  if(!daysInMonth)return 0;
+  return (+fullTarget||0)/daysInMonth*daysElapsed;
+}
+function performanceNumber(label,value,className=''){
+  return `<div class='performanceNumber ${className}'><div class='label'>${label}</div><div class='value'>${value}</div></div>`;
+}
+
+
+function getReviewCountRecord(monthNumber,year){
+  return (data.monthlyReviewCounts||[]).find(x=>x.month===monthNumber&&x.year===year)||null;
+}
+function previousMonthIdentity(monthNumber,year){
+  return monthNumber===1?{month:12,year:year-1}:{month:monthNumber-1,year};
+}
+function calculateNewReviews(monthNumber,year){
+  let current=getReviewCountRecord(monthNumber,year),
+      prevId=previousMonthIdentity(monthNumber,year),
+      previous=getReviewCountRecord(prevId.month,prevId.year);
+
+  if(!current||!previous)return {actual:null,current,previous};
+
+  let currentTotal=(+current.facebook||0)+(+current.google||0),
+      previousTotal=(+previous.facebook||0)+(+previous.google||0);
+
+  return {actual:Math.max(0,currentTotal-previousTotal),current,previous,currentTotal,previousTotal};
+}
+function reviewPerformanceCard(stack,monthNumber,year){
+  let reviews=calculateNewReviews(monthNumber,year),
+      target=+stack.newReviewsTarget||0;
+
+  if(reviews.actual==null){
+    return `<div class='performanceReportCard'>
+      <h3>New Reviews</h3>
+      <div class='performanceReportNumbers'>
+        ${performanceNumber('Month Target',target)}
+        ${performanceNumber('Actual','—')}
+      </div>
+      <div class='performanceReportFormula'>Review totals have not yet been recorded for both this month and the previous month.</div>
+    </div>`;
+  }
+
+  let cls=reviews.actual>=target?'actualGood':'actualBad';
+  return `<div class='performanceReportCard'>
+    <h3>New Reviews</h3>
+    <div class='performanceReportNumbers'>
+      ${performanceNumber('Month Target',target)}
+      ${performanceNumber('Actual',reviews.actual,cls)}
+    </div>
+    <div class='performanceReportFormula'>(${reviews.current.facebook} Facebook + ${reviews.current.google} Google) − (${reviews.previous.facebook} Facebook + ${reviews.previous.google} Google) = ${reviews.actual} new reviews.</div>
+  </div>`;
+}
+function buildPerformanceCards(stack,monthNumber,year){
+  let actual=monthPerformanceActuals(monthNumber,year),
+      signupTrack=onTrackTarget(stack.signupTarget,actual.daysElapsed,actual.daysInMonth),
+      rltTrack=onTrackTarget(stack.rltSessionsTarget,actual.daysElapsed,actual.daysInMonth),
+      minsTrack=onTrackTarget(stack.totalMinutesTarget,actual.daysElapsed,actual.daysInMonth),
+      kpiClass=actual.kpi>=stack.target?'actualGood':'actualBad',
+      signupClass=actual.signups>=signupTrack?'actualGood':'actualBad',
+      rltClass=actual.rltSessions>=rltTrack?'actualGood':'actualBad',
+      minsClass=actual.minutes>=minsTrack?'actualGood':'actualBad';
+
+  return `<div class='performanceReportGrid'>
+    <div class='performanceReportCard'>
+      <h3>Mins Per Bed Per Hour</h3>
+      <div class='performanceReportNumbers'>
+        ${performanceNumber('Target',Number(stack.target).toFixed(1))}
+        ${performanceNumber('Actual',actual.kpi.toFixed(1),kpiClass)}
+      </div>
+      <div class='performanceReportFormula'>${actual.minutes} total minutes ÷ ${BED_COUNT} beds ÷ ${actual.hours.toFixed(1)} opening hours.</div>
+    </div>
+
+    <div class='performanceReportCard'>
+      <h3>New Sign Ups</h3>
+      <div class='performanceReportNumbers'>
+        ${performanceNumber('Month Target',stack.signupTarget)}
+        ${performanceNumber('On Track Target',signupTrack.toFixed(1))}
+        ${performanceNumber('Actual',actual.signups,signupClass)}
+      </div>
+      <div class='performanceReportFormula'>On Track Target = ${stack.signupTarget} ÷ ${actual.daysInMonth} days × ${actual.daysElapsed} days elapsed.</div>
+    </div>
+
+    <div class='performanceReportCard'>
+      <h3>Red Light Therapy Only Sessions</h3>
+      <div class='performanceReportNumbers'>
+        ${performanceNumber('Month Target',stack.rltSessionsTarget)}
+        ${performanceNumber('On Track Target',rltTrack.toFixed(1))}
+        ${performanceNumber('Actual',actual.rltSessions,rltClass)}
+      </div>
+      <div class='performanceReportFormula'>On Track Target = ${stack.rltSessionsTarget} ÷ ${actual.daysInMonth} days × ${actual.daysElapsed} days elapsed.</div>
+    </div>
+
+    <div class='performanceReportCard'>
+      <h3>Total Minutes Used</h3>
+      <div class='performanceReportNumbers'>
+        ${performanceNumber('Month Target',stack.totalMinutesTarget)}
+        ${performanceNumber('On Track Target',minsTrack.toFixed(0))}
+        ${performanceNumber('Actual',actual.minutes,minsClass)}
+      </div>
+      <div class='performanceReportFormula'>On Track Target = ${stack.totalMinutesTarget} ÷ ${actual.daysInMonth} days × ${actual.daysElapsed} days elapsed.</div>
+    </div>
+    ${reviewPerformanceCard(stack,monthNumber,year)}
+  </div>`;
+}
+
+function renderPerformanceReporting(){
+  let host=document.getElementById('performanceReportingContent');if(!host)return;
+  let now=currentMonthIdentity(),stack=getTargetStackFor(now.month,now.year);
+  document.getElementById('performanceReportingPeriod').textContent=`${MONTH_NAMES[now.month-1]} ${now.year} · performance to date`;
+
+  let currentHtml=`<div class='currentMonthPerformanceStrip'><div class='performanceSectionTitle'>Current Month</div>`;
+  if(!stack){
+    currentHtml+=`<div class='performanceReportEmpty'>No target stack has been created for ${MONTH_NAMES[now.month-1]} ${now.year}. Create one under Sunbed Performance → Settings → Monthly Targets.</div>`;
+  }else{
+    currentHtml+=buildPerformanceCards(stack,now.month,now.year);
+  }
+
+  let previous=(data.monthlyTargets||[])
+    .filter(x=>x.year<now.year || (x.year===now.year&&x.monthNumber<now.month))
+    .sort((a,b)=>b.year-a.year||b.monthNumber-a.monthNumber);
+
+  currentHtml+=`</div>`;
+
+  let historyHtml=`<div class='performanceHistory'>
+    <div class='performanceSectionTitle'>Previous Months</div>`;
+
+  if(!previous.length){
+    historyHtml+=`<div class='performanceReportEmpty'>No previous monthly target records yet.</div>`;
+  }else{
+    historyHtml+=`<div class='card'><table class='table'>
+      <tr><th>Month</th><th>Mins / Bed / Hour</th><th>New Sign Ups</th><th>RLT Only Sessions</th><th>Total Minutes</th><th>New Reviews</th><th></th></tr>
+      ${previous.map(x=>{
+        let a=monthPerformanceActuals(x.monthNumber,x.year),
+            kpiGood=a.kpi>=x.target,
+            signupGood=a.signups>=x.signupTarget,
+            rltGood=a.rltSessions>=x.rltSessionsTarget,
+            minsGood=a.minutes>=x.totalMinutesTarget,
+            reviewData=calculateNewReviews(x.monthNumber,x.year),
+            reviewsGood=reviewData.actual!=null&&reviewData.actual>=x.newReviewsTarget;
+        return `<tr class='performanceHistoryRow' onclick="openHistoricalPerformance('${x.id}')">
+          <td><b>${MONTH_NAMES[x.monthNumber-1]} ${x.year}</b></td>
+          <td><span class='${kpiGood?'historyStatusGood':'historyStatusBad'}'>${a.kpi.toFixed(1)}</span> / ${Number(x.target).toFixed(1)}</td>
+          <td><span class='${signupGood?'historyStatusGood':'historyStatusBad'}'>${a.signups}</span> / ${x.signupTarget}</td>
+          <td><span class='${rltGood?'historyStatusGood':'historyStatusBad'}'>${a.rltSessions}</span> / ${x.rltSessionsTarget}</td>
+          <td><span class='${minsGood?'historyStatusGood':'historyStatusBad'}'>${a.minutes}</span> / ${x.totalMinutesTarget}</td>
+          <td>${reviewData.actual==null?'—':`<span class='${reviewsGood?'historyStatusGood':'historyStatusBad'}'>${reviewData.actual}</span> / ${x.newReviewsTarget}`}</td>
+          <td>Open →</td>
+        </tr>`;
+      }).join('')}
+    </table></div>`;
+  }
+  historyHtml+=`</div>`;
+
+  host.innerHTML=currentHtml+historyHtml;
+}
+
+function openHistoricalPerformance(id){
+  let stack=data.monthlyTargets.find(x=>x.id===id);if(!stack)return;
+  document.getElementById('historicalPerformanceTitle').textContent=`${MONTH_NAMES[stack.monthNumber-1]} ${stack.year} Performance`;
+  document.getElementById('historicalPerformanceSubtitle').textContent='Historic month performance against the targets set for that month.';
+  document.getElementById('historicalPerformanceContent').innerHTML=buildPerformanceCards(stack,stack.monthNumber,stack.year);
+  document.getElementById('historicalPerformanceModal').classList.add('show');
+}
+function closeHistoricalPerformance(){document.getElementById('historicalPerformanceModal').classList.remove('show')}
+function renderOpeningHours(){
+  let t=document.getElementById('openingHoursTable');if(!t)return;
+  t.innerHTML="<tr><th>Day</th><th>Opening Time</th><th>Closing Time</th></tr>"+[1,2,3,4,5,6,0].map(day=>{
+    let h=(data.openingHours||DEFAULT_OPENING_HOURS)[day]||DEFAULT_OPENING_HOURS[day];
+    return `<tr><td><b>${DAY_NAMES[day]}</b></td><td><input type='time' id='open_${day}' value='${h.open}'></td><td><input type='time' id='close_${day}' value='${h.close}'></td></tr>`
+  }).join('');
+}
+async function saveOpeningHours(){
+  for(let day of [0,1,2,3,4,5,6]){
+    let open=document.getElementById('open_'+day).value,close=document.getElementById('close_'+day).value;
+    if(!open||!close||timeToMinutes(close)<=timeToMinutes(open))return alert(`Please enter valid opening and closing times for ${DAY_NAMES[day]}.`);
+    let dbDay=day===0?7:day,{error}=await sb.from('opening_hours').update({opening_time:open,closing_time:close}).eq('day_of_week',dbDay);
+    if(error)return alert(error.message);
+  }
+  await loadLiveData();renderOpeningHours();renderBedTracker();alert('Opening hours saved.');
+}
+function exclusiveSessionType(which){let r=document.getElementById('sessionRlt'),h=document.getElementById('sessionHybrid');if(which==='rlt'&&r.checked)h.checked=false;if(which==='hybrid'&&h.checked)r.checked=false}
+function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
+
+function isLastDayOfCurrentMonth(){
+  let d=new Date();
+  return d.getDate()===new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+}
+function renderMonthlyReviewsRecorder(){
+  let tile=document.getElementById('monthlyReviewsRecorder');if(!tile)return;
+  if(!isLastDayOfCurrentMonth()){tile.style.display='none';return;}
+
+  tile.style.display='block';
+  let now=currentMonthIdentity(),existing=getReviewCountRecord(now.month,now.year);
+  document.getElementById('monthEndFacebookReviews').value=existing?existing.facebook:'';
+  document.getElementById('monthEndGoogleReviews').value=existing?existing.google:'';
+
+  let isAdmin=currentProfile?.role==='admin';
+  document.getElementById('monthEndFacebookReviews').readOnly=!isAdmin;
+  document.getElementById('monthEndGoogleReviews').readOnly=!isAdmin;
+  document.getElementById('monthEndReviewSaveBtn').style.display=isAdmin?'inline-block':'none';
+}
+async function saveMonthEndReviews(){
+  if(currentProfile?.role!=='admin')return;
+  let facebook=+document.getElementById('monthEndFacebookReviews').value,
+      google=+document.getElementById('monthEndGoogleReviews').value,
+      err=document.getElementById('monthEndReviewError'),
+      btn=document.getElementById('monthEndReviewSaveBtn'),
+      now=currentMonthIdentity();
+
+  err.style.display='none';
+  if(!Number.isInteger(facebook)||facebook<0||!Number.isInteger(google)||google<0){
+    err.textContent='Please enter valid Facebook and Google review totals.';
+    err.style.display='block';
+    return;
+  }
+
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let {error}=await sb.from('monthly_review_counts').upsert({
+      review_month:now.month,
+      review_year:now.year,
+      facebook_reviews:facebook,
+      google_reviews:google,
+      updated_at:new Date().toISOString()
+    },{onConflict:'review_year,review_month'});
+    if(error)throw error;
+    await loadLiveData();
+    renderMonthlyReviewsRecorder();
+    renderPerformanceReporting();
+  }catch(e){
+    err.textContent=e.message||'Could not save review totals.';
+    err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Record Review Totals';
+  }
+}
+function renderBedTracker(){
+  if(!data.bedSessions)data.bedSessions=[];
+  if(!data.sunbedBookings)data.sunbedBookings=[];
+
+  let today=localDateKey(),
+      rows=data.bedSessions.filter(x=>x.date===today),
+      el=document.getElementById('trackerDate');
+  if(!el)return;
+
+  let now=new Date();
+  el.textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  let total=rows.reduce((a,b)=>a+(+b.length||0),0),
+      signups=rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,
+      rlt=rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+(+b.length||0),0),
+      hybrid=rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+(+b.length||0),0),
+      elapsed=getElapsedOpeningHours(now),
+      kpi=elapsed>0?total/BED_COUNT/elapsed:0;
+
+  document.getElementById('metricSessions').textContent=rows.length;
+  document.getElementById('metricMinutes').textContent=total;
+  document.getElementById('metricSignups').textContent=signups;
+  document.getElementById('metricRltMinutes').textContent=rlt;
+  document.getElementById('metricHybridMinutes').textContent=hybrid;
+  document.getElementById('metricKpi').textContent=kpi.toFixed(1);
+  let currentTarget=getCurrentMonthlyTarget(),kpiTile=document.getElementById('metricKpi')?.closest('.metric');
+  document.getElementById('metricKpiTarget').textContent=currentTarget==null?'Target: not set':`Target: ${Number(currentTarget).toFixed(1)}`;
+  if(kpiTile){
+    kpiTile.classList.remove('kpiAboveTarget','kpiBelowTarget');
+    if(currentTarget!=null)kpiTile.classList.add(kpi>=currentTarget?'kpiAboveTarget':'kpiBelowTarget');
+  }
+  document.getElementById('metricKpiDetail').textContent=elapsed>0
+    ?`${total} total minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
+    :(()=>{let h=effectiveHoursForDate(today);return `KPI starts calculating once the shop opens at ${h.open}.`})();
+
+  // Month-to-date performance: all recorded minutes this month divided by
+  // 4 beds and all elapsed opening hours in the month so far.
+  let monthStart=new Date(now.getFullYear(),now.getMonth(),1),
+      monthKeys=dateRangeKeys(monthStart,now),
+      monthRows=data.bedSessions.filter(x=>monthKeys.includes(x.date)),
+      monthMinutes=monthRows.reduce((sum,x)=>sum+(+x.length||0),0),
+      monthHours=periodOpenHours(monthKeys),
+      monthKpi=monthHours>0?monthMinutes/BED_COUNT/monthHours:0;
+
+  document.getElementById('metricMonthKpi').textContent=monthKpi.toFixed(1);
+  document.getElementById('metricMonthKpiDetail').textContent=monthHours>0
+    ?`${monthMinutes} month-to-date minutes ÷ ${BED_COUNT} beds ÷ ${monthHours.toFixed(1)} opening hours`
+    :'No elapsed opening hours yet this month.';
+  renderMonthlyReviewsRecorder();
+}
+
+function parseLocalDateKey(key){let [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d)}
+function dayKpi(dateKey,totalMinutes){let today=localDateKey(),h=effectiveHoursForDate(dateKey);let hours=dateKey===today?getElapsedOpeningHours(new Date()):hoursDuration(h);return hours>0?totalMinutes/BED_COUNT/hours:0}
+function aggregateSessions(rows){let total=rows.reduce((a,b)=>a+(+b.length||0),0);return {sessions:rows.length,minutes:total,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+(+b.length||0),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+(+b.length||0),0)}}
+function dateRangeKeys(start,end){let keys=[],d=new Date(start);d.setHours(12,0,0,0);let e=new Date(end);e.setHours(12,0,0,0);while(d<=e){keys.push(localDateKey(d));d.setDate(d.getDate()+1)}return keys}
+function summaryMetricsHtml(a,kpi,label){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div><div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>${label||'KPI'}</div><div class='value'>${kpi.toFixed(1)}</div></div></div>`}
+function periodOpenHours(keys){let today=localDateKey();return keys.reduce((sum,k)=>sum+(k===today?getElapsedOpeningHours(new Date()):hoursDuration(effectiveHoursForDate(k))),0)}
+function renderPeriodPerformance(mode){let now=new Date(),start,end,title;if(mode==='week'){let day=(now.getDay()+6)%7;start=new Date(now);start.setDate(now.getDate()-day);end=new Date(now);title='Weekly Performance Tracker'}else{start=new Date(now.getFullYear(),now.getMonth(),1);end=new Date(now);title='Monthly Performance Tracker'}let keys=dateRangeKeys(start,end),rows=(data.bedSessions||[]).filter(x=>keys.includes(x.date)),a=aggregateSessions(rows),hours=periodOpenHours(keys),kpi=hours>0?a.minutes/BED_COUNT/hours:0;document.getElementById('perfTitle').textContent=title;document.getElementById('perfSubtitle').textContent=`${start.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${end.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`;let daily=keys.map(k=>{let r=rows.filter(x=>x.date===k),m=aggregateSessions(r);return {key:k,...m,kpi:dayKpi(k,m.minutes)}});document.getElementById('perfContent').innerHTML=summaryMetricsHtml(a,kpi,'Minutes / Bed / Hour')+`<div class='card perfTableWrap'><table class='table'><tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI</th></tr>${daily.map(d=>`<tr><td><b>${parseLocalDateKey(d.key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td><td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td><td>${d.kpi.toFixed(1)}</td></tr>`).join('')}</table></div>`}
+function drawBarChart(canvas,labels,values,valueSuffix=''){let ctx=canvas.getContext('2d'),ratio=window.devicePixelRatio||1,w=Math.max(canvas.parentElement.clientWidth,700),h=280;canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.scale(ratio,ratio);ctx.clearRect(0,0,w,h);let pad={l:48,r:18,t:22,b:52},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,max=Math.max(...values,1),step=cw/Math.max(labels.length,1),bar=Math.max(10,step*.62);ctx.font='11px Segoe UI';ctx.fillStyle='#9da3ad';ctx.strokeStyle='#30353d';ctx.lineWidth=1;for(let i=0;i<=4;i++){let y=pad.t+ch-(ch*i/4),v=Math.round(max*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(v,pad.l-38,y+4)}values.forEach((v,i)=>{let x=pad.l+i*step+(step-bar)/2,bh=max?ch*(v/max):0,y=pad.t+ch-bh;ctx.fillStyle='#ff2d78';ctx.fillRect(x,y,bar,bh);ctx.fillStyle='#f5f5f7';ctx.textAlign='center';ctx.fillText(`${Number(v).toFixed(valueSuffix?1:0)}${valueSuffix}`,x+bar/2,Math.max(12,y-6));ctx.save();ctx.translate(x+bar/2,pad.t+ch+15);ctx.rotate(-.55);ctx.fillStyle='#9da3ad';ctx.fillText(labels[i],0,0);ctx.restore()});ctx.textAlign='left'}
+function renderPerformanceCharts(){let sessions=data.bedSessions||[],today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1),keys=dateRangeKeys(first,today);let days=keys.map(k=>{let a=aggregateSessions(sessions.filter(x=>x.date===k));return {key:k,minutes:a.minutes,kpi:dayKpi(k,a.minutes)}});document.getElementById('perfTitle').textContent='Performance Charts';document.getElementById('perfSubtitle').textContent='Calendar month to date';document.getElementById('perfContent').innerHTML=`<div class='chartCard'><h3>Total Minutes by Day</h3><div class='chartWrap'><canvas id='minutesChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Minutes Per Bed Per Hour KPI by Day</h3><div class='chartWrap'><canvas id='kpiChart' class='chartCanvas'></canvas></div></div>`;let labels=days.map(d=>parseLocalDateKey(d.key).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));requestAnimationFrame(()=>{drawBarChart(document.getElementById('minutesChart'),labels,days.map(d=>d.minutes));drawBarChart(document.getElementById('kpiChart'),labels,days.map(d=>d.kpi),'')})}
+function openPerformance(mode){document.getElementById('performanceOverlay').classList.add('show');if(mode==='charts')renderPerformanceCharts();else renderPeriodPerformance(mode)}
+function closePerformance(){document.getElementById('performanceOverlay').classList.remove('show')}
+function showTodaysSessions(){
+  let today=localDateKey(),rows=(data.bedSessions||[]).filter(x=>x.date===today);
+  let d=parseLocalDateKey(today).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  let body=rows.length?[...rows].reverse().map(x=>{let type=normalizeSessionType(x);return `<tr><td>${x.time||''}</td><td>${x.length||0} min</td><td>${x.payment||''}</td><td>${type}</td><td>${(x.newSignup==='Yes'||x.newSignup===true)?'Yes':'No'}</td><td>${x.purchasedBlockBooking==='Yes'?'Yes':'No'}</td></tr>`}).join(''):`<tr><td colspan='6'>No sessions recorded today.</td></tr>`;
+  let w=window.open('','_blank');
+  if(!w)return alert('Your browser blocked the new tab. Please allow pop-ups for this page.');
+  w.document.write(`<!doctype html><html><head><title>Today's Sessions - Revibe</title><style>body{font-family:Segoe UI,Arial,sans-serif;background:#111318;color:#fff;padding:28px}h1{margin-bottom:4px}.sub{color:#999;margin-bottom:24px}table{width:100%;border-collapse:collapse;background:#1a1e24}th,td{text-align:left;padding:12px;border-bottom:1px solid #343a44}th{color:#bbb;font-size:12px;text-transform:uppercase}button{margin-top:20px;padding:10px 14px;background:#ff2b8a;color:white;border:0;border-radius:6px;cursor:pointer}
+.sunbedTop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.sunbedWeek{display:grid;grid-template-columns:repeat(7,minmax(230px,1fr));gap:8px;overflow-x:auto;padding-bottom:8px}
+.sunbedDay{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:520px;overflow:hidden}
+.sunbedDayHead{padding:12px 13px;border-bottom:1px solid var(--line);font-weight:800;background:#1c2026}
+.bedLane{border-bottom:1px solid var(--line);padding:9px 8px;min-height:105px}
+.bedLane:last-child{border-bottom:0}
+.bedLaneHead{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;margin-bottom:6px}
+.bedTypeTag{font-size:9px;color:#9aa2ad;text-transform:uppercase;letter-spacing:.5px}
+.sunbedBooking{padding:8px 9px;background:#252a31;border-left:3px solid #18d7e8;border-radius:5px;font-size:11px;margin-top:6px;cursor:pointer}
+.sunbedBooking b{display:block;margin-bottom:3px;font-size:12px}
+.sunbedBooking .muted{font-size:10px}
+.sunbedEmpty{padding:7px 2px;color:#646c77;font-size:10px}
+.bedPill,.sessionPill{display:inline-block;margin-top:5px;margin-right:4px;padding:2px 6px;border-radius:8px;background:#303741;color:#dce1e7;font-size:9px}
+.sunbedSessionChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:5px}
+.sunbedSessionChoice{border:1px solid var(--line);background:#191c21;border-radius:7px;padding:10px 8px;text-align:center;cursor:pointer;font-size:12px;color:#cdd2d8}
+.sunbedSessionChoice.active{border-color:#18d7e8;background:#12343a;color:#fff;box-shadow:0 0 0 1px #18d7e8 inset}
+@media(max-width:900px){.sunbedSessionChoices{grid-template-columns:1fr}}
+
+.bookingSteps{display:grid;gap:18px}
+.bookingStep{border-top:1px solid var(--line);padding-top:14px}
+.bookingStep:first-child{border-top:0;padding-top:0}
+.bookingStepTitle{font-size:12px;color:#aeb5be;text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:9px}
+.choiceGrid{display:flex;flex-wrap:wrap;gap:8px}
+.choiceBtn{padding:10px 12px;text-align:left;background:#1d2127;border:1px solid #363c46;border-radius:7px;color:#fff;cursor:pointer}
+.choiceBtn.active{border-color:#18d7e8;background:#12343a;box-shadow:0 0 0 1px #18d7e8 inset}
+.choiceBtn.full{opacity:.55;cursor:not-allowed}
+.choiceBtn .small{display:block;color:#9ba3ad;font-size:10px;margin-top:3px}
+.bookingNotice{padding:10px 12px;border-radius:7px;background:#2b2616;border:1px solid #665a25;color:#eadb91;font-size:12px}
+
+.loginGate{position:fixed;inset:0;z-index:1000;background:#0d0f12;display:flex;align-items:center;justify-content:center;padding:20px}
+.loginCard{width:min(430px,94vw);background:#171a1f;border:1px solid #30353d;border-radius:14px;padding:28px}
+.loginBrand{font-size:30px;font-weight:900;letter-spacing:1.5px;margin-bottom:6px}
+.loginCard input{font-size:15px;padding:12px;margin-bottom:12px}
+.loginCard .primary{width:100%;padding:12px}
+.loginError{display:none;margin-top:12px;padding:10px;background:#321a20;border:1px solid #6d2d3d;border-radius:7px;color:#ffb8c8}
+.userBar{position:fixed;right:18px;bottom:16px;z-index:8;background:#171a1f;border:1px solid #30353d;border-radius:9px;padding:8px 10px;font-size:11px;color:#bbb}
+body.loading .app{visibility:hidden}
+
+.debugPanel{position:fixed;right:18px;top:18px;z-index:1200;width:min(420px,90vw);background:#171a1f;border:1px solid #3b414b;border-radius:10px;padding:14px;display:none}
+.debugPanel h3{margin:0 0 8px;font-size:15px}
+.debugPanel pre{white-space:pre-wrap;word-break:break-word;background:#0f1115;border:1px solid #30353d;border-radius:7px;padding:10px;color:#d7dbe1;font-size:11px;max-height:320px;overflow:auto}
+ .staffShift{margin-top:6px;background:#262b33;border-left:3px solid #18d7e8;padding:7px;border-radius:5px;font-size:11px}.staffShift b{display:block;margin-bottom:2px}.staffWeekTotal{margin-top:14px;padding:12px;border-radius:8px;background:#252a31;border:1px solid #3a414b}.staffWeekTotal .big{font-size:24px;font-weight:800;margin-top:4px}.staffRotaDay .dayhead{min-height:72px}
+.staffRotaMatrixWrap{overflow:auto}
+.staffRotaMatrix{position:relative;display:grid;grid-template-columns:72px repeat(7,minmax(150px,1fr));min-width:1150px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.staffRotaHead{background:#1c2026;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:11px;font-weight:800;text-align:center}
+.staffRotaTime{position:relative;background:#15181d;border-right:1px solid var(--line);border-bottom:1px solid #252a31;color:#9da3ad;font-size:10px;padding:4px 6px;text-align:right}
+.staffRotaCell{position:relative;border-right:1px solid var(--line);border-bottom:1px solid #252a31;min-height:28px;background:#171a1f}
+.staffRotaCell.edge{background:#1a1d22}
+.staffRotaShiftLayer{position:absolute;inset:0;pointer-events:none}
+.staffRotaShiftBlock{position:absolute;left:5px;right:5px;border-left:4px solid;border-radius:6px;padding:5px 7px;font-size:10px;overflow:hidden;pointer-events:auto;box-shadow:0 2px 8px #0005}
+.staffRotaShiftBlock b{display:block;font-size:11px;margin-bottom:2px}
+.staffRotaLegend{margin-top:12px;color:var(--muted);font-size:11px}
+.menuRoleNote{font-size:10px;color:#888;margin-top:4px}
+
+.sunbedSettingsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.sunbedSettingsTile{background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);border-radius:12px;padding:20px;cursor:pointer;min-height:130px}
+.sunbedSettingsTile:hover{border-color:#555c67;transform:translateY(-1px)}
+.sunbedSettingsTile h3{margin:0 0 8px;font-size:19px}
+.kpiAboveTarget{background:rgba(34,197,94,.28)!important;border-color:#36e26d!important;box-shadow:0 0 0 1px rgba(54,226,109,.25) inset}
+.kpiBelowTarget{background:rgba(190,70,70,.12)!important;border-color:rgba(220,90,90,.28)!important}
+.kpiTargetLine{margin-top:6px;font-size:11px;color:#d4d7dc}
+.staffWeekSummary{margin-top:16px}
+.staffColourDot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:7px;border:1px solid #555}
+
+.targetStoryModal{align-items:stretch!important;justify-content:stretch!important;padding:22px}
+.targetStoryModal .modalbox{width:100%!important;max-width:none!important;height:calc(100vh - 44px);overflow:auto;border-radius:14px}
+.targetStoryGrid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:16px;margin-top:18px}
+.targetStoryCard{background:#20242b;border:1px solid var(--line);border-radius:12px;padding:20px}
+.targetStoryCard .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.targetStoryCard .value{font-size:38px;font-weight:900;margin-top:8px}
+.targetActualGood{background:rgba(34,197,94,.20)!important;border-color:#3be06f!important}
+.targetActualBad{background:rgba(190,70,70,.14)!important;border-color:rgba(220,90,90,.45)!important}
+.targetStorySub{margin-top:7px;color:#aeb4bd;font-size:12px}
+@media(max-width:760px){.targetStoryGrid{grid-template-columns:1fr}}
+
+.performanceReportGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.performanceReportCard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.performanceReportCard h3{margin:0 0 14px;font-size:16px}
+.performanceReportNumbers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.performanceNumber{background:#20242b;border:1px solid #30353d;border-radius:8px;padding:12px}
+.performanceNumber .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.performanceNumber .value{font-size:25px;font-weight:850;margin-top:5px}
+.performanceNumber.actualGood{background:rgba(34,197,94,.22);border-color:#3be06f}
+.performanceNumber.actualBad{background:rgba(190,70,70,.14);border-color:rgba(220,90,90,.45)}
+.performanceReportFormula{margin-top:11px;color:#9da3ad;font-size:11px;line-height:1.5}
+.performanceReportEmpty{padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--muted)}
+@media(max-width:720px){.performanceReportNumbers{grid-template-columns:1fr}}
+
+.performanceSectionTitle{font-size:18px;font-weight:850;margin:0 0 12px}
+.performanceHistory{margin-top:24px}
+.performanceHistoryRow{cursor:pointer}
+.performanceHistoryRow:hover{background:#20242a}
+.historyStatusGood{color:#55e58a;font-weight:800}
+.historyStatusBad{color:#ff8c9d;font-weight:800}
+.historyModal{align-items:stretch!important;justify-content:stretch!important;padding:22px}
+.historyModal .modalbox{width:100%!important;max-width:none!important;height:calc(100vh - 44px);overflow:auto}
+
+.recordSessionPanel{background:rgba(194,145,45,.34)!important;border-color:rgba(234,188,74,.52)!important}
+.currentMonthPerformanceStrip{background:rgba(129,92,246,.10);border:1px solid rgba(155,120,255,.20);border-radius:12px;padding:18px;margin-bottom:22px}
+.holidayStatus{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:800}
+.holidayPending{background:rgba(242,184,75,.16);color:#f2c86e}
+.holidayApproved{background:rgba(43,213,118,.15);color:#61e899}
+.holidayRejected,.holidayCancelled{background:rgba(190,80,80,.14);color:#ff9baa}
+.holidayRotaShade{background:rgba(160,164,172,.12)!important}
+.holidayRotaLabel{position:absolute;left:4px;right:4px;top:3px;padding:3px 5px;background:rgba(120,125,135,.20);border:1px dashed rgba(170,175,185,.35);border-radius:4px;color:#bfc4cc;font-size:9px;text-align:center;z-index:1}
+.holidayWarning{margin-top:12px;padding:11px 12px;background:rgba(242,184,75,.12);border:1px solid rgba(242,184,75,.35);border-radius:8px;color:#e7c46f}
+
+.userRoleBadge{display:inline-block;padding:4px 8px;border-radius:12px;background:#292e37;border:1px solid #3b424e;font-size:10px;font-weight:800}
+.userInactive{opacity:.55}
+.userEditRow{cursor:pointer}
+.userEditRow:hover{background:#20242a}
+
+.roleTile{cursor:pointer}
+.roleTile.locked{border-color:#ff2d78}
+.permissionsTable th:not(:first-child),.permissionsTable td:not(:first-child){text-align:center;width:130px}
+.permissionCheck{width:20px;height:20px;accent-color:var(--pink)}
+.permissionGroupRow td{background:#14171b;color:var(--pink);font-weight:850;text-transform:uppercase;letter-spacing:.6px;font-size:11px}
+.permissionDisabled{opacity:.55}
+.permissionNote{font-size:10px;color:#8d949e;margin-top:4px}
+</style></head><body><h1>Today’s Bed Sessions</h1><div class='sub'>${d}</div><table><tr><th>Time</th><th>Session Length</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th></tr>${body}</table><button onclick='window.print()'>Print</button></body></html>`);
+  w.document.close();
+}
+function toggleBlockBookingQuestion(){let signup=document.getElementById('sessionSignup').checked,row=document.getElementById('blockBookingRow'),block=document.getElementById('sessionBlockBooking');row.style.display=signup?'flex':'none';if(!signup)block.checked=false}
+async function recordBedSession(){
+  let length=+document.getElementById('sessionLength').value;if(!length||length<1)return alert('Please enter the session length in minutes.');
+  let rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;if(rlt&&hybrid)return alert('Please select either Red Light Therapy or Hybrid, not both.');
+  let now=new Date(),sessionType=rlt?'Red Light Therapy':hybrid?'Hybrid':'Standard UV';
+  let {error}=await sb.from('bed_sessions').insert({
+    session_date:localDateKey(now),session_time:now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+    session_length_minutes:length,payment_type:document.getElementById('sessionPayment').value,
+    new_sign_up:document.getElementById('sessionSignup').checked,purchased_block_booking:document.getElementById('sessionBlockBooking')?.checked||false,
+    session_type:sessionType
+  });
+  if(error)return alert(error.message);
+  document.getElementById('sessionLength').value='';document.getElementById('sessionPayment').value='Account Minutes';document.getElementById('sessionSignup').checked=false;document.getElementById('sessionBlockBooking').checked=false;document.getElementById('blockBookingRow').style.display='none';document.getElementById('sessionRlt').checked=false;document.getElementById('sessionHybrid').checked=false;
+  let msg=document.getElementById('sessionSuccess');msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),1800);
+  await loadLiveData();renderBedTracker();
+}
+function addRenter(){
+  if(!data.products.length)return alert('Create at least one Treatment Type before creating a Renter.');
+  document.getElementById('renterCreateName').value='';
+  document.getElementById('renterCreatePhone').value='';
+  document.getElementById('renterCreateEmail').value='';
+  document.getElementById('renterCreateProduct').innerHTML=data.products.filter(p=>p.active!==false).map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
+  document.getElementById('renterCreateError').style.display='none';
+  document.getElementById('renterCreateModal').classList.add('show');
+}
+function closeRenterCreate(){document.getElementById('renterCreateModal').classList.remove('show')}
+async function saveNewRenter(){
+  let name=document.getElementById('renterCreateName').value.trim(),phone=document.getElementById('renterCreatePhone').value.trim(),
+      email=document.getElementById('renterCreateEmail').value.trim(),productId=document.getElementById('renterCreateProduct').value,
+      err=document.getElementById('renterCreateError'),btn=document.getElementById('renterCreateSaveBtn');
+  err.style.display='none';
+  if(!name)return showRenterCreateError('Please enter a clinician name.');
+  if(!productId)return showRenterCreateError('Please select a Product.');
+  btn.disabled=true;btn.textContent='Creating...';
+  try{
+    let {data:row,error}=await sb.from('renters').insert({name,phone:phone||null,email:email||null,active:true}).select().single();
+    if(error)throw error;
+    let link=await sb.from('renter_products').insert({renter_id:row.id,product_id:productId});
+    if(link.error)throw link.error;
+    closeRenterCreate();await loadLiveData();renderAll();
+  }catch(e){showRenterCreateError(e.message||'Could not create Renter.')}
+  finally{btn.disabled=false;btn.textContent='Create Clinician';}
+}
+function showRenterCreateError(msg){let el=document.getElementById('renterCreateError');el.textContent=msg;el.style.display='block'}
+function openClinicEdit(id){
+  let c=data.clinicDays.find(x=>x.id===id);if(!c)return;
+  editingClinicId=id;
+  document.getElementById('clinicEditModal').classList.add('show');
+  let d=parseLocalDateKey(c.date);
+  document.getElementById('clinicEditSubtitle').textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('clinicEditDate').value=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('clinicEditRenter').innerHTML=data.renters.map(r=>`<option value='${r.id}'>${r.name} — ${r.product}</option>`).join('');
+  document.getElementById('clinicEditRenter').value=String(c.renterId);
+  document.getElementById('clinicEditStart').value=c.start;
+  document.getElementById('clinicEditEnd').value=c.end;
+  document.getElementById('clinicEditDiscount').value=+c.discountPercent||0;document.getElementById('clinicEditRentalCharge').value=(+c.rentalCharge||0).toFixed(2);
+}
+function closeClinicEdit(){document.getElementById('clinicEditModal').classList.remove('show');editingClinicId=null}
+async function saveClinicDayEdits(){
+  let c=data.clinicDays.find(x=>x.id===editingClinicId);if(!c)return;
+  let renterId=document.getElementById('clinicEditRenter').value,r=data.renters.find(x=>x.id===renterId);
+  let start=document.getElementById('clinicEditStart').value,end=document.getElementById('clinicEditEnd').value,discount=+document.getElementById('clinicEditDiscount').value,rentalCharge=+document.getElementById('clinicEditRentalCharge').value;
+  if(!r)return alert('Please select a clinician.');if(!start||!end||minutesFromTime(end)<=minutesFromTime(start))return alert('Please enter valid clinic start and end times.');
+  let {error}=await sb.from('clinic_days').update({renter_id:renterId,product_id:r.productId,start_time:start,end_time:end,provided_discount_percent:discount,rental_charge:rentalCharge}).eq('id',c.id);
+  if(error)return alert(error.message);closeClinicEdit();await loadLiveData();renderAll();
+}
+async function deleteClinicDay(){
+  if(editingClinicId==null)return;if(!confirm('Delete this clinic day?'))return;
+  let {error}=await sb.from('clinic_days').delete().eq('id',editingClinicId);if(error)return alert(error.message);
+  closeClinicEdit();await loadLiveData();renderAll();
+}
+function addClinic(){
+  let renterSelect=document.getElementById('clinicCreateRenter'),
+      errBox=document.getElementById('clinicCreateError'),
+      saveBtn=document.getElementById('clinicCreateSaveBtn');
+
+  document.getElementById('clinicCreateDate').value=localDateKey();
+  document.getElementById('clinicCreateStart').value='09:00';
+  document.getElementById('clinicCreateEnd').value='18:00';
+  document.getElementById('clinicCreateDiscount').value='0';
+  document.getElementById('clinicCreateRental').value='0.00';
+
+  if(data.renters.length){
+    renterSelect.innerHTML=data.renters.map(r=>`<option value='${r.id}'>${r.name} — ${r.product||'No Product linked'}</option>`).join('');
+    saveBtn.disabled=false;
+    errBox.style.display='none';
+    document.getElementById('clinicCreateRenterShortcut').style.display='none';
+  }else{
+    renterSelect.innerHTML=`<option value=''>No clinicians configured</option>`;
+    saveBtn.disabled=true;
+    errBox.textContent='You need to create a Clinician before you can create a Clinic Day. Go to Renters → Add Clinician, then come back here.';
+    errBox.style.display='block';
+  }
+
+  document.getElementById('clinicCreateModal').classList.add('show');
+}
+function closeClinicCreate(){document.getElementById('clinicCreateModal').classList.remove('show')}
+async function saveNewClinicDay(){
+  let renterId=document.getElementById('clinicCreateRenter').value,
+      renter=data.renters.find(r=>r.id===renterId),
+      date=document.getElementById('clinicCreateDate').value,
+      start=document.getElementById('clinicCreateStart').value,
+      end=document.getElementById('clinicCreateEnd').value,
+      discount=+document.getElementById('clinicCreateDiscount').value||0,
+      rental=+document.getElementById('clinicCreateRental').value||0,
+      errBox=document.getElementById('clinicCreateError'),
+      btn=document.getElementById('clinicCreateSaveBtn');
+
+  errBox.style.display='none';
+  if(!renter)return showClinicCreateError('Please select a clinician.');
+  if(!renter.productId)return showClinicCreateError('This clinician is not linked to a Treatment Type.');
+  if(!date)return showClinicCreateError('Please select a date.');
+  if(!start||!end||minutesFromTime(end)<=minutesFromTime(start))return showClinicCreateError('Please enter valid start and end times.');
+  if(discount<0||discount>100)return showClinicCreateError('Discount must be between 0 and 100.');
+  if(rental<0)return showClinicCreateError('Rental Charge cannot be negative.');
+
+  btn.disabled=true;btn.textContent='Creating...';
+  try{
+    let {error}=await sb.from('clinic_days').insert({
+      clinic_date:date,
+      renter_id:renter.id,
+      product_id:renter.productId,
+      start_time:start,
+      end_time:end,
+      provided_discount_percent:discount,
+      rental_charge:rental,
+      active:true
+    });
+    if(error)throw error;
+    closeClinicCreate();
+    await loadLiveData();
+    renderAll();
+  }catch(e){
+    showClinicCreateError(e.message||'Could not create Clinic Day.');
+  }finally{
+    btn.disabled=false;btn.textContent='Create Clinic Day';
+  }
+}
+function showClinicCreateError(msg){
+  let el=document.getElementById('clinicCreateError');
+  el.textContent=msg;el.style.display='block';
+}
+function resetDemo(){alert('Prototype reset is disabled in the live system.')}
+
+async function loadLiveData(){
+  let [products,treatments,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,hours,hist]=await Promise.all([
+    sb.from('products').select('*').order('name'),
+    sb.from('treatments').select('*').order('name'),
+    sb.from('renters').select('*').order('name'),
+    sb.from('renter_products').select('*'),
+    sb.from('clinic_days').select('*').order('clinic_date'),
+    sb.from('treatment_bookings').select('*').order('booking_date'),
+    sb.from('beds').select('*').order('bed_number'),
+    sb.from('sunbed_bookings').select('*').order('booking_date'),
+    sb.from('bed_sessions').select('*').order('session_date'),
+    sb.from('staff_members').select('*').order('name'),
+    sb.from('staff_shifts').select('*').order('shift_date'),
+    sb.from('monthly_targets').select('*').order('target_month'),
+    sb.from('monthly_review_counts').select('*').order('review_year').order('review_month'),
+    sb.from('holiday_requests').select('*').order('start_date'),
+    sb.from('opening_hours').select('*').order('day_of_week'),
+    sb.from('opening_hours_history').select('*').order('effective_from')
+  ]);
+  let err=[products,treatments,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,hours,hist].find(x=>x.error)?.error;
+  if(err)throw err;
+  data.products=products.data.map(x=>({id:x.id,name:x.name,active:x.active}));
+  data.treatments=treatments.data.map(x=>({id:x.id,productId:x.product_id,product:data.products.find(p=>p.id===x.product_id)?.name||'',name:x.name,duration:x.duration_minutes,buffer:x.buffer_minutes,price:+x.price,active:x.active}));
+  data.renters=renters.data.map(x=>{let rp=renterProducts.data.find(y=>y.renter_id===x.id),p=data.products.find(z=>z.id===rp?.product_id);return {id:x.id,name:x.name,phone:x.phone,email:x.email,active:x.active,productId:p?.id||null,product:p?.name||''}});
+  data.clinicDays=clinics.data.map(x=>({id:x.id,date:x.clinic_date,renterId:x.renter_id,productId:x.product_id,product:data.products.find(p=>p.id===x.product_id)?.name||'',start:(x.start_time||'').slice(0,5),end:(x.end_time||'').slice(0,5),discountPercent:+x.provided_discount_percent||0,rentalCharge:+x.rental_charge||0}));
+  data.appointments=bookings.data.map(x=>({id:x.id,date:x.booking_date,time:(x.start_time||'').slice(0,5),treatmentId:x.treatment_id,customerName:x.customer_name,customerPhone:x.customer_phone,price:+x.price,clinicDiscountPercent:+x.clinic_discount_percent,amountPayable:+x.amount_payable,notes:x.notes,status:x.status}));
+  data.beds=beds.data.map(x=>({id:x.id,name:x.name,number:x.bed_number,type:x.bed_type,active:x.active}));
+  data.sunbedBookings=sunbeds.data.map(x=>{let b=data.beds.find(y=>y.id===x.bed_id);return {id:x.id,name:x.customer_name,phone:x.customer_phone,date:x.booking_date,time:(x.start_time||'').slice(0,5),length:x.session_length_minutes,totalMinutes:x.session_length_minutes+x.turnaround_minutes,bed:b?.name||'',bedType:b?.type||'',sessionType:x.session_type,status:x.status}});
+  data.bedSessions=sessions.data.map(x=>({id:x.id,date:x.session_date,time:(x.session_time||'').slice(0,5),length:x.session_length_minutes,payment:x.payment_type,newSignup:x.new_sign_up,purchasedBlockBooking:x.purchased_block_booking,sessionType:x.session_type,createdAt:x.created_at}));data.staffMembers=staffMembers.data.map(x=>({id:x.id,name:x.name,address:x.address||'',phone:x.phone_number||'',dateOfJoining:x.date_of_joining,holidayEntitlement:+x.holiday_entitlement_this_year||0,holidaysRemaining:+x.holidays_remaining||0,colour:x.rota_colour||'#18d7e8',active:x.active}));data.staffShifts=staffShifts.data.map(x=>({id:x.id,staffId:x.staff_member_id,date:x.shift_date,start:(x.start_time||'').slice(0,5),end:(x.end_time||'').slice(0,5),hours:+x.shift_hours||0}));data.monthlyTargets=monthlyTargets.data.map(x=>({
+    id:x.id,
+    month:x.target_month,
+    monthNumber:+x.target_month_number || new Date(x.target_month+'T00:00:00').getMonth()+1,
+    year:+x.target_year || new Date(x.target_month+'T00:00:00').getFullYear(),
+    target:+x.mins_per_bed_per_hour_target||0,
+    signupTarget:+x.new_sign_ups_target||0,
+    rltSessionsTarget:+x.rlt_only_sessions_target||0,
+    totalMinutesTarget:+x.total_minutes_target||0,
+    newReviewsTarget:+x.new_reviews_target||0
+  }));
+  data.monthlyReviewCounts=monthlyReviewCounts.data.map(x=>({id:x.id,month:+x.review_month,year:+x.review_year,facebook:+x.facebook_reviews||0,google:+x.google_reviews||0}));
+  data.holidayRequests=holidayRequests.data.map(x=>({
+    id:x.id,staffId:x.staff_member_id,startDate:x.start_date,endDate:x.end_date,daysTotal:+x.days_total||0,status:x.status,
+    approvedById:x.approved_by_staff_member_id,approvedDate:x.approved_date
+  }));
+  let mapped={};hours.data.forEach(x=>{let js=x.day_of_week===7?0:x.day_of_week;mapped[js]={open:(x.opening_time||'').slice(0,5),close:(x.closing_time||'').slice(0,5)}});data.openingHours=mapped;
+  data.openingHoursHistory=(hist.data||[]).map(x=>({
+    day:x.day_of_week===7?0:x.day_of_week,
+    open:(x.opening_time||'').slice(0,5),
+    close:(x.closing_time||'').slice(0,5),
+    effectiveFrom:x.effective_from,
+    effectiveTo:x.effective_to
+  }));
+}
+async function loginRevibe(){
+  let email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value,box=document.getElementById('loginError');
+  box.style.display='none';let {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){box.textContent=error.message;box.style.display='block';return;}await bootRevibe();
+}
+async function logoutRevibe(){await sb.auth.signOut();location.reload()}
+
+async function runRevibeAuthDebug(showPanel=true){
+  let out=document.getElementById('debugOutput');
+  try{
+    let {data:{session}}=await sb.auth.getSession();
+    let sessionSummary=session?{
+      access_token_present:!!session.access_token,
+      user_id:session.user?.id||null,
+      user_email:session.user?.email||null,
+      expires_at:session.expires_at||null
+    }:{session:null};
+
+    let rpc=await sb.rpc('revibe_auth_debug');
+    let result={
+      browser_session:sessionSummary,
+      rpc_data:rpc.data,
+      rpc_error:rpc.error?{
+        message:rpc.error.message,
+        details:rpc.error.details,
+        hint:rpc.error.hint,
+        code:rpc.error.code
+      }:null
+    };
+    out.textContent=JSON.stringify(result,null,2);
+    if(showPanel)document.getElementById('debugPanel').style.display='block';
+    return result;
+  }catch(e){
+    out.textContent=JSON.stringify({exception:e.message||String(e)},null,2);
+    if(showPanel)document.getElementById('debugPanel').style.display='block';
+    return null;
+  }
+}
+async function bootRevibe(){
+  let {data:{session}}=await sb.auth.getSession();
+  if(!session){document.body.classList.remove('loading');document.querySelector('.app').style.display='none';document.getElementById('loginGate').style.display='flex';return;}
+  currentUser=session.user;
+  let {data:profile,error}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
+  if(error||!profile||!profile.active){await sb.auth.signOut();return alert('Your Revibe account is not active.');}
+  currentProfile=profile;
+  try{await loadLiveData();await loadRolePermissions();if(profile.role==='admin')await loadRevibeUsers()}catch(e){return alert('Could not load Revibe data: '+e.message)}
+  document.getElementById('loginGate').style.display='none';document.querySelector('.app').style.display='grid';document.body.classList.remove('loading');
+  let ub=document.getElementById('userBar');ub.style.display='block';ub.innerHTML=`${profile.full_name||currentUser.email} · ${profile.role} &nbsp; <button onclick='logoutRevibe()'>Sign out</button>`;
+  updatePreferredBedOptions();renderAll();applyPermissionBasedNavigation();let addStaffBtn=document.getElementById('addStaffMemberBtn');if(addStaffBtn){addStaffBtn.style.display=currentProfile?.role==='admin'?'inline-block':'none';}let holidayBtn=document.getElementById('createHolidayRequestBtn');if(holidayBtn){holidayBtn.style.display=currentProfile?.role==='admin'?'inline-block':'none';}
+}
+document.getElementById('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')loginRevibe()});
+document.getElementById('newProductName').addEventListener('keydown',e=>{if(e.key==='Enter')saveNewProduct()});
+document.getElementById('renterCreateName').addEventListener('keydown',e=>{if(e.key==='Enter')saveNewRenter()});
+document.getElementById('treatmentCreateName').addEventListener('keydown',e=>{if(e.key==='Enter')saveNewTreatment()});
+document.getElementById('sunbedLength').addEventListener('input',updateSunbedTotal);
+bootRevibe();
+setInterval(()=>{if(document.getElementById('bedtracker')?.classList.contains('active'))renderBedTracker()},60000);
+</script></body></html>
