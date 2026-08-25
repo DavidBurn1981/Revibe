@@ -523,7 +523,13 @@ body.loading .app{visibility:hidden}
       <button onclick='closeClinicCreate()'>✕</button>
     </div>
     <div class='formgrid'>
-      <div><label>Date</label><input id='clinicCreateDate' type='date'></div>
+      <div><label>Date</label>
+  <div style='display:flex;gap:8px'>
+    <input id='clinicCreateDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick="openUniversalDatePicker('clinicCreate')">
+    <button type='button' onclick="openUniversalDatePicker('clinicCreate')">📅</button>
+  </div>
+  <input id='clinicCreateDate' type='hidden'>
+</div>
       <div><label>Clinician</label><select id='clinicCreateRenter'></select></div>
       <div><label>Start Time</label><input id='clinicCreateStart' type='time' value='09:00'></div>
       <div><label>End Time</label><input id='clinicCreateEnd' type='time' value='18:00'></div>
@@ -537,6 +543,40 @@ body.loading .app{visibility:hidden}
     </div>
   </div>
 </div>
+<div class='modal' id='clinicCopyModal'>
+  <div class='modalbox' style='max-width:560px'>
+    <div class='top'>
+      <div><h1>Copy Clinic Day</h1><div class='muted' id='clinicCopySubtitle'>Choose the date for the copied clinic.</div></div>
+      <button onclick='closeClinicCopy()'>✕</button>
+    </div>
+    <label>New Clinic Date</label>
+    <div style='display:flex;gap:8px'>
+      <input id='clinicCopyDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick="openUniversalDatePicker('clinicCopy')">
+      <button type='button' onclick="openUniversalDatePicker('clinicCopy')">📅</button>
+    </div>
+    <input id='clinicCopyDate' type='hidden'>
+    <div id='clinicCopyError' class='loginError' style='margin-top:12px'></div>
+    <div style='text-align:right;margin-top:18px'>
+      <button onclick='closeClinicCopy()'>Cancel</button>
+      <button class='primary' id='clinicCopySaveBtn' onclick='copyClinicDay()'>Create Copy</button>
+    </div>
+  </div>
+</div>
+
+<div class='modal' id='universalDatePickerModal'>
+  <div class='modalbox' style='max-width:420px'>
+    <div class='top'>
+      <div><h1>Select Date</h1><div class='muted' id='universalDatePickerSubtitle'></div></div>
+      <button onclick='closeUniversalDatePicker()'>✕</button>
+    </div>
+    <div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'>
+      <button type='button' onclick='changeUniversalDatePickerMonth(-1)'>←</button>
+      <strong id='universalDatePickerMonthLabel'></strong>
+      <button type='button' onclick='changeUniversalDatePickerMonth(1)'>→</button>
+    </div>
+    <div id='universalDatePickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div>
+  </div>
+</div>
 <div class='modal' id='clinicEditModal'>
   <div class='modalbox' style='max-width:620px'>
     <div class='top'><div><h1>Edit Clinic Day</h1><div class='muted' id='clinicEditSubtitle'></div></div><button onclick='closeClinicEdit()'>✕</button></div>
@@ -548,7 +588,10 @@ body.loading .app{visibility:hidden}
       <div><label>Provided Discount %</label><input id='clinicEditDiscount' type='number' min='0' max='100' step='1'></div><div><label>Rental Charge (£)</label><input id='clinicEditRentalCharge' type='number' min='0' step='0.01' placeholder='0.00'></div>
     </div>
     <div style='display:flex;justify-content:space-between;gap:10px;margin-top:20px'>
-      <button onclick='deleteClinicDay()'>Delete Clinic Day</button>
+      <div style='display:flex;gap:8px'>
+        <button onclick='deleteClinicDay()'>Delete Clinic Day</button>
+        <button onclick='openCopyClinicDay()'>Copy Clinic Day</button>
+      </div>
       <div><button onclick='closeClinicEdit()'>Cancel</button> <button class='primary' onclick='saveClinicDayEdits()'>Save Changes</button></div>
     </div>
   </div>
@@ -632,7 +675,7 @@ body.loading .app{visibility:hidden}
 const SUPABASE_URL='https://fjryihtrtqygpozkirqp.supabase.co';
 const SUPABASE_KEY='sb_publishable_ciDrF9_Fo5_tVL9E9m8EZw_R0QStFpc';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=null,currentProfile=null;let editingUserId=null;let revibeUsers=[];let revibeRolePermissions=[];let editingPermissionRole=null;let workingRolePermissions={};let editingMonthlyTargetId=null;let editingHolidayRequestId=null;let holidayPickerMode='start';let holidayPickerMonth=new Date();
+let currentUser=null,currentProfile=null;let universalDatePickerTarget=null;let universalDatePickerMonth=new Date();let editingUserId=null;let revibeUsers=[];let revibeRolePermissions=[];let editingPermissionRole=null;let workingRolePermissions={};let editingMonthlyTargetId=null;let editingHolidayRequestId=null;let holidayPickerMode='start';let holidayPickerMonth=new Date();
 let data={products:[],renters:[],treatments:[],customers:[],clinicDays:[],appointments:[],bedSessions:[],sunbedBookings:[],staffMembers:[],staffShifts:[],monthlyTargets:[],monthlyReviewCounts:[],holidayRequests:[],openingHours:null,openingHoursHistory:[]};
 let booking={date:null,treatment:null,product:null,clinicId:null};let currentProduct=null;let editingClinicId=null;
 let weekStart=startMonday(new Date());let staffRotaWeekStart=startMonday(new Date());let shiftPickerMonth=new Date();let staffJoinPickerMonth=new Date();let sunbedWeekStart=startMonday(new Date());let sunbedSessionType='Red Light Therapy';let pendingSunbedBooking=null;let sunbedPickerMonth=new Date();let displayDays=7;
@@ -2478,6 +2521,132 @@ async function saveNewRenter(){
   finally{btn.disabled=false;btn.textContent='Create Clinician';}
 }
 function showRenterCreateError(msg){let el=document.getElementById('renterCreateError');el.textContent=msg;el.style.display='block'}
+
+function openUniversalDatePicker(target){
+  universalDatePickerTarget=target;
+  let key='',subtitle='';
+
+  if(target==='clinicCreate'){
+    key=document.getElementById('clinicCreateDate').value;
+    subtitle='Clinic Day';
+  }else if(target==='clinicCopy'){
+    key=document.getElementById('clinicCopyDate').value;
+    subtitle='Copied Clinic Day';
+  }else{
+    return;
+  }
+
+  universalDatePickerMonth=key?parseLocalDateKey(key):new Date();
+  document.getElementById('universalDatePickerSubtitle').textContent=subtitle;
+  renderUniversalDatePicker();
+  document.getElementById('universalDatePickerModal').classList.add('show');
+}
+function closeUniversalDatePicker(){
+  document.getElementById('universalDatePickerModal').classList.remove('show');
+}
+function changeUniversalDatePickerMonth(delta){
+  universalDatePickerMonth=new Date(universalDatePickerMonth.getFullYear(),universalDatePickerMonth.getMonth()+delta,1);
+  renderUniversalDatePicker();
+}
+function selectUniversalDate(key){
+  if(universalDatePickerTarget==='clinicCreate'){
+    document.getElementById('clinicCreateDate').value=key;
+    document.getElementById('clinicCreateDateDisplay').value=formatSunbedDisplayDate(key);
+  }else if(universalDatePickerTarget==='clinicCopy'){
+    document.getElementById('clinicCopyDate').value=key;
+    document.getElementById('clinicCopyDateDisplay').value=formatSunbedDisplayDate(key);
+  }
+  closeUniversalDatePicker();
+}
+function renderUniversalDatePicker(){
+  let grid=document.getElementById('universalDatePickerGrid'),
+      y=universalDatePickerMonth.getFullYear(),
+      m=universalDatePickerMonth.getMonth();
+
+  document.getElementById('universalDatePickerMonthLabel').textContent=
+    new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+
+  let heads=['Mo','Tu','We','Th','Fr','Sa','Su']
+      .map(x=>`<div style='color:#8f98a4;font-size:11px;padding:6px 0'>${x}</div>`).join(''),
+      first=new Date(y,m,1),
+      offset=(first.getDay()+6)%7,
+      days=new Date(y,m+1,0).getDate(),
+      cells='';
+
+  for(let i=0;i<offset;i++)cells+='<div></div>';
+
+  let selectedKey=universalDatePickerTarget==='clinicCreate'
+      ?document.getElementById('clinicCreateDate').value
+      :document.getElementById('clinicCopyDate').value;
+
+  for(let d=1;d<=days;d++){
+    let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,
+        selected=selectedKey===key;
+    cells+=`<button type='button' onclick="selectUniversalDate('${key}')" style='padding:10px 4px;${selected?'border-color:#18d7e8;background:#12343a;color:white;':''}'>${d}</button>`;
+  }
+
+  grid.innerHTML=heads+cells;
+}
+
+function openCopyClinicDay(){
+  let c=data.clinicDays.find(x=>x.id===editingClinicId);if(!c)return;
+  document.getElementById('clinicCopyDate').value='';
+  document.getElementById('clinicCopyDateDisplay').value='';
+  document.getElementById('clinicCopyError').style.display='none';
+  let clinician=data.renters.find(r=>r.id===c.renterId);
+  document.getElementById('clinicCopySubtitle').textContent=
+    `Copies ${clinician?.name||'clinician'}, ${c.start}–${c.end}, discount and rental charge.`;
+  document.getElementById('clinicCopyModal').classList.add('show');
+}
+function closeClinicCopy(){
+  document.getElementById('clinicCopyModal').classList.remove('show');
+}
+async function copyClinicDay(){
+  let source=data.clinicDays.find(x=>x.id===editingClinicId),
+      date=document.getElementById('clinicCopyDate').value,
+      err=document.getElementById('clinicCopyError'),
+      btn=document.getElementById('clinicCopySaveBtn');
+
+  err.style.display='none';
+  if(!source)return;
+  if(!date){
+    err.textContent='Please select the date for the copied Clinic Day.';
+    err.style.display='block';
+    return;
+  }
+
+  let existing=data.clinicDays.find(x=>x.date===date);
+  if(existing){
+    let existingClinician=data.renters.find(r=>r.id===existing.renterId);
+    alert(`A Clinic Day already exists on ${formatSunbedDisplayDate(date)}${existingClinician?.name?` for ${existingClinician.name}`:''}. The copy has not been created.`);
+    return;
+  }
+
+  btn.disabled=true;btn.textContent='Creating Copy...';
+  try{
+    let {error}=await sb.from('clinic_days').insert({
+      clinic_date:date,
+      renter_id:source.renterId,
+      product_id:source.productId,
+      start_time:source.start,
+      end_time:source.end,
+      provided_discount_percent:+source.discountPercent||0,
+      rental_charge:+source.rentalCharge||0,
+      active:true
+    });
+    if(error)throw error;
+
+    closeClinicCopy();
+    closeClinicEdit();
+    await loadLiveData();
+    renderAll();
+  }catch(e){
+    err.textContent=e.message||'Could not copy Clinic Day.';
+    err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Create Copy';
+  }
+}
 function openClinicEdit(id){
   let c=data.clinicDays.find(x=>x.id===id);if(!c)return;
   editingClinicId=id;
@@ -2510,7 +2679,7 @@ function addClinic(){
       errBox=document.getElementById('clinicCreateError'),
       saveBtn=document.getElementById('clinicCreateSaveBtn');
 
-  document.getElementById('clinicCreateDate').value=localDateKey();
+  document.getElementById('clinicCreateDate').value=localDateKey();document.getElementById('clinicCreateDateDisplay').value=formatSunbedDisplayDate(localDateKey());
   document.getElementById('clinicCreateStart').value='09:00';
   document.getElementById('clinicCreateEnd').value='18:00';
   document.getElementById('clinicCreateDiscount').value='0';
@@ -2546,6 +2715,7 @@ async function saveNewClinicDay(){
   if(!renter)return showClinicCreateError('Please select a clinician.');
   if(!renter.productId)return showClinicCreateError('This clinician is not linked to a Treatment Type.');
   if(!date)return showClinicCreateError('Please select a date.');
+  if(data.clinicDays.some(x=>x.date===date))return showClinicCreateError(`A Clinic Day already exists on ${formatSunbedDisplayDate(date)}.`);
   if(!start||!end||minutesFromTime(end)<=minutesFromTime(start))return showClinicCreateError('Please enter valid start and end times.');
   if(discount<0||discount>100)return showClinicCreateError('Discount must be between 0 and 100.');
   if(rental<0)return showClinicCreateError('Rental Charge cannot be negative.');
