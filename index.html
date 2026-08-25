@@ -123,6 +123,10 @@ body.loading .app{visibility:hidden}
 .permissionGroupRow td{background:#14171b;color:var(--pink);font-weight:850;text-transform:uppercase;letter-spacing:.6px;font-size:11px}
 .permissionDisabled{opacity:.55}
 .permissionNote{font-size:10px;color:#8d949e;margin-top:4px}
+
+#clinicCopyModal{z-index:80!important}
+#universalDatePickerModal{z-index:100!important}
+#holidayDatePickerModal,#shiftCalendarPickerModal,#staffJoinCalendarPickerModal{z-index:100!important}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
@@ -2474,6 +2478,10 @@ body.loading .app{visibility:hidden}
 .permissionGroupRow td{background:#14171b;color:var(--pink);font-weight:850;text-transform:uppercase;letter-spacing:.6px;font-size:11px}
 .permissionDisabled{opacity:.55}
 .permissionNote{font-size:10px;color:#8d949e;margin-top:4px}
+
+#clinicCopyModal{z-index:80!important}
+#universalDatePickerModal{z-index:100!important}
+#holidayDatePickerModal,#shiftCalendarPickerModal,#staffJoinCalendarPickerModal{z-index:100!important}
 </style></head><body><h1>Today’s Bed Sessions</h1><div class='sub'>${d}</div><table><tr><th>Time</th><th>Session Length</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th></tr>${body}</table><button onclick='window.print()'>Print</button></body></html>`);
   w.document.close();
 }
@@ -2590,6 +2598,7 @@ function renderUniversalDatePicker(){
 
 function openCopyClinicDay(){
   let c=data.clinicDays.find(x=>x.id===editingClinicId);if(!c)return;
+  document.getElementById('clinicEditModal').classList.remove('show');
   document.getElementById('clinicCopyDate').value='';
   document.getElementById('clinicCopyDateDisplay').value='';
   document.getElementById('clinicCopyError').style.display='none';
@@ -2600,6 +2609,7 @@ function openCopyClinicDay(){
 }
 function closeClinicCopy(){
   document.getElementById('clinicCopyModal').classList.remove('show');
+  if(editingClinicId)document.getElementById('clinicEditModal').classList.add('show');
 }
 async function copyClinicDay(){
   let source=data.clinicDays.find(x=>x.id===editingClinicId),
@@ -2636,8 +2646,8 @@ async function copyClinicDay(){
     });
     if(error)throw error;
 
-    closeClinicCopy();
-    closeClinicEdit();
+    document.getElementById('clinicCopyModal').classList.remove('show');
+    editingClinicId=null;
     await loadLiveData();
     renderAll();
   }catch(e){
