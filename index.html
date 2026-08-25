@@ -526,7 +526,7 @@ body.loading .app{visibility:hidden}
 
     <div style='display:flex;justify-content:flex-end;gap:8px;margin-top:18px'>
       <button onclick='closeUserModal()'>Cancel</button>
-      <button class='primary' id='userSaveButton' onclick='saveUser()'>Send Invitation</button>
+      <button class='primary' id='userSaveButton' onclick='saveUser()'>Create User</button>
     </div>
   </div>
 </div>
@@ -1458,13 +1458,13 @@ function openCreateUserModal(){
   editingUserId=null;
   populateUserClinicians();
   document.getElementById('userModalTitle').textContent='Create User';
-  document.getElementById('userModalSubtitle').textContent='Send an invitation so the user can set their own password.';
+  document.getElementById('userModalSubtitle').textContent='Send an login so the user can set their own password.';
   document.getElementById('userFullName').value='';
   document.getElementById('userEmail').value='';
   document.getElementById('userEmail').readOnly=false;
   document.getElementById('userRole').value='staff';
   document.getElementById('userActiveWrap').style.display='none';
-  document.getElementById('userSaveButton').textContent='Send Invitation';
+  document.getElementById('userSaveButton').textContent='Create User';
   document.getElementById('userFormError').style.display='none';
   updateUserRoleFields();
   document.getElementById('userModal').classList.add('show');
@@ -1476,10 +1476,10 @@ function openEditUserModal(id){
   editingUserId=id;
   populateUserClinicians();
   document.getElementById('userModalTitle').textContent='Edit User';
-  document.getElementById('userModalSubtitle').textContent='Change the user’s REVIBE role or active status.';
+  document.getElementById('userModalSubtitle').textContent='Change the user’s details, email, REVIBE role or active status.';
   document.getElementById('userFullName').value=u.fullName||'';
   document.getElementById('userEmail').value=u.email||'';
-  document.getElementById('userEmail').readOnly=true;
+  document.getElementById('userEmail').readOnly=false;
   document.getElementById('userRole').value=u.role;
   document.getElementById('userClinicianLink').value=u.clinicianId||'';
   document.getElementById('userActive').checked=!!u.active;
@@ -1497,6 +1497,7 @@ function closeUserModal(){
 
 async function saveUser(){
   if(currentProfile?.role!=='admin')return;
+
   let name=document.getElementById('userFullName').value.trim(),
       email=document.getElementById('userEmail').value.trim(),
       role=document.getElementById('userRole').value,
@@ -1505,15 +1506,58 @@ async function saveUser(){
       btn=document.getElementById('userSaveButton');
 
   err.style.display='none';
-  if(!name){err.textContent='Please enter a name.';err.style.display='block';return;}
-  if(!email){err.textContent='Please enter an email address.';err.style.display='block';return;}
-  if(role==='renter'&&!clinicianId){err.textContent='Please link this Clinician login to a Clinician record.';err.style.display='block';return;}
+
+  if(!name){
+    err.textContent='Please enter a name.';
+    err.style.display='block';
+    return;
+  }
+
+  if(!email){
+    err.textContent='Please enter an email address.';
+    err.style.display='block';
+    return;
+  }
+
+  if(role==='renter'&&!clinicianId){
+    err.textContent='Please link this Clinician login to a Clinician record.';
+    err.style.display='block';
+    return;
+  }
 
   btn.disabled=true;
-  btn.textContent=editingUserId?'Saving...':'Sending Invitation...';
+  btn.textContent=editingUserId?'Saving...':'Creating User...';
 
   try{
     if(editingUserId){
+      let existing=revibeUsers.find(x=>x.id===editingUserId);
+
+      if(existing && existing.email!==email){
+        const {data:{session},error:sessionError}=await sb.auth.getSession();
+        if(sessionError||!session?.access_token)throw new Error('Your login session could not be read.');
+
+        const response=await fetch(`${SUPABASE_URL}/functions/v1/manage-revibe-user`,{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'apikey':SUPABASE_KEY,
+            'Authorization':`Bearer ${session.access_token}`
+          },
+          body:JSON.stringify({
+            action:'update_email',
+            user_id:editingUserId,
+            email
+          })
+        });
+
+        let payload={};
+        try{payload=await response.json()}catch(_){}
+
+        if(!response.ok){
+          throw new Error(payload?.error||`Could not update email (HTTP ${response.status}).`);
+        }
+      }
+
       let {error}=await sb.rpc('revibe_admin_update_user',{
         p_user_id:editingUserId,
         p_full_name:name,
@@ -1521,9 +1565,12 @@ async function saveUser(){
         p_active:document.getElementById('userActive').checked,
         p_renter_id:clinicianId
       });
+
       if(error)throw error;
+
     }else{
-      // Secure server-side invitation. Requires the create-revibe-user Edge Function.
+      // Creates the Supabase login immediately.
+      // No invitation email is required.
       let {data,error}=await sb.functions.invoke('create-revibe-user',{
         body:{
           email,
@@ -1532,25 +1579,49 @@ async function saveUser(){
           renter_id:clinicianId
         }
       });
-      if(error)throw error;
+
+      if(error){
+        let msg=error.message||'Could not create user.';
+        try{
+          if(error.context){
+            let body=await error.context.json();
+            if(body?.error)msg=body.error;
+          }
+        }catch(_){}
+        throw new Error(msg);
+      }
+
       if(data?.error)throw new Error(data.error);
     }
 
     await loadRevibeUsers();
     renderUsers();
+
+    let createdEmail=email;
+    let wasNew=!editingUserId;
+
     closeUserModal();
-  }catch(e){
-    let message=e?.message||'Could not save user.';
-    if(message.includes('Failed to send a request')){
-      message='The secure Create User function has not been deployed yet. Use the supplied Edge Function file when we configure user invitations.';
+
+    if(wasNew){
+      let created=revibeUsers.find(x=>x.email.toLowerCase()===createdEmail.toLowerCase());
+      if(created){
+        if(confirm(`User created successfully for ${createdEmail}.\n\nSet a temporary password now?`)){
+          openTemporaryPasswordModal(created.id,created.email);
+        }
+      }else{
+        alert(`User created successfully for ${createdEmail}. You can now use Set Temporary Password from the Users list.`);
+      }
     }
-    err.textContent=message;
+
+  }catch(e){
+    err.textContent=e?.message||'Could not save user.';
     err.style.display='block';
   }finally{
     btn.disabled=false;
-    btn.textContent=editingUserId?'Save Changes':'Send Invitation';
+    btn.textContent=editingUserId?'Save Changes':'Create User';
   }
 }
+
 function holidayDateKeys(startKey,endKey){
   if(!startKey||!endKey)return [];
   return dateRangeKeys(parseLocalDateKey(startKey),parseLocalDateKey(endKey));
