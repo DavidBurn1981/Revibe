@@ -395,7 +395,7 @@ body.loading .app{visibility:hidden}
     <table class='table' id='monthlyTargetsTable'></table>
   </div>
 </section>
-<section id='openinghours' class='page'><div class='top'><div><h1>Opening Hours</h1><div class='muted'>Set the standard opening and closing time for each day. Changes apply from today forward; historic KPI calculations keep the hours that applied on that date.</div></div></div><div class='card' style='max-width:760px'><table class='table' id='openingHoursTable'></table><div style='margin-top:18px'><button class='primary' onclick='saveOpeningHours()'>Save Opening Hours</button></div></div></section>
+<section id='openinghours' class='page'><div class='top'><div><h1>Opening Hours</h1><div class='muted'>Set the standard opening and closing time for each day. Changes apply from today forward; historic KPI calculations keep the hours that applied on that date.</div></div></div><div class='card' style='max-width:760px'><div style='overflow-x:auto'><table class='table' id='openingHoursTable'></table></div><div style='margin-top:18px'><button class='primary' onclick='saveOpeningHours()'>Save Opening Hours</button></div></div></section>
 
 <section id='sunbedbookings' class='page'>
   <div class='sunbedTop'>
@@ -802,24 +802,24 @@ body.loading .app{visibility:hidden}
     <div class='card' style='margin:0 0 18px;padding:16px'>
       <div class='bookingStepTitle'>Target Period</div>
       <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
-        <div><label>Month</label><select id='targetMonthNumber'></select></div>
-        <div><label>Year</label><input id='targetYear' type='number' min='2020' max='2100' step='1'></div>
+        <div><label>Month</label><select id='targetMonthNumber' onchange='updateAutoTotalMinutesTarget()'></select></div>
+        <div><label>Year</label><input id='targetYear' type='number' min='2020' max='2100' step='1' oninput='updateAutoTotalMinutesTarget()'></div>
       </div>
     </div>
     <div class='card' style='margin:0;padding:16px'>
       <h3 style='margin:0 0 14px'>Set Targets for Month</h3>
       <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
-        <div><label>Mins Per Bed Per Hour Target</label><input id='monthlyKpiTarget' type='number' min='0' step='0.1' placeholder='e.g. 10.0'></div>
+        <div><label>Mins Per Bed Per Hour Target</label><input id='monthlyKpiTarget' type='number' min='0' step='0.1' placeholder='e.g. 10.0' oninput='updateAutoTotalMinutesTarget()'></div>
         <div><label>Number of New Sign Ups</label><input id='monthlySignupTarget' type='number' min='0' step='1' placeholder='e.g. 120'></div>
         <div><label>Number of Red Light Therapy Only Sessions</label><input id='monthlyRltSessionsTarget' type='number' min='0' step='1' placeholder='e.g. 80'></div>
-        <div><label>Total Minutes Used</label><input id='monthlyTotalMinutesTarget' type='number' min='0' step='1' placeholder='e.g. 18000'></div>
+        <div><label>Total Minutes Used (auto calculates)</label><input id='monthlyTotalMinutesTarget' type='number' min='0' step='1' readonly></div>
         <div><label>Number of New Reviews</label><input id='monthlyNewReviewsTarget' type='number' min='0' step='1' placeholder='e.g. 25'></div>
         <div><label>RLT Case Studies</label><input id='monthlyRltCaseStudiesTarget' type='number' min='0' step='1' placeholder='e.g. 8'></div>
       </div>
 
       <div style='margin-top:22px;border-top:1px solid var(--line);padding-top:18px'>
         <h3 style='margin:0 0 5px'>Bonus Stack</h3>
-        <div class='muted' style='margin-bottom:14px'>Three monthly bonus levels based on Mins Per Bed Per Hour.</div>
+        <div class='muted' style='margin-bottom:14px'>Enter three targets and the bonus amount for each.</div>
 
         <div class='bonusRow'>
           <div><label>Level 1 Target</label><input id='bonus1Kpi' type='number' min='0' step='0.1' placeholder='e.g. 10.0'></div>
@@ -2172,10 +2172,17 @@ async function saveCustomer(){
  let first=document.getElementById('custFirst').value.trim(),last=document.getElementById('custLast').value.trim(),dob=document.getElementById('custDob').value,phone=document.getElementById('custPhone').value.trim(),address=document.getElementById('custAddress').value.trim(),uv=document.getElementById('custUv').value==='true',idChecked=document.getElementById('custIdChecked').value==='true',age=ageFromDob(dob),err=document.getElementById('customerError');err.style.display='none';
  if(!first||!last||!dob){err.textContent='First name, last name and DOB are required.';err.style.display='block';return}
  if(age<18){alert('CUSTOMER IS BELOW 18 AND CAN NOT BE A CUSTOMER.');return}
+ let duplicate=(data.customers||[]).find(c=>c.id!==editingCustomerId&&c.dob===dob&&c.firstName.trim().toLowerCase()===first.toLowerCase()&&c.lastName.trim().toLowerCase()===last.toLowerCase());
+ if(duplicate){err.textContent=`A customer with the name ${first} ${last} and this date of birth already exists (${duplicate.accountNumber}).`;err.style.display='block';return}
  if(uv&&age<25&&!idChecked)alert('CHECK CUSTOMER ID');
  let payload={first_name:first,last_name:last,date_of_birth:dob,phone_number:phone||null,address:address||null,intends_uv_or_injectables:uv,id_checked:idChecked,updated_at:new Date().toISOString()},error,row;
  if(editingCustomerId)({data:row,error}=await sb.from('customers').update(payload).eq('id',editingCustomerId).select().single());else({data:row,error}=await sb.from('customers').insert(payload).select().single());
- if(error){err.textContent=error.message;err.style.display='block';return}
+ if(error){
+   err.textContent=error.code==='23505'
+     ?'A customer with this name and date of birth already exists.'
+     :error.message;
+   err.style.display='block';return
+ }
  await loadLiveData();renderCustomers();openCustomer(row.id)
 }
 function renderCustomerPurchases(c){
@@ -2293,14 +2300,15 @@ async function saveNewTreatment(){
 }
 function showTreatmentCreateError(msg){let el=document.getElementById('treatmentCreateError');el.textContent=msg;el.style.display='block'}
 function resetPageScroll(){window.scrollTo({top:0,left:0,behavior:'instant'});document.querySelector('.main')?.scrollTo?.({top:0,left:0,behavior:'instant'})}
-function goToPage(pageId){resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders()}
+function goToPage(pageId){resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders();if(pageId==='openinghours')renderOpeningHours();
+}
 function makeTablesSortable(){
  document.querySelectorAll('table.table').forEach(table=>table.querySelectorAll('th').forEach((th,i)=>{
   if(th.dataset.sortReady)return;th.dataset.sortReady='1';th.classList.add('sortable');th.innerHTML+=`<span class='sortIcon'>↕</span>`;
   th.onclick=()=>{let rows=[...table.querySelectorAll('tr')].slice(1),asc=th.dataset.asc!=='true';rows.sort((a,b)=>{let av=a.children[i]?.innerText.trim()||'',bv=b.children[i]?.innerText.trim()||'',an=parseFloat(av.replace(/[£,%]/g,'')),bn=parseFloat(bv.replace(/[£,%]/g,''));return ((!isNaN(an)&&!isNaN(bn))?an-bn:av.localeCompare(bv,undefined,{numeric:true}))*(asc?1:-1)});rows.forEach(r=>table.appendChild(r));th.dataset.asc=String(asc)}
  }))
 }
-function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderFinance();renderOrders();renderCustomers();renderTanningProducts();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting();setTimeout(makeTablesSortable,0);}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-staffRotaDays);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+staffRotaDays);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
+function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderFinance();renderOrders();renderCustomers();renderTanningProducts();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting();setTimeout(makeTablesSortable,0);}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders();if(e.target.dataset.page==='openinghours')renderOpeningHours()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-staffRotaDays);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+staffRotaDays);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
 
 const SUNBEDS=[
   {name:'Bed 1',type:'Stand Up'},
@@ -2697,6 +2705,28 @@ function renderMonthlyTargets(){
       return `<tr ${isAdmin?`class='clinicRow' onclick="openMonthlyTargetEdit('${x.id}')"`:''}><td><b>${MONTH_NAMES[x.monthNumber-1]}</b></td><td>${x.year}</td><td>${Number(x.target).toFixed(1)}</td><td>${x.signupTarget}</td><td>${x.rltSessionsTarget}</td><td>${x.totalMinutesTarget}</td><td>${x.newReviewsTarget}</td><td>${isCurrent?`<span class='pill'>Current Month</span>`:''}</td></tr>`;
     }).join(''):`<tr><td colspan='8' class='muted'>No monthly target stacks created yet.</td></tr>`);
 }
+
+function openingHoursForWholeMonth(monthNumber,year){
+  if(!monthNumber||!year)return 0;
+  let days=new Date(year,monthNumber,0).getDate(),total=0;
+  for(let day=1;day<=days;day++){
+    let key=`${year}-${String(monthNumber).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    total+=hoursDuration(effectiveHoursForDate(key));
+  }
+  return total;
+}
+function calculatedMonthlyMinutesTarget(monthNumber,year,kpiTarget){
+  let hours=openingHoursForWholeMonth(monthNumber,year);
+  return Math.round((+kpiTarget||0)*BED_COUNT*hours);
+}
+function updateAutoTotalMinutesTarget(){
+  let field=document.getElementById('monthlyTotalMinutesTarget');if(!field)return;
+  let month=+document.getElementById('targetMonthNumber')?.value,
+      year=+document.getElementById('targetYear')?.value,
+      kpi=+document.getElementById('monthlyKpiTarget')?.value;
+  field.value=calculatedMonthlyMinutesTarget(month,year,kpi);
+  field.title=`Calculated from ${kpi||0} mins × ${BED_COUNT} beds × ${openingHoursForWholeMonth(month,year).toFixed(1)} opening hours`;
+}
 function populateTargetMonthOptions(){
   document.getElementById('targetMonthNumber').innerHTML=MONTH_NAMES.map((m,i)=>`<option value='${i+1}'>${m}</option>`).join('');
 }
@@ -2712,10 +2742,11 @@ function openMonthlyTargetCreate(){
   document.getElementById('monthlyKpiTarget').value='';
   document.getElementById('monthlySignupTarget').value='';
   document.getElementById('monthlyRltSessionsTarget').value='';
-  document.getElementById('monthlyTotalMinutesTarget').value='';
+  document.getElementById('monthlyTotalMinutesTarget').value='0';
   document.getElementById('monthlyNewReviewsTarget').value='';document.getElementById('monthlyRltCaseStudiesTarget').value='';['bonus1Kpi','bonus1Amount','bonus2Kpi','bonus2Amount','bonus3Kpi','bonus3Amount'].forEach(id=>document.getElementById(id).value='');
   ['bonus1Perf','bonus2Perf','bonus3Perf'].forEach(id=>document.getElementById(id).textContent='Performance: —');
   document.getElementById('monthlyTargetModalTitle').textContent='Create Monthly Target Stack';
+  updateAutoTotalMinutesTarget();
   document.getElementById('monthlyTargetError').style.display='none';
   document.getElementById('monthlyTargetDeleteButton').style.display='none';document.getElementById('monthlyTargetModal').classList.add('show');
 }
@@ -2729,7 +2760,7 @@ function openMonthlyTargetEdit(id){
   document.getElementById('monthlyKpiTarget').value=String(row.target);
   document.getElementById('monthlySignupTarget').value=String(row.signupTarget);
   document.getElementById('monthlyRltSessionsTarget').value=String(row.rltSessionsTarget);
-  document.getElementById('monthlyTotalMinutesTarget').value=String(row.totalMinutesTarget);
+  document.getElementById('monthlyTotalMinutesTarget').value=String(calculatedMonthlyMinutesTarget(row.monthNumber,row.year,row.target));
   document.getElementById('monthlyNewReviewsTarget').value=String(row.newReviewsTarget);document.getElementById('monthlyRltCaseStudiesTarget').value=String(row.rltCaseStudiesTarget||0);for(let i=1;i<=3;i++){document.getElementById(`bonus${i}Kpi`).value=row[`bonus${i}Kpi`]||0;document.getElementById(`bonus${i}Amount`).value=row[`bonus${i}Amount`]||0;let a=monthPerformanceActuals(row.monthNumber,row.year),t=row[`bonus${i}Kpi`]||0,pct=t?a.kpi/t*100:0;document.getElementById(`bonus${i}Perf`).innerHTML=`Actual ${a.kpi.toFixed(2)} · ${pct.toFixed(0)}%<div class='progressTrack'><div class='progressFill' style='width:${Math.min(100,pct)}%'></div></div>`}
   // Month + Year are the immutable unique identity of a target stack.
   document.getElementById('targetMonthNumber').disabled=true;
@@ -2751,7 +2782,7 @@ async function saveMonthlyTarget(){
       target=+document.getElementById('monthlyKpiTarget').value,
       signupTarget=+document.getElementById('monthlySignupTarget').value,
       rltSessionsTarget=+document.getElementById('monthlyRltSessionsTarget').value,
-      totalMinutesTarget=+document.getElementById('monthlyTotalMinutesTarget').value,
+      totalMinutesTarget=calculatedMonthlyMinutesTarget(monthNumber,year,target),
       newReviewsTarget=+document.getElementById('monthlyNewReviewsTarget').value,rltCaseStudiesTarget=+document.getElementById('monthlyRltCaseStudiesTarget').value,bonus1Kpi=+document.getElementById('bonus1Kpi').value||0,bonus1Amount=+document.getElementById('bonus1Amount').value||0,bonus2Kpi=+document.getElementById('bonus2Kpi').value||0,bonus2Amount=+document.getElementById('bonus2Amount').value||0,bonus3Kpi=+document.getElementById('bonus3Kpi').value||0,bonus3Amount=+document.getElementById('bonus3Amount').value||0,
       err=document.getElementById('monthlyTargetError'),
       btn=document.getElementById('monthlyTargetSaveBtn');
