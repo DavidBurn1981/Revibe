@@ -1267,12 +1267,30 @@ async function saveOrder(){
   finally{btn.disabled=false;btn.textContent='Save Order'}
 }
 async function manageUser(action,id,email){
- if(currentProfile?.role!=='admin')return;
+ if(currentProfile?.role!=='admin')return alert('Admin access required.');
  if(action==='delete'&&!confirm(`Delete ${email}? This removes their login.`))return;
- let {data,error}=await sb.functions.invoke('manage-revibe-user',{body:{action,user_id:id,email,redirect_to:location.origin}});
- if(error||data?.error)return alert(data?.error||error.message);
- alert(action==='delete'?'User deleted.':'Email sent.');
- if(typeof loadUsers==='function')await loadUsers();renderUsers();
+ try{
+   const {data:{session},error:sessionError}=await sb.auth.getSession();
+   if(sessionError||!session?.access_token)throw new Error('Your login session could not be read. Please sign out and back in.');
+   const response=await fetch(`${SUPABASE_URL}/functions/v1/manage-revibe-user`,{
+     method:'POST',
+     headers:{
+       'Content-Type':'application/json',
+       'apikey':SUPABASE_KEY,
+       'Authorization':`Bearer ${session.access_token}`
+     },
+     body:JSON.stringify({action,user_id:id,email,redirect_to:location.origin})
+   });
+   let payload={};
+   try{payload=await response.json()}catch(_){}
+   if(!response.ok)throw new Error(payload?.error||`User management failed (HTTP ${response.status}).`);
+   alert(action==='delete'?'User deleted.':(action==='resend_invite'?'Password setup email sent.':'Password reset email sent.'));
+   if(typeof loadUsers==='function')await loadUsers();
+   renderUsers();
+ }catch(e){
+   console.error('REVIBE user management failed:',e);
+   alert(e?.message||String(e));
+ }
 }
 function renderUsers(){
   let table=document.getElementById('usersTable');if(!table)return;
