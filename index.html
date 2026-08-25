@@ -162,6 +162,43 @@ body.loading .app{visibility:hidden}
 .progressTrack{height:10px;background:#252932;border-radius:20px;overflow:hidden;margin-top:7px}.progressFill{height:100%;background:var(--green)}
 .sortable{cursor:pointer;user-select:none}.sortIcon{opacity:.55;margin-left:5px}
 @media(max-width:650px){.globalNewCustomer{position:static;float:right;margin-bottom:12px}.bonusRow{grid-template-columns:1fr}}
+
+.appTopBar{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:58px;
+  background:#050607;
+  border-bottom:1px solid #1d2025;
+  z-index:60;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:0 20px;
+  box-sizing:border-box;
+}
+.globalNewCustomer{
+  position:static!important;
+  margin:0!important;
+}
+.app aside{
+  padding-top:58px;
+  box-sizing:border-box;
+}
+.main{
+  padding-top:78px!important;
+}
+.topCustomerNav{
+  margin-top:0!important;
+  margin-bottom:18px!important;
+  font-weight:800!important;
+}
+@media(max-width:700px){
+  .appTopBar{height:54px;padding:0 10px}
+  .app aside{padding-top:54px}
+  .main{padding-top:72px!important}
+}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
@@ -181,7 +218,7 @@ body.loading .app{visibility:hidden}
   <pre id='debugOutput'>Waiting...</pre>
 </div>
 <div id='userBar' class='userBar' style='display:none'></div>
-<div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><div class='navtitle'>Sunbed Performance</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='settings'>Settings</button></nav></aside><main class='main'><button class='primary globalNewCustomer' onclick='openCustomerCreate()'>+ New Customer</button>
+<div class='appTopBar'><button class='primary globalNewCustomer' onclick='openCustomerCreate()'>+ New Customer</button></div><div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
@@ -2944,6 +2981,43 @@ body.loading .app{visibility:hidden}
 .progressTrack{height:10px;background:#252932;border-radius:20px;overflow:hidden;margin-top:7px}.progressFill{height:100%;background:var(--green)}
 .sortable{cursor:pointer;user-select:none}.sortIcon{opacity:.55;margin-left:5px}
 @media(max-width:650px){.globalNewCustomer{position:static;float:right;margin-bottom:12px}.bonusRow{grid-template-columns:1fr}}
+
+.appTopBar{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:58px;
+  background:#050607;
+  border-bottom:1px solid #1d2025;
+  z-index:60;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:0 20px;
+  box-sizing:border-box;
+}
+.globalNewCustomer{
+  position:static!important;
+  margin:0!important;
+}
+.app aside{
+  padding-top:58px;
+  box-sizing:border-box;
+}
+.main{
+  padding-top:78px!important;
+}
+.topCustomerNav{
+  margin-top:0!important;
+  margin-bottom:18px!important;
+  font-weight:800!important;
+}
+@media(max-width:700px){
+  .appTopBar{height:54px;padding:0 10px}
+  .app aside{padding-top:54px}
+  .main{padding-top:72px!important}
+}
 </style></head><body><h1>Today’s Bed Sessions</h1><div class='sub'>${d}</div><table><tr><th>Time</th><th>Session Length</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th></tr>${body}</table><button onclick='window.print()'>Print</button></body></html>`);
   w.document.close();
 }
