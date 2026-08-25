@@ -194,6 +194,9 @@ body.loading .app{visibility:hidden}
   .main{padding-top:72px!important}
 }
 .temporarilyDisabled{opacity:.45!important;cursor:not-allowed!important;background:#30343a!important}
+
+#temporaryPasswordModal .warningBig{font-size:12px;line-height:1.5}
+#forcedPasswordGate .loginCard{max-width:440px}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
@@ -527,6 +530,45 @@ body.loading .app{visibility:hidden}
     </div>
   </div>
 </div>
+
+<div class='modal' id='temporaryPasswordModal'>
+  <div class='modalbox' style='max-width:560px'>
+    <div class='top'>
+      <div>
+        <h1>Set Temporary Password</h1>
+        <div class='muted' id='temporaryPasswordUserLabel'></div>
+      </div>
+      <button onclick='closeTemporaryPasswordModal()'>✕</button>
+    </div>
+    <div class='warningBig' style='margin-bottom:14px'>
+      This password will only be shown here. REVIBE does not store it. The user will be forced to choose their own password on next login.
+    </div>
+    <label>Temporary Password</label>
+    <div style='display:flex;gap:8px'>
+      <input id='temporaryPasswordValue' type='password' style='flex:1'>
+      <button type='button' id='temporaryPasswordShowBtn' onclick='toggleTemporaryPassword()'>Show</button>
+      <button type='button' onclick='generateTemporaryPassword()'>Generate</button>
+    </div>
+    <div id='temporaryPasswordError' class='loginError' style='margin-top:12px'></div>
+    <div style='display:flex;justify-content:flex-end;gap:8px;margin-top:18px'>
+      <button onclick='closeTemporaryPasswordModal()'>Cancel</button>
+      <button class='primary' id='temporaryPasswordSaveBtn' onclick='setTemporaryPassword()'>Set Password</button>
+    </div>
+  </div>
+</div>
+
+<div class='loginGate' id='forcedPasswordGate' style='display:none;z-index:1300'>
+  <div class='loginCard'>
+    <div class='loginBrand'>REVIBE</div>
+    <div class='muted' style='margin-bottom:18px'>You must choose a new password before continuing.</div>
+    <label>New Password</label>
+    <input id='forcedNewPassword' type='password' placeholder='New password'>
+    <label>Confirm New Password</label>
+    <input id='forcedConfirmPassword' type='password' placeholder='Confirm new password'>
+    <div id='forcedPasswordError' class='loginError'></div>
+    <button class='primary' id='forcedPasswordSaveBtn' onclick='completeForcedPasswordChange()'>Set New Password</button>
+  </div>
+</div>
 <div class='modal' id='holidayRequestModal'>
   <div class='modalbox' style='max-width:780px'>
     <div class='top'>
@@ -837,7 +879,7 @@ body.loading .app{visibility:hidden}
 const SUPABASE_URL='https://fjryihtrtqygpozkirqp.supabase.co';
 const SUPABASE_KEY='sb_publishable_ciDrF9_Fo5_tVL9E9m8EZw_R0QStFpc';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=null,currentProfile=null;let editingOrderId=null;let editingProductId=null;let editingTreatmentId=null;let editingRenterId=null;let editingStaffId=null;let universalDatePickerTarget=null;let universalDatePickerMonth=new Date();let editingUserId=null;let revibeUsers=[];let revibeRolePermissions=[];let editingPermissionRole=null;let workingRolePermissions={};let editingMonthlyTargetId=null;let editingHolidayRequestId=null;let holidayPickerMode='start';let holidayPickerMonth=new Date();
+let currentUser=null,currentProfile=null;let temporaryPasswordUserId=null;let temporaryPasswordUserEmail='';let editingOrderId=null;let editingProductId=null;let editingTreatmentId=null;let editingRenterId=null;let editingStaffId=null;let universalDatePickerTarget=null;let universalDatePickerMonth=new Date();let editingUserId=null;let revibeUsers=[];let revibeRolePermissions=[];let editingPermissionRole=null;let workingRolePermissions={};let editingMonthlyTargetId=null;let editingHolidayRequestId=null;let holidayPickerMode='start';let holidayPickerMonth=new Date();
 let data={products:[],renters:[],treatments:[],customers:[],clinicDays:[],appointments:[],bedSessions:[],sunbedBookings:[],staffMembers:[],staffShifts:[],monthlyTargets:[],monthlyReviewCounts:[],holidayRequests:[],dailyTakings:[],orders:[],tanningProducts:[],customerTransactions:[],openingHours:null,openingHoursHistory:[]};
 let booking={date:null,treatment:null,product:null,clinicId:null};let editingCustomerId=null,editingTanningProductId=null,purchaseProductId=null,pendingPaygSplit=null;let currentProduct=null;let editingClinicId=null;
 let weekStart=startMonday(new Date());let staffRotaWeekStart=startMonday(new Date());let shiftPickerMonth=new Date();let staffJoinPickerMonth=new Date();let sunbedWeekStart=startMonday(new Date());let sunbedSessionType='Red Light Therapy';let pendingSunbedBooking=null;let sunbedPickerMonth=new Date();let displayDays=7;
@@ -931,6 +973,10 @@ function applyPermissionBasedNavigation(){
       return;
     }
 
+    if(page==='users'&&['admin','shop_manager'].includes(currentProfile?.role)){
+      btn.style.display='block';
+      return;
+    }
     if(!key)return;
     btn.style.display=hasRolePermission(key,'view')?'block':'none';
   });
@@ -1167,8 +1213,8 @@ function updateUserRoleFields(){
 }
 
 async function loadRevibeUsers(){
-  if(currentProfile?.role!=='admin'){revibeUsers=[];return;}
-  let {data,error}=await sb.rpc('revibe_list_users');
+  if(!['admin','shop_manager'].includes(currentProfile?.role)){revibeUsers=[];return;}
+  let {data,error}=await sb.rpc('revibe_list_manageable_users');
   if(error)throw error;
   revibeUsers=(data||[]).map(x=>({
     id:x.id,
@@ -1177,7 +1223,8 @@ async function loadRevibeUsers(){
     role:x.role,
     active:x.active,
     clinicianId:x.renter_id||null,
-    createdAt:x.created_at
+    createdAt:x.created_at,
+    mustChangePassword:!!x.must_change_password
   }));
 }
 
@@ -1266,6 +1313,91 @@ async function saveOrder(){
   }catch(e){err.textContent=e.message||'Could not save order.';err.style.display='block'}
   finally{btn.disabled=false;btn.textContent='Save Order'}
 }
+
+function openTemporaryPasswordModal(id,email){
+  if(!['admin','shop_manager'].includes(currentProfile?.role))return;
+  temporaryPasswordUserId=id;
+  temporaryPasswordUserEmail=email||'';
+  document.getElementById('temporaryPasswordUserLabel').textContent=email||'User';
+  document.getElementById('temporaryPasswordValue').value='';
+  document.getElementById('temporaryPasswordValue').type='password';
+  document.getElementById('temporaryPasswordShowBtn').textContent='Show';
+  document.getElementById('temporaryPasswordError').style.display='none';
+  generateTemporaryPassword();
+  document.getElementById('temporaryPasswordModal').classList.add('show');
+}
+function closeTemporaryPasswordModal(){
+  document.getElementById('temporaryPasswordModal').classList.remove('show');
+  document.getElementById('temporaryPasswordValue').value='';
+  temporaryPasswordUserId=null;
+  temporaryPasswordUserEmail='';
+}
+function generateTemporaryPassword(){
+  const words=['Glow','Nova','Luxe','Pulse','Aura','Vivid','Solar','Bloom','Neon','Velvet'];
+  const word=words[Math.floor(Math.random()*words.length)];
+  const number=String(Math.floor(1000+Math.random()*9000));
+  const symbols=['!','@','#','£'];
+  const symbol=symbols[Math.floor(Math.random()*symbols.length)];
+  document.getElementById('temporaryPasswordValue').value=`Revibe-${word}-${number}${symbol}`;
+}
+function toggleTemporaryPassword(){
+  let input=document.getElementById('temporaryPasswordValue'),btn=document.getElementById('temporaryPasswordShowBtn');
+  input.type=input.type==='password'?'text':'password';
+  btn.textContent=input.type==='password'?'Show':'Hide';
+}
+async function setTemporaryPassword(){
+  let password=document.getElementById('temporaryPasswordValue').value,
+      err=document.getElementById('temporaryPasswordError'),
+      btn=document.getElementById('temporaryPasswordSaveBtn');
+  err.style.display='none';
+  if(!temporaryPasswordUserId)return;
+  if(password.length<10){err.textContent='Temporary password must be at least 10 characters.';err.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Setting...';
+  try{
+    const {data:{session},error:sessionError}=await sb.auth.getSession();
+    if(sessionError||!session?.access_token)throw new Error('Your login session could not be read.');
+    const response=await fetch(`${SUPABASE_URL}/functions/v1/manage-revibe-user`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${session.access_token}`},
+      body:JSON.stringify({action:'set_temp_password',user_id:temporaryPasswordUserId,temporary_password:password})
+    });
+    let payload={};try{payload=await response.json()}catch(_){}
+    if(!response.ok)throw new Error(payload?.error||`Could not set temporary password (HTTP ${response.status}).`);
+    alert(`Temporary password set for ${temporaryPasswordUserEmail}. Give the password to the user securely. They will be forced to change it when they next sign in.`);
+    closeTemporaryPasswordModal();
+    await loadRevibeUsers();renderUsers();
+  }catch(e){
+    err.textContent=e?.message||String(e);err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Set Password';
+  }
+}
+
+async function completeForcedPasswordChange(){
+  let p1=document.getElementById('forcedNewPassword').value,
+      p2=document.getElementById('forcedConfirmPassword').value,
+      err=document.getElementById('forcedPasswordError'),
+      btn=document.getElementById('forcedPasswordSaveBtn');
+  err.style.display='none';
+  if(p1.length<10){err.textContent='Please choose a password of at least 10 characters.';err.style.display='block';return;}
+  if(p1!==p2){err.textContent='The passwords do not match.';err.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let {error:updateError}=await sb.auth.updateUser({password:p1});
+    if(updateError)throw updateError;
+    let {error:flagError}=await sb.rpc('revibe_complete_password_change');
+    if(flagError)throw flagError;
+    document.getElementById('forcedPasswordGate').style.display='none';
+    document.getElementById('forcedNewPassword').value='';
+    document.getElementById('forcedConfirmPassword').value='';
+    currentProfile.must_change_password=false;
+    await bootRevibe();
+  }catch(e){
+    err.textContent=e?.message||String(e);err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Set New Password';
+  }
+}
 async function manageUser(action,id,email){
  if(currentProfile?.role!=='admin')return alert('Admin access required.');
  if(action==='delete'&&!confirm(`Delete ${email}? This removes their login.`))return;
@@ -1294,20 +1426,23 @@ async function manageUser(action,id,email){
 }
 function renderUsers(){
   let table=document.getElementById('usersTable');if(!table)return;
-  if(currentProfile?.role!=='admin'){
-    table.innerHTML=`<tr><td class='muted'>Admin access required.</td></tr>`;
+  if(!['admin','shop_manager'].includes(currentProfile?.role)){
+    table.innerHTML=`<tr><td class='muted'>Admin or Shop Manager access required.</td></tr>`;
     return;
   }
 
   table.innerHTML=`<tr><th>Name</th><th>Email / Login</th><th>Access Level</th><th>Linked Record</th><th>Status</th><th>Account Actions</th></tr>`+
     (revibeUsers.length?revibeUsers.map(u=>{
       let clinician=data.renters.find(r=>r.id===u.clinicianId);
-      return `<tr class='userEditRow ${u.active?'':'userInactive'}' onclick="openEditUserModal('${u.id}')">
+      return `<tr class='userEditRow ${u.active?'':'userInactive'}' ${currentProfile?.role==='admin'?`onclick="openEditUserModal('${u.id}')"`:''}>
         <td><b>${u.fullName||''}</b></td>
         <td>${u.email}</td>
         <td><span class='userRoleBadge'>${REVIBE_ROLE_LABELS[u.role]||u.role}</span></td>
         <td>${u.role==='renter'?(clinician?.name||'Not linked'):''}</td>
-        <td>${u.active?'Active':'Inactive'}</td><td><button onclick="event.stopPropagation();manageUser('resend_invite','${u.id}','${u.email}')">Resend Invite</button> <button onclick="event.stopPropagation();manageUser('password_reset','${u.id}','${u.email}')">Reset Password</button> <button onclick="event.stopPropagation();manageUser('delete','${u.id}','${u.email}')">Delete</button></td>
+        <td>${u.active?'Active':'Inactive'}${u.mustChangePassword?`<div class='muted' style='margin-top:4px'>Temporary password set</div>`:''}</td><td>
+          <button onclick="event.stopPropagation();openTemporaryPasswordModal('${u.id}','${u.email}')">Set Temporary Password</button>
+          ${currentProfile?.role==='admin'?`<button onclick="event.stopPropagation();manageUser('resend_invite','${u.id}','${u.email}')">Resend Invite</button> <button onclick="event.stopPropagation();manageUser('password_reset','${u.id}','${u.email}')">Reset Password</button> <button onclick="event.stopPropagation();manageUser('delete','${u.id}','${u.email}')">Delete</button>`:''}
+        </td>
       </tr>`;
     }).join(''):`<tr><td colspan='6' class='muted'>No users found.</td></tr>`);
 }
@@ -3030,6 +3165,9 @@ body.loading .app{visibility:hidden}
   .app aside{padding-top:54px}
   .main{padding-top:72px!important}
 }
+
+#temporaryPasswordModal .warningBig{font-size:12px;line-height:1.5}
+#forcedPasswordGate .loginCard{max-width:440px}
 </style></head><body><h1>Today’s Bed Sessions</h1><div class='sub'>${d}</div><table><tr><th>Time</th><th>Session Length</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th></tr>${body}</table><button onclick='window.print()'>Print</button></body></html>`);
   w.document.close();
 }
@@ -3437,7 +3575,14 @@ async function bootRevibe(){
   let {data:profile,error}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
   if(error||!profile||!profile.active){await sb.auth.signOut();return alert('Your Revibe account is not active.');}
   currentProfile=profile;
-  try{await loadLiveData();await loadRolePermissions();if(profile.role==='admin')await loadRevibeUsers()}catch(e){return alert('Could not load Revibe data: '+e.message)}
+  if(profile.must_change_password){
+    document.getElementById('loginGate').style.display='none';
+    document.querySelector('.app').style.display='none';
+    document.getElementById('forcedPasswordGate').style.display='flex';
+    document.body.classList.remove('loading');
+    return;
+  }
+  try{await loadLiveData();await loadRolePermissions();if(['admin','shop_manager'].includes(profile.role))await loadRevibeUsers()}catch(e){return alert('Could not load Revibe data: '+e.message)}
   document.getElementById('loginGate').style.display='none';document.querySelector('.app').style.display='grid';document.body.classList.remove('loading');
   let ub=document.getElementById('userBar');ub.style.display='block';ub.innerHTML=`${profile.full_name||currentUser.email} · ${profile.role} &nbsp; <button onclick='logoutRevibe()'>Sign out</button>`;
   updatePreferredBedOptions();renderAll();applyPermissionBasedNavigation();let addStaffBtn=document.getElementById('addStaffMemberBtn');if(addStaffBtn){addStaffBtn.style.display=currentProfile?.role==='admin'?'inline-block':'none';}let holidayBtn=document.getElementById('createHolidayRequestBtn');if(holidayBtn){holidayBtn.style.display=currentProfile?.role==='admin'?'inline-block':'none';}
