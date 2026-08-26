@@ -356,6 +356,65 @@ body.loading .app{visibility:hidden}
 .logo img{display:block;width:100%;max-width:165px;max-height:58px;object-fit:contain;object-position:left center}
 @media(max-width:1000px) and (min-width:651px){.logo{margin:0 0 28px!important;justify-content:center}.logo img{max-width:48px;max-height:48px}}
 @media(max-width:650px){.app aside .logo{margin:0 10px 22px!important}.app aside .logo img{max-width:165px;max-height:58px}}
+
+/* Bed Sessions full-screen workspace */
+#bedSessionsModal{
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  padding:8px!important;
+  overflow:hidden!important;
+}
+#bedSessionsModal .modalbox{
+  width:calc(100vw - 16px)!important;
+  max-width:calc(100vw - 16px)!important;
+  height:calc(100vh - 16px)!important;
+  max-height:calc(100vh - 16px)!important;
+  margin:0!important;
+  padding:22px!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+#bedSessionsModal .bedSessionsHeader{flex:0 0 auto}
+#bedSessionsModal .bedSessionsKpiBar{
+  display:flex!important;
+  justify-content:flex-end!important;
+  flex:0 0 auto!important;
+  margin:0 0 18px!important;
+}
+#bedSessionsModal .bedSessionsKpi{
+  display:block!important;
+  min-width:270px!important;
+  background:#20242b!important;
+  border:1px solid #30353d!important;
+  border-radius:10px!important;
+  padding:14px 18px!important;
+  text-align:right!important;
+}
+#bedSessionsModal .bedSessionsKpi .label{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.6px}
+#bedSessionsModal .bedSessionsKpi .value{font-size:32px;font-weight:900;margin-top:4px}
+#bedSessionsModal .bedSessionsTableWrap{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow:auto!important;
+  border:1px solid #30353d;
+  border-radius:10px;
+}
+#bedSessionsModal #bedSessionsTable{margin:0!important;width:100%!important}
+#bedSessionsModal #bedSessionsTable thead th{position:sticky;top:0;background:#20242b;z-index:2}
+@media(max-width:700px){
+  #bedSessionsModal{padding:4px!important}
+  #bedSessionsModal .modalbox{
+    width:calc(100vw - 8px)!important;
+    max-width:calc(100vw - 8px)!important;
+    height:calc(100vh - 8px)!important;
+    max-height:calc(100vh - 8px)!important;
+    margin:0!important;
+    padding:12px!important;
+  }
+  #bedSessionsModal .bedSessionsKpi{width:100%!important;min-width:0!important;text-align:center!important}
+  #bedSessionsModal #bedSessionsTable{min-width:780px!important}
+}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
