@@ -350,6 +350,12 @@ body.loading .app{visibility:hidden}
 .financeTreatmentTotal{font-size:26px;font-weight:900;margin-top:14px}
 @media(max-width:850px){.financeOutgoingsGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.financeOutgoingsGrid{grid-template-columns:1fr!important}}
+
+/* REVIBE v1.28.1 - real logo */
+.logo{display:flex;align-items:center;margin:0 10px 28px!important;min-height:34px}
+.logo img{display:block;width:100%;max-width:165px;max-height:58px;object-fit:contain;object-position:left center}
+@media(max-width:1000px) and (min-width:651px){.logo{margin:0 0 28px!important;justify-content:center}.logo img{max-width:48px;max-height:48px}}
+@media(max-width:650px){.app aside .logo{margin:0 10px 22px!important}.app aside .logo img{max-width:165px;max-height:58px}}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
@@ -371,7 +377,7 @@ body.loading .app{visibility:hidden}
 <div id='userBar' class='userBar' style='display:none'></div>
 <button id='mobileMenuButton' class='mobileMenuButton' type='button' aria-label='Open menu' onclick='toggleMobileNav()'>☰</button>
 <div id='mobileNavBackdrop' class='mobileNavBackdrop' onclick='closeMobileNav()'></div>
-<div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
+<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
