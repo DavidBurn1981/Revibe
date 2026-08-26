@@ -3544,7 +3544,7 @@ async function deleteBedSessionFromHistory(id){
   let row=(data.bedSessions||[]).find(x=>String(x.id)===String(id));
   if(!row)return {ok:false,error:'The session could not be found.'};
 
-  let {error}=await sb.from('bed_sessions').delete().eq('id',id);
+  let {error}=await sb.rpc('revibe_delete_bed_session',{p_session_id:id});
   if(error)return {ok:false,error:error.message};
 
   try{
@@ -3556,107 +3556,81 @@ async function deleteBedSessionFromHistory(id){
   return {ok:true,sessions:bedSessionHistoryRows()};
 }
 
-// Reliable communication from the pop-out Bed Sessions page.
-window.addEventListener('message',async function(e){
-  let msg=e.data;
-  if(!msg||msg.type!=='REVIBE_DELETE_BED_SESSION')return;
 
-  let result;
-  try{
-    result=await deleteBedSessionFromHistory(msg.id);
-  }catch(err){
-    result={ok:false,error:err?.message||String(err)};
-  }
-
-  try{
-    e.source?.postMessage({
-      type:'REVIBE_DELETE_BED_SESSION_RESULT',
-      requestId:msg.requestId,
-      result
-    },'*');
-  }catch(_){}
-});
+function formatBedSessionsDate(key){
+  if(!key)return '';
+  let [y,m,d]=key.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('en-GB',{
+    weekday:'long',day:'numeric',month:'long',year:'numeric'
+  });
+}
 
 function showTodaysSessions(){
-  let sessions=bedSessionHistoryRows();
   let today=localDateKey();
-  let canDelete=hasRolePermission('daily_session_tracker','edit');
-  let w=window.open('','_blank');
-  if(!w)return alert('Your browser blocked the new tab. Please allow pop-ups for this page.');
-  let sessionJson=JSON.stringify(sessions).replace(/</g,'\\u003c');
-  w.document.write(`<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Bed Sessions - REVIBE</title><style>
-  *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#111318;color:#fff;padding:28px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:18px}.title h1{margin:0 0 5px;font-size:28px}.sub{color:#999}.datePicker{min-width:190px}.datePicker label{display:block;color:#bbb;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;text-align:right}.datePicker input{width:100%;background:#1a1e24;border:1px solid #3a414b;color:#fff;padding:10px 12px;border-radius:7px;font-size:15px;color-scheme:dark}.kpiBar{display:flex;justify-content:flex-end;margin-bottom:18px}.kpiCard{min-width:245px;background:#20242b;border:1px solid #30353d;border-radius:10px;padding:14px 16px;text-align:right}.kpiLabel{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.6px}.kpiValue{font-size:30px;font-weight:900;margin-top:4px}table{width:100%;border-collapse:collapse;background:#1a1e24;border:1px solid #30353d;border-radius:9px;overflow:hidden}th,td{text-align:left;padding:12px;border-bottom:1px solid #343a44}th{color:#bbb;font-size:12px;text-transform:uppercase}tr:last-child td{border-bottom:0}tfoot td{font-weight:900;background:#20242b;border-top:2px solid #444b56}.totalLabel{text-align:right}.empty{color:#999;padding:24px;text-align:center}.actions{margin-top:20px}button{padding:10px 14px;background:#ff2d78;color:white;border:0;border-radius:6px;cursor:pointer;font-weight:700}.deleteBtn{background:#44202a;border:1px solid #7b3347;padding:7px 10px}.deleteBtn:hover{background:#61283a}.deleting{opacity:.55;pointer-events:none}@media(max-width:700px){body{padding:16px}.top{flex-direction:column;align-items:stretch}.datePicker{min-width:0;width:100%}.datePicker label{text-align:left}.kpiBar{justify-content:stretch}.kpiCard{width:100%;min-width:0;text-align:center}.tableWrap{overflow-x:auto}table{min-width:800px}.title h1{font-size:24px}}@media print{.datePicker,.actions,.deleteCol{display:none!important}body{background:#fff;color:#000;padding:0}.sub,th,.kpiLabel{color:#555}.kpiCard,table,tfoot td{background:#fff;border-color:#bbb}th,td{border-color:#ccc}}
-  </style></head><body><div class='top'><div class='title'><h1 id='pageTitle'>Bed Sessions</h1><div class='sub' id='dateLabel'></div></div><div class='datePicker'><label for='sessionDatePicker'>Select Date</label><input id='sessionDatePicker' type='date' value='${today}' onchange='renderSessions(this.value)'></div></div><div class='kpiBar'><div class='kpiCard'><div class='kpiLabel'>Minutes Per Bed Per Hour</div><div class='kpiValue' id='dayKpi'>0.0</div></div></div><div class='tableWrap'><table><thead><tr><th>Time</th><th>Session Length</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='deleteCol'></th>":''}</tr></thead><tbody id='sessionRows'></tbody><tfoot id='sessionTotals'></tfoot></table></div><div class='actions'><button onclick='window.print()'>Print</button></div><script>
-  let sessions=${sessionJson};
-  const canDelete=${canDelete?'true':'false'};
-  function esc(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-  function prettyDate(key){if(!key)return '';let [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
-  function paymentIsFree(v){let p=String(v||'').trim().toLowerCase();return p==='free'||p==='free session'}
-  function calculateKpi(key){
-    const rows=sessions.filter(x=>x.date===key&&!paymentIsFree(x.payment));
-    if(!window.opener||window.opener.closed)return 0;
-    try{return Number(window.opener.bedSessionHistoryKpi(key)||0)}catch(_){return 0}
-  }
-  function renderSessions(key){
-    const rows=sessions.filter(x=>x.date===key).sort((a,b)=>String(b.time).localeCompare(String(a.time)));
-    const totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
-    document.getElementById('dateLabel').textContent=prettyDate(key);
-    document.getElementById('pageTitle').textContent='Bed Sessions';
-    document.getElementById('dayKpi').textContent=calculateKpi(key).toFixed(1);
-    document.title='Bed Sessions - '+prettyDate(key)+' - REVIBE';
-    const cols=canDelete?7:6;
-    document.getElementById('sessionRows').innerHTML=rows.length?rows.map(x=>'<tr id="sessionRow_'+esc(x.id)+'"><td>'+esc(x.time)+'</td><td>'+esc(x.length)+' min</td><td>'+esc(x.payment)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.newSignup)+'</td><td>'+esc(x.block)+'</td>'+(canDelete?'<td class="deleteCol"><button type="button" class="deleteBtn" data-session-id="'+esc(x.id)+'">Delete</button></td>':'')+'</tr>').join(''):'<tr><td class="empty" colspan="'+cols+'">No sessions recorded for this date.</td></tr>';
-    document.getElementById('sessionTotals').innerHTML=rows.length?'<tr><td class="totalLabel">Total</td><td>'+esc(totalMinutes)+' min</td><td colspan="'+(canDelete?5:4)+'"></td></tr>':'';
-  }
-  let pendingDeleteRequests={};
-  window.addEventListener('message',function(e){
-    const msg=e.data;
-    if(!msg||msg.type!=='REVIBE_DELETE_BED_SESSION_RESULT')return;
-    const pending=pendingDeleteRequests[msg.requestId];
-    if(!pending)return;
-    delete pendingDeleteRequests[msg.requestId];
-
-    const btn=pending.btn;
-    const result=msg.result||{};
-    if(result.ok){
-      sessions=result.sessions||sessions;
-      renderSessions(document.getElementById('sessionDatePicker').value);
-    }else{
-      alert('Could not delete the session: '+(result.error||'Unknown error.'));
-      if(document.body.contains(btn)){btn.classList.remove('deleting');btn.textContent='Delete';}
-    }
-  });
-
-  function deleteSession(id,btn){
-    const row=sessions.find(x=>String(x.id)===String(id));
-    if(!row)return alert('The session could not be found.');
-    if(!confirm('Delete the '+row.length+'-minute session logged at '+(row.time||'this time')+' on '+prettyDate(row.date)+'?\n\nThis cannot be undone.'))return;
-    if(!window.opener||window.opener.closed)return alert('The REVIBE window is no longer open. Please reopen this page from REVIBE.');
-
-    btn.classList.add('deleting');btn.textContent='Deleting...';
-    const requestId=Date.now()+'_'+Math.random().toString(36).slice(2);
-    pendingDeleteRequests[requestId]={btn};
-    window.opener.postMessage({type:'REVIBE_DELETE_BED_SESSION',requestId,id},'*');
-
-    setTimeout(()=>{
-      const pending=pendingDeleteRequests[requestId];
-      if(!pending)return;
-      delete pendingDeleteRequests[requestId];
-      if(document.body.contains(btn)){btn.classList.remove('deleting');btn.textContent='Delete';}
-      alert('The delete request did not receive a response. Please try again.');
-    },8000);
-  }
-  document.getElementById('sessionRows').addEventListener('click',function(e){
-    const btn=e.target.closest('.deleteBtn');
-    if(!btn)return;
-    e.preventDefault();
-    e.stopPropagation();
-    deleteSession(btn.dataset.sessionId,btn);
-  });
-  renderSessions('${today}');
-  <\/script></body></html>`);
-  w.document.close();
+  let picker=document.getElementById('bedSessionsDatePicker');
+  if(picker)picker.value=today;
+  document.getElementById('bedSessionsModal').classList.add('show');
+  renderBedSessionsModal(today);
 }
+
+function closeBedSessionsModal(){
+  document.getElementById('bedSessionsModal').classList.remove('show');
+}
+
+function renderBedSessionsModal(key){
+  if(!key)key=localDateKey();
+  let rows=bedSessionHistoryRows()
+    .filter(x=>x.date===key)
+    .sort((a,b)=>String(b.time||'').localeCompare(String(a.time||'')));
+  let canDelete=hasRolePermission('daily_session_tracker','edit');
+  let totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
+
+  document.getElementById('bedSessionsDateLabel').textContent=formatBedSessionsDate(key);
+  document.getElementById('bedSessionsKpiValue').textContent=Number(bedSessionHistoryKpi(key)||0).toFixed(1);
+
+  let picker=document.getElementById('bedSessionsDatePicker');
+  if(picker&&picker.value!==key)picker.value=key;
+
+  document.getElementById('bedSessionsHead').innerHTML=
+    `<tr><th>Time</th><th>Session Length</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='bedSessionsDeleteCol'></th>":''}</tr>`;
+
+  let cols=canDelete?7:6;
+  document.getElementById('bedSessionsRows').innerHTML=rows.length
+    ? rows.map(x=>`<tr>
+        <td>${escapeHtml(x.time||'')}</td>
+        <td>${escapeHtml(x.length)} min</td>
+        <td>${escapeHtml(x.payment||'')}</td>
+        <td>${escapeHtml(x.type||'')}</td>
+        <td>${escapeHtml(x.newSignup||'')}</td>
+        <td>${escapeHtml(x.block||'')}</td>
+        ${canDelete?`<td class='bedSessionsDeleteCol'><button type='button' class='bedSessionsDelete' onclick="deleteBedSessionFromModal('${escapeHtml(x.id)}')">Delete</button></td>`:''}
+      </tr>`).join('')
+    : `<tr><td colspan='${cols}' class='muted' style='text-align:center;padding:24px'>No sessions recorded for this date.</td></tr>`;
+
+  document.getElementById('bedSessionsTotals').innerHTML=rows.length
+    ? `<tr><td style='text-align:right'>Total</td><td>${totalMinutes} min</td><td colspan='${canDelete?5:4}'></td></tr>`
+    : '';
+}
+
+async function deleteBedSessionFromModal(id){
+  let row=(data.bedSessions||[]).find(x=>String(x.id)===String(id));
+  if(!row)return alert('The session could not be found.');
+
+  let date=row.date||document.getElementById('bedSessionsDatePicker').value;
+  if(!confirm(`Delete the ${row.length}-minute session logged at ${row.time||'this time'} on ${formatBedSessionsDate(date)}?\n\nThis cannot be undone.`))return;
+
+  let result=await deleteBedSessionFromHistory(id);
+  if(!result?.ok)return alert('Could not delete the session: '+(result?.error||'Unknown error.'));
+
+  renderBedSessionsModal(document.getElementById('bedSessionsDatePicker').value||date);
+}
+
+function printBedSessions(){
+  document.body.classList.add('bedSessionsPrinting');
+  window.print();
+  setTimeout(()=>document.body.classList.remove('bedSessionsPrinting'),300);
+}
+
 function toggleBlockBookingQuestion(){let signup=document.getElementById('sessionSignup').checked,row=document.getElementById('blockBookingRow'),block=document.getElementById('sessionBlockBooking');row.style.display=signup?'flex':'none';if(!signup)block.checked=false}
 function closeSessionLoggedConfirmation(){
   let modal=document.getElementById('sessionLoggedModal');if(modal)modal.classList.remove('show');
@@ -4163,4 +4137,38 @@ document.getElementById('treatmentCreateName').addEventListener('keydown',e=>{if
 document.getElementById('sunbedLength').addEventListener('input',updateSunbedTotal);
 bootRevibe();
 setInterval(()=>{if(document.getElementById('bedtracker')?.classList.contains('active'))renderBedTracker()},60000);
-</script></body></html>
+</script>
+<div class='modal bedSessionsModal' id='bedSessionsModal'>
+  <div class='modalbox'>
+    <div class='bedSessionsHeader'>
+      <div>
+        <h1 style='margin:0 0 5px'>Bed Sessions</h1>
+        <div class='muted' id='bedSessionsDateLabel'></div>
+      </div>
+      <div style='display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap'>
+        <div class='bedSessionsDate'>
+          <label for='bedSessionsDatePicker'>Select Date</label>
+          <input id='bedSessionsDatePicker' type='date' onchange='renderBedSessionsModal(this.value)'>
+        </div>
+        <button id='bedSessionsCloseBtn' onclick='closeBedSessionsModal()'>✕ Close</button>
+      </div>
+    </div>
+    <div class='bedSessionsKpiBar'>
+      <div class='bedSessionsKpi'>
+        <div class='label'>Minutes Per Bed Per Hour</div>
+        <div class='value' id='bedSessionsKpiValue'>0.0</div>
+      </div>
+    </div>
+    <div class='bedSessionsTableWrap'>
+      <table class='table' id='bedSessionsTable'>
+        <thead id='bedSessionsHead'></thead>
+        <tbody id='bedSessionsRows'></tbody>
+        <tfoot id='bedSessionsTotals'></tfoot>
+      </table>
+    </div>
+    <div style='margin-top:18px'>
+      <button class='primary' id='bedSessionsPrintBtn' onclick='printBedSessions()'>Print</button>
+    </div>
+  </div>
+</div>
+</body></html>
