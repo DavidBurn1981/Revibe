@@ -3312,7 +3312,7 @@ async function saveOpeningHours(){
 }
 function exclusiveSessionType(which){let r=document.getElementById('sessionRlt'),h=document.getElementById('sessionHybrid');if(which==='rlt'&&r.checked)h.checked=false;if(which==='hybrid'&&h.checked)r.checked=false}
 function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
-function isPerformanceSession(x){return String(x?.payment||'').trim().toLowerCase()!=='free session'}
+function isPerformanceSession(x){let p=String(x?.payment||'').trim().toLowerCase();return p!=='free session'&&p!=='free'}
 function performanceSessions(rows){return (rows||[]).filter(isPerformanceSession)}
 
 function isLastDayOfCurrentMonth(){
@@ -3551,12 +3551,37 @@ function showTodaysSessions(){
   w.document.close();
 }
 function toggleBlockBookingQuestion(){let signup=document.getElementById('sessionSignup').checked,row=document.getElementById('blockBookingRow'),block=document.getElementById('sessionBlockBooking');row.style.display=signup?'flex':'none';if(!signup)block.checked=false}
+function resetBedSessionForm(){
+  let today=localDateKey();
+  document.getElementById('sessionDate').value=today;
+  document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(today);
+  document.getElementById('sessionLength').value='';
+  document.getElementById('sessionPayment').value='Account Minutes';
+  document.getElementById('sessionSignup').checked=false;
+  document.getElementById('sessionBlockBooking').checked=false;
+  document.getElementById('blockBookingRow').style.display='none';
+  document.getElementById('sessionRlt').checked=false;
+  document.getElementById('sessionHybrid').checked=false;
+  pendingPaygSplit=null;
+}
 async function recordBedSession(){
  let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),length=+document.getElementById('sessionLength').value,payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
  if(!Number.isInteger(length)||length<1)return alert('Please enter a valid Session Length.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
- if(!c){let {error}=await sb.from('bed_sessions').insert({session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:(payment==='Account Minutes'||payment==='Free Session')?0:length});if(error)return alert(error.message);await loadLiveData();renderBedTracker();alert(`Historic session recorded for ${formatSunbedDisplayDate(date)}.`);return}
+ if(!c){
+   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:(payment==='Account Minutes'||payment==='Free Session')?0:length};
+   let {error}=await sb.from('bed_sessions').insert(payload);
+   // Some existing REVIBE databases use the older value 'Free' rather than 'Free Session'.
+   // If that is the only reason the insert failed, transparently retry using the legacy value.
+   if(error&&payment==='Free Session'){
+     let retry=await sb.from('bed_sessions').insert({...payload,payment_type:'Free'});
+     error=retry.error;
+   }
+   if(error)return alert(error.message);
+   await loadLiveData();renderBedTracker();resetBedSessionForm();
+   alert(`Session recorded for ${formatSunbedDisplayDate(date)}.`);return
+ }
  let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');let accountUsed=0,payg=0;if(payment==='Free Session'){accountUsed=0;payg=0}else if(payment==='Account Minutes'){if(length>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${length} minutes.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}accountUsed=length}else if(pendingPaygSplit){accountUsed=pendingPaygSplit.account;payg=pendingPaygSplit.payg}else payg=length;
- let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg,p_session_date:date});if(error)return alert(error.message);pendingPaygSplit=null;await loadLiveData();renderBedTracker();renderCustomers();sessionCustomerChanged();alert(`Session recorded. ${bal} minutes left on account.`);
+ let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg,p_session_date:date});if(error)return alert(error.message);pendingPaygSplit=null;await loadLiveData();renderBedTracker();renderCustomers();sessionCustomerChanged();resetBedSessionForm();alert(`Session recorded. ${bal} minutes left on account.`);
 }
 function addRenter(){
   if(!data.products.length)return alert('Create at least one Treatment Type before creating a Clinician.');
