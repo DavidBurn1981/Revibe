@@ -3586,7 +3586,10 @@ function renderBedSessionsModal(key){
   let totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
 
   document.getElementById('bedSessionsDateLabel').textContent=formatBedSessionsDate(key);
-  document.getElementById('bedSessionsKpiValue').textContent=Number(bedSessionHistoryKpi(key)||0).toFixed(1);
+  {
+    let kpi=Number(bedSessionHistoryKpi(key));
+    document.getElementById('bedSessionsKpiValue').textContent=Number.isFinite(kpi)?kpi.toFixed(1):'0.0';
+  }
 
   let picker=document.getElementById('bedSessionsDatePicker');
   if(picker&&picker.value!==key)picker.value=key;
