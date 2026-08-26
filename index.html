@@ -571,9 +571,12 @@ body.loading .app{visibility:hidden}
       <div class='muted' id='dailySessionsDateLabel'></div>
     </div>
     <div class='actions' style='align-items:flex-end'>
-      <div style='min-width:190px'>
+      <div style='min-width:220px'>
         <label for='dailySessionsDatePicker' style='text-align:right'>Select Date</label>
-        <input id='dailySessionsDatePicker' type='date' onchange='renderDailySessionsPage(this.value)'>
+        <div style='display:flex;gap:8px'>
+          <input id='dailySessionsDatePicker' type='date' onchange='renderDailySessionsPage(this.value)' style='flex:1'>
+          <button type='button' class='calendarBtn' aria-label='Open calendar' onclick="openDailySessionsCalendar()">📅</button>
+        </div>
       </div>
       <button onclick='printDailySessions()'>Print</button>
     </div>
@@ -2687,7 +2690,11 @@ async function saveNewTreatment(){
 }
 function showTreatmentCreateError(msg){let el=document.getElementById('treatmentCreateError');el.textContent=msg;el.style.display='block'}
 function resetPageScroll(){window.scrollTo({top:0,left:0,behavior:'instant'});document.querySelector('.main')?.scrollTo?.({top:0,left:0,behavior:'instant'})}
-function goToPage(pageId){resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders();if(pageId==='openinghours')renderOpeningHours();if(pageId==='dailysessions')renderDailySessionsPage(document.getElementById('dailySessionsDatePicker')?.value||localDateKey());
+function goToPage(pageId){resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders();if(pageId==='openinghours')renderOpeningHours();if(pageId==='dailysessions'){
+  let dailyPicker=document.getElementById('dailySessionsDatePicker');
+  if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
+  renderDailySessionsPage(dailyPicker?.value||localDateKey());
+}
 }
 function makeTablesSortable(){
  document.querySelectorAll('table.table').forEach(table=>table.querySelectorAll('th').forEach((th,i)=>{
@@ -2696,7 +2703,11 @@ function makeTablesSortable(){
  }))
 }
 function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderFinance();renderOrders();renderCustomers();renderTanningProducts();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting();applyPermissionBasedActions();setTimeout(()=>{makeTablesSortable();applyPermissionBasedActions();},0);
-  if(document.getElementById('dailysessions')?.classList.contains('active'))renderDailySessionsPage(document.getElementById('dailySessionsDatePicker')?.value||localDateKey());}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders();if(e.target.dataset.page==='openinghours')renderOpeningHours();applyPermissionBasedActions()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-staffRotaDays);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+staffRotaDays);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
+  if(document.getElementById('dailysessions')?.classList.contains('active')){
+    let dailyPicker=document.getElementById('dailySessionsDatePicker');
+    if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
+    renderDailySessionsPage(dailyPicker?.value||localDateKey());
+  }}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders();if(e.target.dataset.page==='openinghours')renderOpeningHours();applyPermissionBasedActions()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-staffRotaDays);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+staffRotaDays);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
 
 const SUNBEDS=[
   {name:'Bed 1',type:'Stand Up'},
@@ -3708,6 +3719,17 @@ function showTodaysSessions(){
   renderDailySessionsPage(today);
 }
 
+
+function openDailySessionsCalendar(){
+  let picker=document.getElementById('dailySessionsDatePicker');
+  if(!picker)return;
+  try{
+    if(typeof picker.showPicker==='function')picker.showPicker();
+    else picker.focus();
+  }catch(_){
+    picker.focus();
+  }
+}
 
 function renderDailySessionsPage(key){
   if(!key)key=localDateKey();
