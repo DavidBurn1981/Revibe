@@ -3607,24 +3607,33 @@ function closeSessionLoggedConfirmation(){
   let success=document.getElementById('sessionSuccess');if(success)success.classList.remove('show');
 }
 function showSessionLoggedConfirmation(date){
-  // Keep the confirmation inside the Record Session panel so it cannot be blocked
-  // by the browser or hidden behind another modal.
+  const btn=document.querySelector('#bedtracker .recordbtn');
+  if(!btn)return;
+
+  // Create a fresh confirmation every time so no modal/class/CSS state can suppress it.
   let success=document.getElementById('sessionSuccess');
-  let btn=document.querySelector('#bedtracker .recordbtn');
-  let message='✓ Session logged successfully for '+formatSunbedDisplayDate(date)+'.';
-  if(success){
-    success.textContent=message;
-    success.classList.add('show');
+  if(!success){
+    success=document.createElement('div');
+    success.id='sessionSuccess';
+    btn.parentNode.insertBefore(success,btn);
+  }else if(success.nextElementSibling!==btn){
+    btn.parentNode.insertBefore(success,btn);
   }
-  if(btn){
-    let original=btn.dataset.defaultText||btn.textContent||'Record Session';
-    btn.dataset.defaultText=original;
-    btn.textContent='✓ Session Logged';
-    btn.disabled=true;
-    setTimeout(()=>{btn.textContent=btn.dataset.defaultText||'Record Session';btn.disabled=false;},1800);
-  }
+
+  success.textContent='✓ Session logged successfully for '+formatSunbedDisplayDate(date)+'.';
+  success.style.cssText='display:block!important;width:100%;margin:2px 0 8px;padding:12px 14px;background:#173323;border:1px solid #2bd576;color:#9af0ba;border-radius:8px;font-weight:800;text-align:center;box-sizing:border-box;';
+
+  const original=btn.dataset.defaultText||'Record Session';
+  btn.dataset.defaultText=original;
+  btn.textContent='✓ Session Logged';
+  btn.disabled=true;
+
   clearTimeout(window.revibeSessionSuccessTimer);
-  window.revibeSessionSuccessTimer=setTimeout(()=>{if(success)success.classList.remove('show');},2000);
+  window.revibeSessionSuccessTimer=setTimeout(()=>{
+    success.style.display='none';
+    btn.textContent=btn.dataset.defaultText||'Record Session';
+    btn.disabled=false;
+  },2000);
 }
 function resetBedSessionForm(){
   let today=localDateKey();
