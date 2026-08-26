@@ -371,7 +371,7 @@ body.loading .app{visibility:hidden}
 <div id='userBar' class='userBar' style='display:none'></div>
 <button id='mobileMenuButton' class='mobileMenuButton' type='button' aria-label='Open menu' onclick='toggleMobileNav()'>☰</button>
 <div id='mobileNavBackdrop' class='mobileNavBackdrop' onclick='closeMobileNav()'></div>
-<div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
+<div class='app'><aside><div class='logo'>REVIBE</div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>Log Session</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
@@ -1117,6 +1117,10 @@ body.loading .app{visibility:hidden}
 function toggleMobileNav(){
   document.body.classList.toggle('mobileNavOpen');
 }
+function openCustomerBookingPage(){
+  window.open('book.html','_blank','noopener');
+}
+
 function closeMobileNav(){
   document.body.classList.remove('mobileNavOpen');
 }
@@ -1215,6 +1219,9 @@ function hasRolePermission(key,action='view'){
 }
 
 function applyPermissionBasedNavigation(){
+  let publicBookingBtn=document.getElementById('customerBookingPageNavButton');
+  if(publicBookingBtn)publicBookingBtn.style.display=currentProfile?.role==='admin'?'block':'none';
+
   document.querySelectorAll('#nav button[data-page]').forEach(btn=>{
     let page=btn.dataset.page,
         key=REVIBE_PAGE_PERMISSION_MAP[page];
