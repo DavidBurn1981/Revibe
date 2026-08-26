@@ -351,7 +351,7 @@ body.loading .app{visibility:hidden}
 @media(max-width:850px){.financeOutgoingsGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.financeOutgoingsGrid{grid-template-columns:1fr!important}}
 
-/* REVIBE v1.28.1 - real logo */
+/* REVIBE v1.28.2 - permissions and security audit */
 .logo{display:flex;align-items:center;margin:0 10px 28px!important;min-height:34px}
 .logo img{display:block;width:100%;max-width:165px;max-height:58px;object-fit:contain;object-position:left center}
 @media(max-width:1000px) and (min-width:651px){.logo{margin:0 0 28px!important;justify-content:center}.logo img{max-width:48px;max-height:48px}}
@@ -1153,9 +1153,9 @@ async function save(){await loadLiveData();renderAll()}
 function startMonday(d){d=new Date(d);let day=d.getDay()||7;d.setDate(d.getDate()-day+1);d.setHours(0,0,0,0);return d}
 function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function nice(d){return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}
-function renderCalendar(){let cal=document.getElementById('calendar');cal.innerHTML='';let end=new Date(weekStart);end.setDate(end.getDate()+displayDays-1);let rangeName=displayDays===7?'Week':displayDays===14?'Next 2 Weeks':'Next 30 Days';document.getElementById('weekLabel').textContent=`${rangeName} · ${nice(weekStart)} – ${nice(end)}`;for(let i=0;i<displayDays;i++){let d=new Date(weekStart);d.setDate(d.getDate()+i);let ds=iso(d),clinic=data.clinicDays.find(x=>x.date===ds),r=clinic&&data.renters.find(x=>x.id===clinic.renterId);let el=document.createElement('div');el.className='day';el.innerHTML=`<div class='dayhead'><div class='date'>${nice(d)}</div>${clinic?`<div class='clinic'><strong>${clinic.product}</strong><br>${r?.name||''}<br>${clinic.start}–${clinic.end}</div>`:`<div class='clinic muted'>No clinic planned</div>`}</div>`;if(clinic){let startHour=parseInt(clinic.start.split(':')[0],10)||9,endHour=parseInt(clinic.end.split(':')[0],10)||18;for(let h=startHour;h<endHour;h++){['00','30'].forEach(m=>{let t=String(h).padStart(2,'0')+':'+m;let ap=data.appointments.find(a=>a.date===ds&&a.time===t);let slot=document.createElement('div');slot.className='slot';slot.onclick=()=>openBooking(ds,t);slot.innerHTML=`<div class='time'>${t}</div>`+(ap?apptHtml(ap):`<div class='available'>Available</div>`);el.appendChild(slot)})}}cal.appendChild(el)}}function apptHtml(a){let tr=data.treatments.find(x=>x.id===a.treatmentId),c=data.customers.find(x=>x.id===a.customerId),name=a.customerName||c?.name||'Customer';return `<div class='appt'><strong>${tr?.name||'Treatment'}</strong><br>${name} · ${tr?.duration||''}m</div>`}
-function renderProducts(){if(!data.products){let names=[...new Set(data.treatments.map(t=>t.product))];data.products=names.map((name,i)=>({id:i+1,name,active:true}))}let tiles=document.getElementById('productTiles');if(!tiles)return;tiles.innerHTML=data.products.map(p=>{let count=data.treatments.filter(t=>t.product===p.name).length;return `<div class='producttile' onclick="openProduct(\'${p.id}\')"><h3>${p.name}</h3><div class='count'>${count} Session Type${count===1?'':'s'} configured</div><div class='openhint'>Open →</div></div>`}).join('')+`<div class='producttile new' onclick='addProduct()'><div><strong>+</strong>Create new Treatment Type</div></div>`}
-function renderProductDetail(){if(!currentProduct)return;let p=data.products.find(x=>x.id===currentProduct);if(!p)return;document.getElementById('productTitle').textContent=p.name;let rows=data.treatments.filter(x=>x.product===p.name);document.getElementById('productSub').textContent=`${rows.length} session type${rows.length===1?'':'s'} configured`;document.getElementById('productTreatmentTable').innerHTML='<tr><th>Session Type</th><th>Duration</th><th>Buffer</th><th>Price</th><th>Status</th></tr>'+rows.map(x=>`<tr class='clinicRow' onclick="openTreatmentEdit('${x.id}')"><td><b>${x.name}</b></td><td>${x.duration} min</td><td>${x.buffer} min</td><td>£${(+x.price||0).toFixed(2)}</td><td><span class=pill>${x.active===false?'Inactive':'Active'}</span></td></tr>`).join('')}
+function renderCalendar(){let cal=document.getElementById('calendar');cal.innerHTML='';let end=new Date(weekStart);end.setDate(end.getDate()+displayDays-1);let rangeName=displayDays===7?'Week':displayDays===14?'Next 2 Weeks':'Next 30 Days';document.getElementById('weekLabel').textContent=`${rangeName} · ${nice(weekStart)} – ${nice(end)}`;for(let i=0;i<displayDays;i++){let d=new Date(weekStart);d.setDate(d.getDate()+i);let ds=iso(d),clinic=data.clinicDays.find(x=>x.date===ds),r=clinic&&data.renters.find(x=>x.id===clinic.renterId);let el=document.createElement('div');el.className='day';el.innerHTML=`<div class='dayhead'><div class='date'>${nice(d)}</div>${clinic?`<div class='clinic'><strong>${clinic.product}</strong><br>${r?.name||''}<br>${clinic.start}–${clinic.end}</div>`:`<div class='clinic muted'>No clinic planned</div>`}</div>`;if(clinic){let startHour=parseInt(clinic.start.split(':')[0],10)||9,endHour=parseInt(clinic.end.split(':')[0],10)||18;for(let h=startHour;h<endHour;h++){['00','30'].forEach(m=>{let t=String(h).padStart(2,'0')+':'+m;let ap=data.appointments.find(a=>a.date===ds&&a.time===t);let slot=document.createElement('div');slot.className='slot';slot.onclick=()=>openBooking(ds,t);slot.innerHTML=`<div class='time'>${t}</div>`+(ap?apptHtml(ap):`<div class='available'>Available</div>`);el.appendChild(slot)})}}cal.appendChild(el)}}function apptHtml(a){let tr=data.treatments.find(x=>x.id===a.treatmentId),c=data.customers.find(x=>x.id===a.customerId),name=a.customerName||c?.name||'Customer';return `<div class='appt'><strong>${escapeHtml(tr?.name||'Treatment')}</strong><br>${escapeHtml(name)} · ${escapeHtml(tr?.duration||'')}m</div>`}
+function renderProducts(){if(!data.products){let names=[...new Set(data.treatments.map(t=>t.product))];data.products=names.map((name,i)=>({id:i+1,name,active:true}))}let tiles=document.getElementById('productTiles');if(!tiles)return;tiles.innerHTML=data.products.map(p=>{let count=data.treatments.filter(t=>t.product===p.name).length;return `<div class='producttile' onclick="openProduct(\'${p.id}\')"><h3>${escapeHtml(p.name)}</h3><div class='count'>${count} Session Type${count===1?'':'s'} configured</div><div class='openhint'>Open →</div></div>`}).join('')+`<div class='producttile new' onclick='addProduct()'><div><strong>+</strong>Create new Treatment Type</div></div>`}
+function renderProductDetail(){if(!currentProduct)return;let p=data.products.find(x=>x.id===currentProduct);if(!p)return;document.getElementById('productTitle').textContent=p.name;let rows=data.treatments.filter(x=>x.product===p.name);document.getElementById('productSub').textContent=`${rows.length} session type${rows.length===1?'':'s'} configured`;document.getElementById('productTreatmentTable').innerHTML='<tr><th>Session Type</th><th>Duration</th><th>Buffer</th><th>Price</th><th>Status</th></tr>'+rows.map(x=>`<tr class='clinicRow' onclick="openTreatmentEdit('${x.id}')"><td><b>${escapeHtml(x.name)}</b></td><td>${x.duration} min</td><td>${x.buffer} min</td><td>£${(+x.price||0).toFixed(2)}</td><td><span class=pill>${x.active===false?'Inactive':'Active'}</span></td></tr>`).join('')}
 function hexToRgba(hex,alpha){let h=(hex||'#18d7e8').replace('#','');if(h.length!==6)return `rgba(24,215,232,${alpha})`;let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return `rgba(${r},${g},${b},${alpha})`}
 
 
@@ -1186,6 +1186,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   sunbedsettings:'sunbed_settings',
   openinghours:'sunbed_settings',
   monthlytargets:'sunbed_settings',
+  tanningproducts:'sunbed_settings',
 
   diary:'treatment_room_diary',
   clinic:'clinic_days',
@@ -1222,6 +1223,48 @@ function hasRolePermission(key,action='view'){
   let p=revibeRolePermissions.find(x=>x.role===currentProfile?.role&&x.key===key);
   if(!p)return false;
   return action==='edit'?p.edit:action==='approve'?p.approve:p.view;
+}
+
+function escapeHtml(value){
+  return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function requireRolePermission(key,action='edit',message){
+  if(hasRolePermission(key,action))return true;
+  alert(message||`Your role does not have permission to ${action==='approve'?'approve':'change'} this area.`);
+  return false;
+}
+const REVIBE_ACTION_PERMISSION_RULES={
+  recordBedSession:['daily_session_tracker','edit'],
+  saveDailyTakings:['daily_session_tracker','edit'],
+  openSunbedBooking:['sunbed_bookings','edit'], saveSunbedBooking:['sunbed_bookings','edit'], completeSunbedBooking:['sunbed_bookings','edit'],
+  openTanningProduct:['sunbed_settings','edit'], saveTanningProduct:['sunbed_settings','edit'], deleteTanningProduct:['sunbed_settings','edit'],
+  openMonthlyTargetCreate:['sunbed_settings','edit'], openMonthlyTargetEdit:['sunbed_settings','edit'], saveMonthlyTarget:['sunbed_settings','edit'], deleteMonthlyTargetStack:['sunbed_settings','edit'], saveOpeningHours:['sunbed_settings','edit'],
+  openBooking:['treatment_room_diary','edit'], saveBooking:['treatment_room_diary','edit'],
+  addClinic:['clinic_days','edit'], saveNewClinicDay:['clinic_days','edit'], saveClinicDayEdits:['clinic_days','edit'], deleteClinicDay:['clinic_days','edit'], copyClinicDay:['clinic_days','edit'],
+  addProduct:['treatment_booking_settings','edit'], saveNewProduct:['treatment_booking_settings','edit'], deleteCurrentProduct:['treatment_booking_settings','edit'], editCurrentProduct:['treatment_booking_settings','edit'],
+  addTreatmentToCurrentProduct:['treatment_booking_settings','edit'], openTreatmentEdit:['treatment_booking_settings','edit'], saveNewTreatment:['treatment_booking_settings','edit'], deleteTreatment:['treatment_booking_settings','edit'],
+  addRenter:['treatment_booking_settings','edit'], openRenterEdit:['treatment_booking_settings','edit'], saveNewRenter:['treatment_booking_settings','edit'], deleteRenter:['treatment_booking_settings','edit'],
+  openCustomerCreate:['treatment_booking_settings','edit'], saveCustomer:['treatment_booking_settings','edit'], deleteCustomer:['treatment_booking_settings','edit'], completeBlockPurchase:['treatment_booking_settings','edit'],
+  openStaffMemberCreate:['staff_members','edit'], openStaffMemberEdit:['staff_members','edit'], saveStaffMember:['staff_members','edit'], deleteStaffMember:['staff_members','edit'],
+  openStaffShiftCreate:['staff_rota','edit'], saveStaffShift:['staff_rota','edit'],
+  openHolidayRequestCreate:['holiday_requests','edit'], saveHolidayRequest:['holiday_requests','edit'], deleteHolidayRequest:['holiday_requests','edit'], approveHolidayRequest:['holiday_requests','approve'],
+  openOrderCreate:['finance','edit'], openOrderEdit:['finance','edit'], saveOrder:['finance','edit'], deleteOrder:['finance','edit'], saveFinanceOutgoings:['finance','edit'],
+  saveMonthEndReviews:['performance_reporting','edit']
+};
+function applyPermissionBasedActions(){
+  document.querySelectorAll('[onclick]').forEach(el=>{
+    let code=el.getAttribute('onclick')||'',m=code.match(/^\s*([A-Za-z_$][\w$]*)\s*\(/);if(!m)return;
+    let rule=REVIBE_ACTION_PERMISSION_RULES[m[1]];if(!rule)return;
+    let allowed=hasRolePermission(rule[0],rule[1]);
+    if(['BUTTON'].includes(el.tagName))el.style.display=allowed?'':'none';
+  });
+}
+function installPermissionGuards(){
+  Object.entries(REVIBE_ACTION_PERMISSION_RULES).forEach(([name,[key,action]])=>{
+    let original=window[name];if(typeof original!=='function'||original.__revibePermissionWrapped)return;
+    let wrapped=function(...args){if(!requireRolePermission(key,action))return;return original.apply(this,args)};
+    wrapped.__revibePermissionWrapped=true;window[name]=wrapped;
+  });
 }
 
 function applyPermissionBasedNavigation(){
@@ -1586,6 +1629,9 @@ function renderFinance(){
   document.getElementById('financeInsurance').value=Number(insurance).toFixed(2);
   document.getElementById('financeElectric').value=electric.cost.toFixed(2);
   document.getElementById('financeElectricDetail').textContent=`${electric.minutes} physical bed minutes × £0.07 × 1.15 = £${electric.cost.toFixed(2)}`;
+  let canEditFinance=hasRolePermission('finance','edit');
+  ['financeWages','financeRent','financeBedHire','financeInsurance'].forEach(id=>{let el=document.getElementById(id);if(el)el.readOnly=!canEditFinance;});
+  let saveFinanceBtn=document.querySelector("button[onclick='saveFinanceOutgoings()']");if(saveFinanceBtn)saveFinanceBtn.style.display=canEditFinance?'':'none';
 
   updateFinanceOutgoingsTotal();
 }
@@ -1598,6 +1644,7 @@ function updateFinanceOutgoingsTotal(){
   document.getElementById('financeOutgoingsTotal').value=(wages+rent+bedHire+electric+insurance).toFixed(2);
 }
 async function saveFinanceOutgoings(){
+  if(!requireRolePermission('finance','edit'))return;
   let wagesRaw=document.getElementById('financeWages').value.trim(),
       rent=+document.getElementById('financeRent').value,
       bedHire=+document.getElementById('financeBedHire').value,
@@ -1646,7 +1693,7 @@ function renderOrders(){
     <div class='financeStatTile'><div class='label'>Total Orders Treatments</div><div class='value'>£${treatments.toFixed(2)}</div></div>`;
 
   let header="<tr><th>Date</th><th>Description</th><th>Supplier</th><th>Amount</th><th>Card Used</th><th>Ordered By</th></tr>";
-  let rowHtml=r=>{let staff=data.staffMembers.find(s=>s.id===r.staffId);return `<tr class='clinicRow' onclick="openOrderEdit('${r.id}')"><td>${formatSunbedDisplayDate(r.date)}</td><td><b>${r.description}</b></td><td>${r.supplier||''}</td><td>£${r.amount.toFixed(2)}</td><td>${r.card}</td><td>${staff?.name||''}</td></tr>`};
+  let rowHtml=r=>{let staff=data.staffMembers.find(s=>s.id===r.staffId);return `<tr class='clinicRow' onclick="openOrderEdit('${r.id}')"><td>${formatSunbedDisplayDate(r.date)}</td><td><b>${escapeHtml(r.description)}</b></td><td>${escapeHtml(r.supplier||'')}</td><td>£${r.amount.toFixed(2)}</td><td>${escapeHtml(r.card)}</td><td>${escapeHtml(staff?.name||'')}</td></tr>`};
 
   current.innerHTML=header+(monthRows.length?monthRows.map(rowHtml).join(''):"<tr><td colspan='6' class='muted'>No orders placed this month.</td></tr>");
   all.innerHTML=header+(rows.length?rows.map(rowHtml).join(''):"<tr><td colspan='6' class='muted'>No orders logged yet.</td></tr>");
@@ -1660,7 +1707,7 @@ function openOrderCreate(){
   document.getElementById('orderAmount').value='';
   document.getElementById('orderCardUsed').value='Treatments';
   let today=localDateKey();document.getElementById('orderDate').value=today;document.getElementById('orderDateDisplay').value=formatSunbedDisplayDate(today);
-  document.getElementById('orderStaffMember').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  document.getElementById('orderStaffMember').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');
   document.getElementById('orderError').style.display='none';
   document.getElementById('orderSaveBtn').textContent='Save Order';
   document.getElementById('orderDeleteBtn').style.display='none';document.getElementById('orderModal').classList.add('show');
@@ -1674,7 +1721,7 @@ function openOrderEdit(id){
   document.getElementById('orderAmount').value=o.amount.toFixed(2);
   document.getElementById('orderCardUsed').value=o.card;
   document.getElementById('orderDate').value=o.date;document.getElementById('orderDateDisplay').value=formatSunbedDisplayDate(o.date);
-  document.getElementById('orderStaffMember').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  document.getElementById('orderStaffMember').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');
   document.getElementById('orderStaffMember').value=o.staffId;
   document.getElementById('orderError').style.display='none';
   document.getElementById('orderSaveBtn').textContent='Save Changes';
@@ -1828,10 +1875,10 @@ function renderUsers(){
     (revibeUsers.length?revibeUsers.map(u=>{
       let clinician=data.renters.find(r=>r.id===u.clinicianId);
       return `<tr class='userEditRow ${u.active?'':'userInactive'}' ${currentProfile?.role==='admin'?`onclick="openEditUserModal('${u.id}')"`:''}>
-        <td><b>${u.fullName||''}</b></td>
-        <td>${u.email}</td>
-        <td><span class='userRoleBadge'>${REVIBE_ROLE_LABELS[u.role]||u.role}</span></td>
-        <td>${u.role==='renter'?(clinician?.name||'Not linked'):''}</td>
+        <td><b>${escapeHtml(u.fullName||'')}</b></td>
+        <td>${escapeHtml(u.email)}</td>
+        <td><span class='userRoleBadge'>${escapeHtml(REVIBE_ROLE_LABELS[u.role]||u.role)}</span></td>
+        <td>${u.role==='renter'?escapeHtml(clinician?.name||'Not linked'):''}</td>
         <td>${u.active?'Active':'Inactive'}${u.mustChangePassword?`<div class='muted' style='margin-top:4px'>Temporary password set</div>`:''}</td><td>
           <button onclick="event.stopPropagation();openTemporaryPasswordModal('${u.id}','${u.email}')">Set Temporary Password</button>
           ${currentProfile?.role==='admin'?`<button onclick="event.stopPropagation();manageUser('resend_invite','${u.id}','${u.email}')">Resend Invite</button> <button onclick="event.stopPropagation();manageUser('password_reset','${u.id}','${u.email}')">Reset Password</button> <button onclick="event.stopPropagation();manageUser('delete','${u.id}','${u.email}')">Delete</button>`:''}
@@ -2041,11 +2088,11 @@ function renderHolidayRequests(){
       let staff=data.staffMembers.find(s=>s.id===h.staffId),approver=data.staffMembers.find(s=>s.id===h.approvedById),
           cls=h.status==='Approved'?'holidayApproved':h.status==='Pending'?'holidayPending':h.status==='Rejected'?'holidayRejected':'holidayCancelled';
       return `<tr class='clinicRow' onclick="openHolidayRequest('${h.id}')">
-        <td><b>${staff?.name||''}</b></td>
+        <td><b>${escapeHtml(staff?.name||'')}</b></td>
         <td>${formatSunbedDisplayDate(h.startDate)} – ${formatSunbedDisplayDate(h.endDate)}</td>
         <td>${h.daysTotal}</td>
-        <td><span class='holidayStatus ${cls}'>${h.status}</span></td>
-        <td>${approver?.name||''}</td>
+        <td><span class='holidayStatus ${cls}'>${escapeHtml(h.status)}</span></td>
+        <td>${escapeHtml(approver?.name||'')}</td>
         <td>${h.approvedDate?formatSunbedDisplayDate(h.approvedDate):''}</td>
       </tr>`;
     }).join(''):`<tr><td colspan='6' class='muted'>No holiday requests yet.</td></tr>`);
@@ -2055,13 +2102,13 @@ function openHolidayRequestCreate(){
   editingHolidayRequestId=null;
   document.getElementById('holidayRequestModalTitle').textContent='New Holiday Request';
   document.getElementById('holidayStaff').disabled=false;
-  document.getElementById('holidayStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  document.getElementById('holidayStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');
   let today=localDateKey();
   document.getElementById('holidayStart').value=today;
   document.getElementById('holidayEnd').value=today;
   document.getElementById('holidayStartDisplay').value=formatSunbedDisplayDate(today);
   document.getElementById('holidayEndDisplay').value=formatSunbedDisplayDate(today);
-  document.getElementById('holidaySaveBtn').style.display=currentProfile?.role==='admin'?'inline-block':'none';
+  document.getElementById('holidaySaveBtn').style.display=hasRolePermission('holiday_requests','edit')?'inline-block':'none';
   document.getElementById('holidayApprovalPanel').style.display='none';
   document.getElementById('holidayRequestError').style.display='none';
   document.getElementById('holidayRotaConflict').style.display='none';
@@ -2072,22 +2119,22 @@ function openHolidayRequest(id){
   let h=data.holidayRequests.find(x=>x.id===id);if(!h)return;
   editingHolidayRequestId=id;
   document.getElementById('holidayRequestModalTitle').textContent='Holiday Request';
-  document.getElementById('holidayStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  document.getElementById('holidayStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');
   document.getElementById('holidayStaff').value=h.staffId;
   document.getElementById('holidayStaff').disabled=true;
   document.getElementById('holidayStart').value=h.startDate;
   document.getElementById('holidayEnd').value=h.endDate;
   document.getElementById('holidayStartDisplay').value=formatSunbedDisplayDate(h.startDate);
   document.getElementById('holidayEndDisplay').value=formatSunbedDisplayDate(h.endDate);
-  document.getElementById('holidaySaveBtn').style.display=h.status==='Pending'&&currentProfile?.role==='admin'?'inline-block':'none';
+  document.getElementById('holidaySaveBtn').style.display=h.status==='Pending'&&hasRolePermission('holiday_requests','edit')?'inline-block':'none';
   document.getElementById('holidayRequestError').style.display='none';
 
   document.getElementById('holidayApprovalPanel').style.display='block';
-  document.getElementById('holidayApprovedBy').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');
+  document.getElementById('holidayApprovedBy').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');
   if(h.approvedById)document.getElementById('holidayApprovedBy').value=h.approvedById;
   document.getElementById('holidayApprovedBy').disabled=h.status==='Approved';
   document.getElementById('holidayApprovedDate').value=h.approvedDate?formatSunbedDisplayDate(h.approvedDate):'Will populate on approval';
-  document.getElementById('holidayApproveBtn').style.display=h.status==='Pending'&&currentProfile?.role==='admin'?'inline-block':'none';
+  document.getElementById('holidayApproveBtn').style.display=h.status==='Pending'&&hasRolePermission('holiday_requests','approve')?'inline-block':'none';
 
   updateHolidayRequestSummary();
   document.getElementById('holidayRequestModal').classList.add('show');
@@ -2114,7 +2161,7 @@ function updateHolidayRequestSummary(){
   }else box.style.display='none';
 }
 async function saveHolidayRequest(){
-  if(currentProfile?.role!=='admin')return;
+  if(!requireRolePermission('holiday_requests','edit'))return;
   let staffId=document.getElementById('holidayStaff').value,start=document.getElementById('holidayStart').value,end=document.getElementById('holidayEnd').value,
       calendarDays=holidayDaysInclusive(start,end),days=holidayChargeDays(calendarDays),err=document.getElementById('holidayRequestError'),btn=document.getElementById('holidaySaveBtn');
   err.style.display='none';
@@ -2140,7 +2187,7 @@ async function saveHolidayRequest(){
   finally{btn.disabled=false;btn.textContent='Save Request';}
 }
 async function approveHolidayRequest(){
-  if(currentProfile?.role!=='admin'||!editingHolidayRequestId)return;
+  if(!editingHolidayRequestId||!requireRolePermission('holiday_requests','approve'))return;
   let h=data.holidayRequests.find(x=>x.id===editingHolidayRequestId),approvedBy=document.getElementById('holidayApprovedBy').value,
       err=document.getElementById('holidayApprovalError'),btn=document.getElementById('holidayApproveBtn');
   err.style.display='none';
@@ -2195,7 +2242,7 @@ function renderHolidayDatePicker(){
   }
   grid.innerHTML=heads+cells;
 }
-function renderStaffMembers(){let t=document.getElementById('staffMembersTable');if(!t)return;t.innerHTML='<tr><th>Name</th><th>Phone</th><th>Address</th><th>Date Joined</th><th>Holiday Entitlement</th><th>Holidays Remaining</th><th>Colour</th></tr>'+(data.staffMembers.length?data.staffMembers.map(s=>`<tr class='clinicRow' onclick="openStaffMemberEdit('${s.id}')"><td><b>${s.name}</b></td><td>${s.phone||''}</td><td>${s.address||''}</td><td>${s.dateOfJoining?formatSunbedDisplayDate(s.dateOfJoining):''}</td><td>${s.holidayEntitlement}</td><td>${s.holidaysRemaining}</td><td><span style='display:inline-block;width:28px;height:18px;border-radius:5px;background:${s.colour};border:1px solid #555'></span></td></tr>`).join(''):`<tr><td colspan='7' class='muted'>No staff members configured yet.</td></tr>`)}
+function renderStaffMembers(){let t=document.getElementById('staffMembersTable');if(!t)return;t.innerHTML='<tr><th>Name</th><th>Phone</th><th>Address</th><th>Date Joined</th><th>Holiday Entitlement</th><th>Holidays Remaining</th><th>Colour</th></tr>'+(data.staffMembers.length?data.staffMembers.map(s=>`<tr class='clinicRow' onclick="openStaffMemberEdit('${s.id}')"><td><b>${escapeHtml(s.name)}</b></td><td>${escapeHtml(s.phone||'')}</td><td>${escapeHtml(s.address||'')}</td><td>${s.dateOfJoining?formatSunbedDisplayDate(s.dateOfJoining):''}</td><td>${s.holidayEntitlement}</td><td>${s.holidaysRemaining}</td><td><span style='display:inline-block;width:28px;height:18px;border-radius:5px;background:${s.colour};border:1px solid #555'></span></td></tr>`).join(''):`<tr><td colspan='7' class='muted'>No staff members configured yet.</td></tr>`)}
 let staffRotaDays=7;function changeStaffRotaRange(){staffRotaDays=+document.getElementById('staffRotaRange').value||7;renderStaffRota()}
 function renderStaffRota(){
   let wrap=document.getElementById('staffRotaCalendar');if(!wrap)return;
@@ -2246,7 +2293,7 @@ function renderStaffRota(){
       let col=staff?.colour||'#18d7e8';
       layer.style.borderLeftColor=col;
       layer.style.background=hexToRgba(col,0.22);
-      layer.innerHTML=`<b>${staff?.name||'Staff Member'}</b>${s.start}–${s.end}<br>${Number(s.hours).toFixed(2)} hrs`;
+      layer.innerHTML=`<b>${escapeHtml(staff?.name||'Staff Member')}</b>${s.start}–${s.end}<br>${Number(s.hours).toFixed(2)} hrs`;
       matrix.appendChild(layer);
     });
   });
@@ -2265,7 +2312,7 @@ function renderStaffRota(){
   document.getElementById('staffJoinDate').value=today;document.getElementById('staffJoinDateDisplay').value=formatSunbedDisplayDate(today);
   document.getElementById('staffHolidayEntitlement').value='0';document.getElementById('staffHolidayRemaining').value='0';document.getElementById('staffColour').value='#18d7e8';
   document.getElementById('staffCreateSaveBtn').textContent='Create Staff Member';document.getElementById('staffCreateError').style.display='none';
-  let isAdmin=currentProfile?.role==='admin';document.getElementById('staffHolidayEntitlement').readOnly=!isAdmin;document.getElementById('staffHolidayRemaining').readOnly=true;
+  let canEdit=hasRolePermission('staff_members','edit');document.getElementById('staffHolidayEntitlement').readOnly=!canEdit;document.getElementById('staffHolidayRemaining').readOnly=true;
   document.getElementById('deleteStaffBtn').style.display='none';document.getElementById('staffMemberCreateModal').classList.add('show');
 }
 function openStaffMemberEdit(id){
@@ -2275,7 +2322,7 @@ function openStaffMemberEdit(id){
   document.getElementById('staffJoinDate').value=s.dateOfJoining||'';document.getElementById('staffJoinDateDisplay').value=s.dateOfJoining?formatSunbedDisplayDate(s.dateOfJoining):'';
   document.getElementById('staffHolidayEntitlement').value=s.holidayEntitlement;document.getElementById('staffHolidayRemaining').value=s.holidaysRemaining;document.getElementById('staffColour').value=s.colour||'#18d7e8';
   document.getElementById('staffCreateSaveBtn').textContent='Save Changes';document.getElementById('staffCreateError').style.display='none';
-  let isAdmin=currentProfile?.role==='admin';document.getElementById('staffHolidayEntitlement').readOnly=!isAdmin;document.getElementById('staffHolidayRemaining').readOnly=true;
+  let canEdit=hasRolePermission('staff_members','edit');document.getElementById('staffHolidayEntitlement').readOnly=!canEdit;document.getElementById('staffHolidayRemaining').readOnly=true;
   document.getElementById('staffMemberCreateModal').classList.add('show');
 }
 async function deleteStaffMember(){if(!editingStaffId)return alert('Save the staff member first.');if(!confirm('Delete this staff member?'))return;let {error}=await sb.from('staff_members').delete().eq('id',editingStaffId);if(error)return alert('This staff member may still have shifts, holidays or orders linked. Delete those first.\n\n'+error.message);document.getElementById('staffMemberCreateModal').classList.remove('show');editingStaffId=null;await loadLiveData();renderAll()}
@@ -2338,7 +2385,7 @@ function populateShiftTimes(){
   }
   start.innerHTML=opts.join('');end.innerHTML=opts.join('');
   start.value='08:45';end.value='20:15';
-}function openStaffShiftCreate(){if(!data.staffMembers.length)return alert('Create a Staff Member first.');document.getElementById('shiftStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${s.name}</option>`).join('');document.getElementById('shiftDate').value=localDateKey();document.getElementById('shiftDateDisplay').value=formatSunbedDisplayDate(localDateKey());populateShiftTimes();document.getElementById('shiftCreateError').style.display='none';updateShiftSummary();document.getElementById('staffShiftCreateModal').classList.add('show')}
+}function openStaffShiftCreate(){if(!data.staffMembers.length)return alert('Create a Staff Member first.');document.getElementById('shiftStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');document.getElementById('shiftDate').value=localDateKey();document.getElementById('shiftDateDisplay').value=formatSunbedDisplayDate(localDateKey());populateShiftTimes();document.getElementById('shiftCreateError').style.display='none';updateShiftSummary();document.getElementById('staffShiftCreateModal').classList.add('show')}
 function closeStaffShiftCreate(){document.getElementById('staffShiftCreateModal').classList.remove('show')}
 function shiftHours(start,end){let s=minutesFromTime(start),e=minutesFromTime(end);return e>s?(e-s)/60:0}
 function updateShiftSummary(){let staffId=document.getElementById('shiftStaff').value,date=document.getElementById('shiftDate').value,start=document.getElementById('shiftStart').value,end=document.getElementById('shiftEnd').value,hours=shiftHours(start,end);document.getElementById('shiftHoursPreview').textContent=`${hours.toFixed(2)} hours`;if(!date){document.getElementById('shiftWeekTotalPreview').textContent=`${hours.toFixed(2)} hours`;return;}let d=parseLocalDateKey(date),week=startMonday(d),weekEnd=new Date(week);weekEnd.setDate(weekEnd.getDate()+6);let keys=dateRangeKeys(week,weekEnd),existing=data.staffShifts.filter(s=>s.staffId===staffId&&keys.includes(s.date)).reduce((sum,s)=>sum+(+s.hours||0),0);document.getElementById('shiftWeekTotalPreview').textContent=`${(existing+hours).toFixed(2)} hours`;document.getElementById('shiftWeekRange').textContent=`${nice(week)} – ${nice(weekEnd)}`}
@@ -2360,8 +2407,9 @@ function ageFromDob(dob){if(!dob)return null;let d=parseLocalDateKey(dob),n=new 
 function renderCustomers(){
  let t=document.getElementById('customerTable');if(!t)return;
  let rows=[...(data.customers||[])].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
- t.innerHTML="<tr><th>Account</th><th>Name</th><th>DOB</th><th>Phone</th><th>Minutes Left</th><th>ID Checked</th><th></th></tr>"+(rows.length?rows.map(c=>`<tr class='clinicRow' onclick="openCustomer('${c.id}')"><td>${c.accountNumber}</td><td><b>${c.firstName} ${c.lastName}</b></td><td>${formatSunbedDisplayDate(c.dob)}</td><td>${c.phone||''}</td><td><b>${c.minutesLeft}</b></td><td>${c.idChecked?'Yes':'No'}</td><td><button onclick="event.stopPropagation();deleteCustomer('${c.id}')">Delete</button></td></tr>`).join(''):"<tr><td colspan='7' class='muted'>No customers yet.</td></tr>");
- let sel=document.getElementById('sessionCustomer');if(sel){let v=sel.value;sel.innerHTML="<option value=''>Select customer...</option>"+rows.map(c=>`<option value='${c.id}'>${c.firstName} ${c.lastName} · ${c.accountNumber}</option>`).join('');sel.value=v}
+ let canEdit=hasRolePermission('treatment_booking_settings','edit');
+ t.innerHTML="<tr><th>Account</th><th>Name</th><th>DOB</th><th>Phone</th><th>Minutes Left</th><th>ID Checked</th><th></th></tr>"+(rows.length?rows.map(c=>`<tr class='clinicRow' onclick="openCustomer('${c.id}')"><td>${escapeHtml(c.accountNumber)}</td><td><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b></td><td>${formatSunbedDisplayDate(c.dob)}</td><td>${escapeHtml(c.phone||'')}</td><td><b>${c.minutesLeft}</b></td><td>${c.idChecked?'Yes':'No'}</td><td>${canEdit?`<button onclick="event.stopPropagation();deleteCustomer('${c.id}')">Delete</button>`:''}</td></tr>`).join(''):"<tr><td colspan='7' class='muted'>No customers yet.</td></tr>");
+ let sel=document.getElementById('sessionCustomer');if(sel){let v=sel.value;sel.innerHTML="<option value=''>Select customer...</option>"+rows.map(c=>`<option value='${c.id}'>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} · ${escapeHtml(c.accountNumber)}</option>`).join('');sel.value=v}
 }
 async function deleteCustomer(id){
  let c=data.customers.find(x=>x.id===id);if(!c)return;
@@ -2399,7 +2447,7 @@ function renderCustomerPurchases(c){
 function openBlockPurchase(id){purchaseProductId=id;document.getElementById('purchaseQty').value='1';updatePurchaseSummary();document.getElementById('purchaseModal').classList.add('show')}
 function updatePurchaseSummary(){let p=data.tanningProducts.find(x=>x.id===purchaseProductId),q=Math.max(1,+document.getElementById('purchaseQty').value||1);if(p)document.getElementById('purchaseSummary').textContent=`Purchasing ${q} × ${p.title} (${p.minutes*q} minutes) for £${(p.price*q).toFixed(2)}.`}
 async function completeBlockPurchase(){let q=Math.max(1,+document.getElementById('purchaseQty').value||1),{data:bal,error}=await sb.rpc('purchase_block_minutes',{p_customer:editingCustomerId,p_product:purchaseProductId,p_quantity:q});if(error)return alert(error.message);document.getElementById('purchaseModal').classList.remove('show');await loadLiveData();openCustomer(editingCustomerId);alert(`Purchase complete. ${bal} minutes left on account.`)}
-function renderTanningProducts(){let t=document.getElementById('tanningProductsTable');if(!t)return;let rows=data.tanningProducts||[];t.innerHTML="<tr><th>Type</th><th>Product</th><th>Minutes</th><th>Price</th><th>Stock</th></tr>"+rows.map(p=>`<tr class='clinicRow' onclick="openTanningProduct('${p.id}')"><td>${p.type}</td><td><b>${p.title}</b></td><td>${p.minutes??'—'}</td><td>£${p.price.toFixed(2)}</td><td>${p.stock??'—'}</td></tr>`).join('')}
+function renderTanningProducts(){let t=document.getElementById('tanningProductsTable');if(!t)return;let rows=data.tanningProducts||[];t.innerHTML="<tr><th>Type</th><th>Product</th><th>Minutes</th><th>Price</th><th>Stock</th></tr>"+rows.map(p=>`<tr class='clinicRow' onclick="openTanningProduct('${p.id}')"><td>${escapeHtml(p.type)}</td><td><b>${escapeHtml(p.title)}</b></td><td>${p.minutes??'—'}</td><td>£${p.price.toFixed(2)}</td><td>${p.stock??'—'}</td></tr>`).join('')}
 function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('deleteTanningProductBtn').style.display=p?'inline-block':'none';document.getElementById('tanningProductModal').classList.add('show')}
 async function deleteTanningProduct(){if(!editingTanningProductId)return alert('Save the product before it can be deleted.');if(!confirm('Delete this product?'))return;let {error}=await sb.from('tanning_rlt_products').delete().eq('id',editingTanningProductId);if(error)return alert(error.message);document.getElementById('tanningProductModal').classList.remove('show');await loadLiveData();renderTanningProducts()}
 function selectTanningProductType(t){let modal=document.getElementById('tanningProductModal');modal.dataset.type=t;document.getElementById('productTypeButtons').querySelectorAll('button').forEach(b=>b.classList.toggle('primary',b.textContent===t));updateTanningProductFields()}
@@ -2411,8 +2459,8 @@ function buyPaygRemainder(){let c=data.customers.find(x=>x.id===document.getElem
 function renderTables(){
   renderProducts();renderProductDetail();
   renderCustomers();renderTanningProducts();
-  document.getElementById('renterTable').innerHTML='<tr><th>Name</th><th>Treatment Type</th><th>Phone</th><th>Email</th></tr>'+data.renters.map(x=>`<tr class='clinicRow' onclick="openRenterEdit('${x.id}')"><td><b>${x.name}</b></td><td>${x.product||''}</td><td>${x.phone||''}</td><td>${x.email||''}</td></tr>`).join('');
-  document.getElementById('clinicTable').innerHTML='<tr><th>Date</th><th>Treatment Type</th><th>Clinician</th><th>Hours</th><th>Provided Discount</th><th>Rental Charge</th></tr>'+data.clinicDays.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{let r=data.renters.find(z=>z.id===x.renterId),d=parseLocalDateKey(x.date),label=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});return `<tr class='clinicRow' onclick="openClinicEdit('${x.id}')"><td><b>${label}</b></td><td>${x.product}</td><td>${r?.name||''}</td><td>${x.start}–${x.end}</td><td>${(+x.discountPercent||0)>0?`${+x.discountPercent}%`:'None'}</td><td>£${(+x.rentalCharge||0).toFixed(2)}</td></tr>`}).join('');
+  document.getElementById('renterTable').innerHTML='<tr><th>Name</th><th>Treatment Type</th><th>Phone</th><th>Email</th></tr>'+data.renters.map(x=>`<tr class='clinicRow' onclick="openRenterEdit('${x.id}')"><td><b>${escapeHtml(x.name)}</b></td><td>${escapeHtml(x.product||'')}</td><td>${escapeHtml(x.phone||'')}</td><td>${escapeHtml(x.email||'')}</td></tr>`).join('');
+  document.getElementById('clinicTable').innerHTML='<tr><th>Date</th><th>Treatment Type</th><th>Clinician</th><th>Hours</th><th>Provided Discount</th><th>Rental Charge</th></tr>'+data.clinicDays.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{let r=data.renters.find(z=>z.id===x.renterId),d=parseLocalDateKey(x.date),label=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});return `<tr class='clinicRow' onclick="openClinicEdit('${x.id}')"><td><b>${label}</b></td><td>${escapeHtml(x.product)}</td><td>${escapeHtml(r?.name||'')}</td><td>${x.start}–${x.end}</td><td>${(+x.discountPercent||0)>0?`${+x.discountPercent}%`:'None'}</td><td>£${(+x.rentalCharge||0).toFixed(2)}</td></tr>`}).join('');
 }
 function openProduct(id){currentProduct=id;document.getElementById('productListView').style.display='none';document.getElementById('productDetailView').style.display='block';renderProductDetail()}
 function backToProducts(){currentProduct=null;document.getElementById('productDetailView').style.display='none';document.getElementById('productListView').style.display='block';renderProducts()}
@@ -2513,7 +2561,7 @@ function makeTablesSortable(){
   th.onclick=()=>{let rows=[...table.querySelectorAll('tr')].slice(1),asc=th.dataset.asc!=='true';rows.sort((a,b)=>{let av=a.children[i]?.innerText.trim()||'',bv=b.children[i]?.innerText.trim()||'',an=parseFloat(av.replace(/[£,%]/g,'')),bn=parseFloat(bv.replace(/[£,%]/g,''));return ((!isNaN(an)&&!isNaN(bn))?an-bn:av.localeCompare(bv,undefined,{numeric:true}))*(asc?1:-1)});rows.forEach(r=>table.appendChild(r));th.dataset.asc=String(asc)}
  }))
 }
-function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderFinance();renderOrders();renderCustomers();renderTanningProducts();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting();setTimeout(makeTablesSortable,0);}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders();if(e.target.dataset.page==='openinghours')renderOpeningHours()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-staffRotaDays);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+staffRotaDays);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
+function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers();renderStaffRota();renderHolidayRequests();renderUsers();renderRolesPermissions();renderFinance();renderOrders();renderCustomers();renderTanningProducts();renderTables();renderBedTracker();renderOpeningHours();renderMonthlyTargets();renderPerformanceReporting();applyPermissionBasedActions();setTimeout(()=>{makeTablesSortable();applyPermissionBasedActions();},0);}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders();if(e.target.dataset.page==='openinghours')renderOpeningHours();applyPermissionBasedActions()};document.getElementById('prev').onclick=()=>{weekStart.setDate(weekStart.getDate()-displayDays);renderCalendar()};document.getElementById('next').onclick=()=>{weekStart.setDate(weekStart.getDate()+displayDays);renderCalendar()};document.getElementById('today').onclick=()=>{weekStart=startMonday(new Date());renderCalendar()};document.getElementById('sunbedPrev').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()-7);renderSunbedCalendar()};document.getElementById('sunbedNext').onclick=()=>{sunbedWeekStart.setDate(sunbedWeekStart.getDate()+7);renderSunbedCalendar()};document.getElementById('sunbedToday').onclick=()=>{sunbedWeekStart=startMonday(new Date());renderSunbedCalendar()};document.getElementById('staffRotaPrev').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()-staffRotaDays);renderStaffRota()};document.getElementById('staffRotaNext').onclick=()=>{staffRotaWeekStart.setDate(staffRotaWeekStart.getDate()+staffRotaDays);renderStaffRota()};document.getElementById('staffRotaToday').onclick=()=>{staffRotaWeekStart=startMonday(new Date());renderStaffRota()};function changeDiaryRange(){displayDays=+document.getElementById('diaryRange').value||7;weekStart=startMonday(new Date());renderCalendar()};
 
 const SUNBEDS=[
   {name:'Bed 1',type:'Stand Up'},
@@ -2764,7 +2812,7 @@ function openBooking(date,time){
   resetTreatmentBookingSteps();
 
   let products=(data.products||[]).filter(p=>p.active!==false&&data.treatments.some(t=>t.product===p.name));
-  document.getElementById('bookingProductChoices').innerHTML=products.map(p=>`<button class='choiceBtn' onclick="chooseBookingProduct(\'${p.id}\')"><b>${p.name}</b><span class='small'>${data.treatments.filter(t=>t.product===p.name).length} treatments</span></button>`).join('');
+  document.getElementById('bookingProductChoices').innerHTML=products.map(p=>`<button class='choiceBtn' onclick="chooseBookingProduct(\'${p.id}\')"><b>${escapeHtml(p.name)}</b><span class='small'>${data.treatments.filter(t=>t.product===p.name).length} treatments</span></button>`).join('');
 
   if(date){
     let clinic=data.clinicDays.find(c=>c.date===date);
@@ -2899,15 +2947,15 @@ function getCurrentMonthlyTarget(){
 
 function renderMonthlyTargets(){
   let table=document.getElementById('monthlyTargetsTable');if(!table)return;
-  let isAdmin=currentProfile?.role==='admin',
+  let canEdit=hasRolePermission('sunbed_settings','edit'),
       createBtn=document.getElementById('createMonthlyTargetBtn');
-  if(createBtn)createBtn.style.display=isAdmin?'inline-block':'none';
+  if(createBtn)createBtn.style.display=canEdit?'inline-block':'none';
 
   let rows=[...(data.monthlyTargets||[])].sort((a,b)=>b.year-a.year||b.monthNumber-a.monthNumber);
   table.innerHTML=`<tr><th>Month</th><th>Year</th><th>Mins / Bed / Hour</th><th>New Sign Ups</th><th>RLT Only Sessions</th><th>Total Minutes</th><th>New Reviews</th><th>Status</th></tr>`+
     (rows.length?rows.map(x=>{
       let current=currentMonthIdentity(),isCurrent=x.monthNumber===current.month&&x.year===current.year;
-      return `<tr ${isAdmin?`class='clinicRow' onclick="openMonthlyTargetEdit('${x.id}')"`:''}><td><b>${MONTH_NAMES[x.monthNumber-1]}</b></td><td>${x.year}</td><td>${Number(x.target).toFixed(1)}</td><td>${x.signupTarget}</td><td>${x.rltSessionsTarget}</td><td>${x.totalMinutesTarget}</td><td>${x.newReviewsTarget}</td><td>${isCurrent?`<span class='pill'>Current Month</span>`:''}</td></tr>`;
+      return `<tr ${canEdit?`class='clinicRow' onclick="openMonthlyTargetEdit('${x.id}')"`:''}><td><b>${MONTH_NAMES[x.monthNumber-1]}</b></td><td>${x.year}</td><td>${Number(x.target).toFixed(1)}</td><td>${x.signupTarget}</td><td>${x.rltSessionsTarget}</td><td>${x.totalMinutesTarget}</td><td>${x.newReviewsTarget}</td><td>${isCurrent?`<span class='pill'>Current Month</span>`:''}</td></tr>`;
     }).join(''):`<tr><td colspan='8' class='muted'>No monthly target stacks created yet.</td></tr>`);
 }
 
@@ -2936,7 +2984,7 @@ function populateTargetMonthOptions(){
   document.getElementById('targetMonthNumber').innerHTML=MONTH_NAMES.map((m,i)=>`<option value='${i+1}'>${m}</option>`).join('');
 }
 function openMonthlyTargetCreate(){
-  if(currentProfile?.role!=='admin')return;
+  if(!requireRolePermission('sunbed_settings','edit'))return;
   editingMonthlyTargetId=null;
   populateTargetMonthOptions();
   let now=currentMonthIdentity();
@@ -2956,7 +3004,7 @@ function openMonthlyTargetCreate(){
   document.getElementById('monthlyTargetDeleteButton').style.display='none';document.getElementById('monthlyTargetModal').classList.add('show');
 }
 function openMonthlyTargetEdit(id){
-  if(currentProfile?.role!=='admin')return;
+  if(!requireRolePermission('sunbed_settings','edit'))return;
   let row=data.monthlyTargets.find(x=>x.id===id);if(!row)return;
   editingMonthlyTargetId=id;
   populateTargetMonthOptions();
@@ -2981,7 +3029,7 @@ function closeMonthlyTargetModal(){
   editingMonthlyTargetId=null;
 }
 async function saveMonthlyTarget(){
-  if(currentProfile?.role!=='admin')return;
+  if(!requireRolePermission('sunbed_settings','edit'))return;
   let monthNumber=+document.getElementById('targetMonthNumber').value,
       year=+document.getElementById('targetYear').value,
       target=+document.getElementById('monthlyKpiTarget').value,
@@ -3245,12 +3293,15 @@ function openHistoricalPerformance(id){
 function closeHistoricalPerformance(){document.getElementById('historicalPerformanceModal').classList.remove('show')}
 function renderOpeningHours(){
   let t=document.getElementById('openingHoursTable');if(!t)return;
+  let canEdit=hasRolePermission('sunbed_settings','edit');
   t.innerHTML="<tr><th>Day</th><th>Opening Time</th><th>Closing Time</th></tr>"+[1,2,3,4,5,6,0].map(day=>{
     let h=(data.openingHours||DEFAULT_OPENING_HOURS)[day]||DEFAULT_OPENING_HOURS[day];
-    return `<tr><td><b>${DAY_NAMES[day]}</b></td><td><input type='time' id='open_${day}' value='${h.open}'></td><td><input type='time' id='close_${day}' value='${h.close}'></td></tr>`
+    return `<tr><td><b>${DAY_NAMES[day]}</b></td><td><input type='time' id='open_${day}' value='${h.open}' ${canEdit?'':'disabled'}></td><td><input type='time' id='close_${day}' value='${h.close}' ${canEdit?'':'disabled'}></td></tr>`
   }).join('');
+  let saveBtn=document.querySelector("button[onclick='saveOpeningHours()']");if(saveBtn)saveBtn.style.display=canEdit?'':'none';
 }
 async function saveOpeningHours(){
+  if(!requireRolePermission('sunbed_settings','edit'))return;
   for(let day of [0,1,2,3,4,5,6]){
     let open=document.getElementById('open_'+day).value,close=document.getElementById('close_'+day).value;
     if(!open||!close||timeToMinutes(close)<=timeToMinutes(open))return alert(`Please enter valid opening and closing times for ${DAY_NAMES[day]}.`);
@@ -3277,13 +3328,13 @@ function renderMonthlyReviewsRecorder(){
   document.getElementById('monthEndFacebookReviews').value=existing?existing.facebook:'';
   document.getElementById('monthEndGoogleReviews').value=existing?existing.google:'';
 
-  let isAdmin=currentProfile?.role==='admin';
-  document.getElementById('monthEndFacebookReviews').readOnly=!isAdmin;
-  document.getElementById('monthEndGoogleReviews').readOnly=!isAdmin;
-  document.getElementById('monthEndReviewSaveBtn').style.display=isAdmin?'inline-block':'none';
+  let canEdit=hasRolePermission('performance_reporting','edit');
+  document.getElementById('monthEndFacebookReviews').readOnly=!canEdit;
+  document.getElementById('monthEndGoogleReviews').readOnly=!canEdit;
+  document.getElementById('monthEndReviewSaveBtn').style.display=canEdit?'inline-block':'none';
 }
 async function saveMonthEndReviews(){
-  if(currentProfile?.role!=='admin')return;
+  if(!requireRolePermission('performance_reporting','edit'))return;
   let facebook=+document.getElementById('monthEndFacebookReviews').value,
       google=+document.getElementById('monthEndGoogleReviews').value,
       err=document.getElementById('monthEndReviewError'),
@@ -3330,9 +3381,9 @@ function renderDailyTakings(){
   if(!hidden.value)hidden.value=localDateKey();let key=hidden.value,row=getDailyTakings(key);
   document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(key);
   document.getElementById('dailyCashTaken').value=(+row?.cash||0).toFixed(2);document.getElementById('dailyTreatmentsCardTaken').value=(+row?.treatmentsCard||0).toFixed(2);document.getElementById('dailyBedCardTaken').value=(+row?.bedCard||0).toFixed(2);updateDailyTakingsTotal();
-  let canEdit=currentProfile?.role==='admin'||currentProfile?.role==='shop_manager';['dailyCashTaken','dailyTreatmentsCardTaken','dailyBedCardTaken'].forEach(id=>document.getElementById(id).readOnly=!canEdit);document.getElementById('saveDailyTakingsBtn').style.display=canEdit?'inline-block':'none';
+  let canEdit=hasRolePermission('daily_session_tracker','edit');['dailyCashTaken','dailyTreatmentsCardTaken','dailyBedCardTaken'].forEach(id=>document.getElementById(id).readOnly=!canEdit);document.getElementById('saveDailyTakingsBtn').style.display=canEdit?'inline-block':'none';
 }
-async function saveDailyTakings(){let key=document.getElementById('dailyTakingsDate').value||localDateKey(),cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');err.style.display='none';if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}btn.disabled=true;btn.textContent='Saving...';try{let {error}=await sb.from('daily_takings').upsert({takings_date:key,cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,updated_at:new Date().toISOString()},{onConflict:'takings_date'});if(error)throw error;await loadLiveData();renderDailyTakings();renderPerformanceReporting()}catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Save Daily Takings'}}
+async function saveDailyTakings(){if(!requireRolePermission('daily_session_tracker','edit'))return;let key=document.getElementById('dailyTakingsDate').value||localDateKey(),cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');err.style.display='none';if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}btn.disabled=true;btn.textContent='Saving...';try{let {error}=await sb.from('daily_takings').upsert({takings_date:key,cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,updated_at:new Date().toISOString()},{onConflict:'takings_date'});if(error)throw error;await loadLiveData();renderDailyTakings();renderPerformanceReporting()}catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Save Daily Takings'}}
 function periodRevenue(keys){
   let rows=(data.dailyTakings||[]).filter(x=>keys.includes(x.date)),
       cash=rows.reduce((s,x)=>s+(+x.cash||0),0),
@@ -4085,8 +4136,8 @@ async function bootRevibe(){
   }
   try{await loadLiveData();await loadRolePermissions();if(['admin','shop_manager'].includes(profile.role))await loadRevibeUsers()}catch(e){return alert('Could not load Revibe data: '+e.message)}
   document.getElementById('loginGate').style.display='none';document.querySelector('.app').style.display='grid';document.body.classList.remove('loading');
-  let ub=document.getElementById('userBar');ub.style.display='block';ub.innerHTML=`${profile.full_name||currentUser.email} · ${profile.role} &nbsp; <button onclick='logoutRevibe()'>Sign out</button>`;
-  updatePreferredBedOptions();renderAll();applyPermissionBasedNavigation();let addStaffBtn=document.getElementById('addStaffMemberBtn');if(addStaffBtn){addStaffBtn.style.display=currentProfile?.role==='admin'?'inline-block':'none';}let holidayBtn=document.getElementById('createHolidayRequestBtn');if(holidayBtn){holidayBtn.style.display=currentProfile?.role==='admin'?'inline-block':'none';}
+  let ub=document.getElementById('userBar');ub.style.display='block';ub.innerHTML=`${escapeHtml(profile.full_name||currentUser.email)} · ${escapeHtml(profile.role)} &nbsp; <button onclick='logoutRevibe()'>Sign out</button>`;
+  updatePreferredBedOptions();installPermissionGuards();renderAll();applyPermissionBasedNavigation();applyPermissionBasedActions();
 }
 document.getElementById('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')loginRevibe()});
 document.getElementById('newProductName').addEventListener('keydown',e=>{if(e.key==='Enter')saveNewProduct()});
