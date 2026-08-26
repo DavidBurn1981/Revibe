@@ -3551,7 +3551,7 @@ function showTodaysSessions(){
   w.document.close();
 }
 function toggleBlockBookingQuestion(){let signup=document.getElementById('sessionSignup').checked,row=document.getElementById('blockBookingRow'),block=document.getElementById('sessionBlockBooking');row.style.display=signup?'flex':'none';if(!signup)block.checked=false}
-function showSessionLoggedConfirmation(date){let m=document.getElementById('sessionLoggedMessage');if(m)m.textContent='The session for '+formatSunbedDisplayDate(date)+' has been logged successfully.';document.getElementById('sessionLoggedModal')?.classList.add('show');}
+function showSessionLoggedConfirmation(date){alert('Session logged successfully for '+formatSunbedDisplayDate(date)+'.');}
 function resetBedSessionForm(){
   let today=localDateKey();
   document.getElementById('sessionDate').value=today;
