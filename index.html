@@ -3540,16 +3540,43 @@ function getBedSessionHistoryData(){
   return {sessions:bedSessionHistoryRows()};
 }
 async function deleteBedSessionFromHistory(id){
-  if(!requireRolePermission('daily_session_tracker','edit','Your role does not have permission to delete sessions.'))return {ok:false};
+  if(!requireRolePermission('daily_session_tracker','edit','Your role does not have permission to delete sessions.'))return {ok:false,error:'Permission denied.'};
   let row=(data.bedSessions||[]).find(x=>String(x.id)===String(id));
   if(!row)return {ok:false,error:'The session could not be found.'};
-  if(!confirm(`Delete the ${row.length}-minute session logged at ${row.time||'this time'} on ${formatSunbedDisplayDate(row.date)}?\n\nThis cannot be undone.`))return {ok:false,cancelled:true};
+
   let {error}=await sb.from('bed_sessions').delete().eq('id',id);
-  if(error){alert('Could not delete the session: '+error.message);return {ok:false,error:error.message};}
-  await loadLiveData();
-  renderBedTracker();
+  if(error)return {ok:false,error:error.message};
+
+  try{
+    await loadLiveData();
+    renderBedTracker();
+  }catch(refreshError){
+    console.error('Session deleted but REVIBE refresh failed:',refreshError);
+  }
   return {ok:true,sessions:bedSessionHistoryRows()};
 }
+
+// Reliable communication from the pop-out Bed Sessions page.
+window.addEventListener('message',async function(e){
+  let msg=e.data;
+  if(!msg||msg.type!=='REVIBE_DELETE_BED_SESSION')return;
+
+  let result;
+  try{
+    result=await deleteBedSessionFromHistory(msg.id);
+  }catch(err){
+    result={ok:false,error:err?.message||String(err)};
+  }
+
+  try{
+    e.source?.postMessage({
+      type:'REVIBE_DELETE_BED_SESSION_RESULT',
+      requestId:msg.requestId,
+      result
+    },'*');
+  }catch(_){}
+});
+
 function showTodaysSessions(){
   let sessions=bedSessionHistoryRows();
   let today=localDateKey();
@@ -3581,14 +3608,43 @@ function showTodaysSessions(){
     document.getElementById('sessionRows').innerHTML=rows.length?rows.map(x=>'<tr id="sessionRow_'+esc(x.id)+'"><td>'+esc(x.time)+'</td><td>'+esc(x.length)+' min</td><td>'+esc(x.payment)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.newSignup)+'</td><td>'+esc(x.block)+'</td>'+(canDelete?'<td class="deleteCol"><button type="button" class="deleteBtn" data-session-id="'+esc(x.id)+'">Delete</button></td>':'')+'</tr>').join(''):'<tr><td class="empty" colspan="'+cols+'">No sessions recorded for this date.</td></tr>';
     document.getElementById('sessionTotals').innerHTML=rows.length?'<tr><td class="totalLabel">Total</td><td>'+esc(totalMinutes)+' min</td><td colspan="'+(canDelete?5:4)+'"></td></tr>':'';
   }
-  async function deleteSession(id,btn){
+  let pendingDeleteRequests={};
+  window.addEventListener('message',function(e){
+    const msg=e.data;
+    if(!msg||msg.type!=='REVIBE_DELETE_BED_SESSION_RESULT')return;
+    const pending=pendingDeleteRequests[msg.requestId];
+    if(!pending)return;
+    delete pendingDeleteRequests[msg.requestId];
+
+    const btn=pending.btn;
+    const result=msg.result||{};
+    if(result.ok){
+      sessions=result.sessions||sessions;
+      renderSessions(document.getElementById('sessionDatePicker').value);
+    }else{
+      alert('Could not delete the session: '+(result.error||'Unknown error.'));
+      if(document.body.contains(btn)){btn.classList.remove('deleting');btn.textContent='Delete';}
+    }
+  });
+
+  function deleteSession(id,btn){
+    const row=sessions.find(x=>String(x.id)===String(id));
+    if(!row)return alert('The session could not be found.');
+    if(!confirm('Delete the '+row.length+'-minute session logged at '+(row.time||'this time')+' on '+prettyDate(row.date)+'?\n\nThis cannot be undone.'))return;
     if(!window.opener||window.opener.closed)return alert('The REVIBE window is no longer open. Please reopen this page from REVIBE.');
+
     btn.classList.add('deleting');btn.textContent='Deleting...';
-    try{
-      const result=await window.opener.deleteBedSessionFromHistory(id);
-      if(result&&result.ok){sessions=result.sessions||sessions;renderSessions(document.getElementById('sessionDatePicker').value);}
-    }catch(e){alert('Could not delete the session: '+(e?.message||e));}
-    finally{if(document.body.contains(btn)){btn.classList.remove('deleting');btn.textContent='Delete';}}
+    const requestId=Date.now()+'_'+Math.random().toString(36).slice(2);
+    pendingDeleteRequests[requestId]={btn};
+    window.opener.postMessage({type:'REVIBE_DELETE_BED_SESSION',requestId,id},'*');
+
+    setTimeout(()=>{
+      const pending=pendingDeleteRequests[requestId];
+      if(!pending)return;
+      delete pendingDeleteRequests[requestId];
+      if(document.body.contains(btn)){btn.classList.remove('deleting');btn.textContent='Delete';}
+      alert('The delete request did not receive a response. Please try again.');
+    },8000);
   }
   document.getElementById('sessionRows').addEventListener('click',function(e){
     const btn=e.target.closest('.deleteBtn');
@@ -3655,11 +3711,40 @@ async function recordBedSession(){
    let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:(payment==='Account Minutes'||payment==='Free'||payment==='Free Session')?0:length};
    let {error}=await sb.from('bed_sessions').insert(payload);
    if(error)return alert(error.message);
-   await loadLiveData();renderBedTracker();resetBedSessionForm();
-   showSessionLoggedConfirmation(date);return
+
+   // Confirm immediately after Supabase has created the record.
+   // Do not make the user wait for the full REVIBE refresh.
+   resetBedSessionForm();
+   showSessionLoggedConfirmation(date);
+
+   try{
+     await loadLiveData();
+     renderBedTracker();
+     // renderBedTracker may rebuild the panel, so surface confirmation again
+     // on the refreshed DOM for the remainder of the 2-second confirmation.
+     showSessionLoggedConfirmation(date);
+   }catch(refreshError){
+     console.error('Session saved but REVIBE refresh failed:',refreshError);
+   }
+   return
  }
  let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');let accountUsed=0,payg=0;if(payment==='Free'||payment==='Free Session'){accountUsed=0;payg=0}else if(payment==='Account Minutes'){if(length>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${length} minutes.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}accountUsed=length}else if(pendingPaygSplit){accountUsed=pendingPaygSplit.account;payg=pendingPaygSplit.payg}else payg=length;
- let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg,p_session_date:date});if(error)return alert(error.message);pendingPaygSplit=null;await loadLiveData();renderBedTracker();renderCustomers();sessionCustomerChanged();resetBedSessionForm();showSessionLoggedConfirmation(date);
+ let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg,p_session_date:date});
+ if(error)return alert(error.message);
+ pendingPaygSplit=null;
+
+ resetBedSessionForm();
+ showSessionLoggedConfirmation(date);
+
+ try{
+   await loadLiveData();
+   renderBedTracker();
+   renderCustomers();
+   sessionCustomerChanged();
+   showSessionLoggedConfirmation(date);
+ }catch(refreshError){
+   console.error('Session saved but REVIBE refresh failed:',refreshError);
+ }
 }
 function addRenter(){
   if(!data.products.length)return alert('Create at least one Treatment Type before creating a Clinician.');
