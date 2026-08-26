@@ -3578,7 +3578,7 @@ function showTodaysSessions(){
     document.getElementById('dayKpi').textContent=calculateKpi(key).toFixed(1);
     document.title='Bed Sessions - '+prettyDate(key)+' - REVIBE';
     const cols=canDelete?7:6;
-    document.getElementById('sessionRows').innerHTML=rows.length?rows.map(x=>'<tr id="sessionRow_'+esc(x.id)+'"><td>'+esc(x.time)+'</td><td>'+esc(x.length)+' min</td><td>'+esc(x.payment)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.newSignup)+'</td><td>'+esc(x.block)+'</td>'+(canDelete?'<td class="deleteCol"><button class="deleteBtn" onclick="deleteSession(\\''+esc(x.id)+'\\', this)">Delete</button></td>':'')+'</tr>').join(''):'<tr><td class="empty" colspan="'+cols+'">No sessions recorded for this date.</td></tr>';
+    document.getElementById('sessionRows').innerHTML=rows.length?rows.map(x=>'<tr id="sessionRow_'+esc(x.id)+'"><td>'+esc(x.time)+'</td><td>'+esc(x.length)+' min</td><td>'+esc(x.payment)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.newSignup)+'</td><td>'+esc(x.block)+'</td>'+(canDelete?'<td class="deleteCol"><button type="button" class="deleteBtn" data-session-id="'+esc(x.id)+'">Delete</button></td>':'')+'</tr>').join(''):'<tr><td class="empty" colspan="'+cols+'">No sessions recorded for this date.</td></tr>';
     document.getElementById('sessionTotals').innerHTML=rows.length?'<tr><td class="totalLabel">Total</td><td>'+esc(totalMinutes)+' min</td><td colspan="'+(canDelete?5:4)+'"></td></tr>':'';
   }
   async function deleteSession(id,btn){
@@ -3590,6 +3590,13 @@ function showTodaysSessions(){
     }catch(e){alert('Could not delete the session: '+(e?.message||e));}
     finally{if(document.body.contains(btn)){btn.classList.remove('deleting');btn.textContent='Delete';}}
   }
+  document.getElementById('sessionRows').addEventListener('click',function(e){
+    const btn=e.target.closest('.deleteBtn');
+    if(!btn)return;
+    e.preventDefault();
+    e.stopPropagation();
+    deleteSession(btn.dataset.sessionId,btn);
+  });
   renderSessions('${today}');
   <\/script></body></html>`);
   w.document.close();
