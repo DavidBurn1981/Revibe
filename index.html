@@ -1116,6 +1116,7 @@ body.loading .app{visibility:hidden}
       <div><label>Clinician</label><select id='clinicCreateRenter'></select></div>
       <div><label>Start Time</label><input id='clinicCreateStart' type='time' value='09:00'></div>
       <div><label>End Time</label><input id='clinicCreateEnd' type='time' value='18:00'></div>
+      <div id='clinicCreateHoursHint' class='muted' style='grid-column:1/-1;margin-top:-4px'>Clinic hours must sit within the shop opening hours for the selected date.</div>
       <div><label>Provided Discount %</label><input id='clinicCreateDiscount' type='number' min='0' max='100' step='1' value='0'></div>
       <div><label>Rental Charge (£)</label><input id='clinicCreateRental' type='number' min='0' step='0.01' value='0.00'></div>
     </div>
@@ -1168,6 +1169,7 @@ body.loading .app{visibility:hidden}
       <div><label>Clinician</label><select id='clinicEditRenter'></select></div>
       <div><label>Start Time</label><input id='clinicEditStart' type='time'></div>
       <div><label>End Time</label><input id='clinicEditEnd' type='time'></div>
+      <div id='clinicEditHoursHint' class='muted' style='grid-column:1/-1;margin-top:-4px'></div>
       <div><label>Provided Discount %</label><input id='clinicEditDiscount' type='number' min='0' max='100' step='1'></div><div><label>Rental Charge (£)</label><input id='clinicEditRentalCharge' type='number' min='0' step='0.01' placeholder='0.00'></div>
     </div>
     <div style='display:flex;justify-content:space-between;gap:10px;margin-top:20px'>
@@ -3079,6 +3081,35 @@ function effectiveHoursForDate(dateKey){
   if(historic)return {open:historic.open,close:historic.close};
   return (data.openingHours||DEFAULT_OPENING_HOURS)[day]||DEFAULT_OPENING_HOURS[day];
 }
+
+function clinicShopHoursForDate(dateKey){
+  if(!dateKey)return null;
+  let h=effectiveHoursForDate(dateKey);
+  return h&&h.open&&h.close?{open:String(h.open).slice(0,5),close:String(h.close).slice(0,5)}:null;
+}
+function setClinicTimeInputBounds(startId,endId,dateKey,hintId,resetValues=false){
+  let h=clinicShopHoursForDate(dateKey),startEl=document.getElementById(startId),endEl=document.getElementById(endId),hint=document.getElementById(hintId);
+  if(!h||!startEl||!endEl)return;
+  startEl.min=h.open;startEl.max=h.close;
+  endEl.min=h.open;endEl.max=h.close;
+  if(resetValues){
+    startEl.value=h.open;
+    endEl.value=h.close;
+  }else{
+    if(!startEl.value||timeToMinutes(startEl.value)<timeToMinutes(h.open)||timeToMinutes(startEl.value)>=timeToMinutes(h.close))startEl.value=h.open;
+    if(!endEl.value||timeToMinutes(endEl.value)>timeToMinutes(h.close)||timeToMinutes(endEl.value)<=timeToMinutes(h.open))endEl.value=h.close;
+  }
+  if(hint)hint.textContent=`Shop hours for this date: ${h.open}–${h.close}. Clinic hours must stay within this range.`;
+}
+function clinicHoursValidationMessage(dateKey,start,end){
+  if(!start||!end||timeToMinutes(end)<=timeToMinutes(start))return 'Please enter valid clinic start and end times.';
+  let h=clinicShopHoursForDate(dateKey);
+  if(!h)return null;
+  if(timeToMinutes(start)<timeToMinutes(h.open))return `Clinic start time cannot be earlier than the shop opening time of ${h.open}.`;
+  if(timeToMinutes(end)>timeToMinutes(h.close))return `Clinic end time cannot be later than the shop closing time of ${h.close}.`;
+  return null;
+}
+
 function getElapsedOpeningHours(now=new Date()){
   let key=localDateKey(now),h=effectiveHoursForDate(key),openMin=timeToMinutes(h.open),closeMin=timeToMinutes(h.close);
   let nowMin=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
@@ -4035,6 +4066,7 @@ function selectUniversalDate(key){
   if(universalDatePickerTarget==='clinicCreate'){
     document.getElementById('clinicCreateDate').value=key;
     document.getElementById('clinicCreateDateDisplay').value=formatSunbedDisplayDate(key);
+    setClinicTimeInputBounds('clinicCreateStart','clinicCreateEnd',key,'clinicCreateHoursHint',true);
   }else if(universalDatePickerTarget==='clinicCopy'){
     document.getElementById('clinicCopyDate').value=key;
     document.getElementById('clinicCopyDateDisplay').value=formatSunbedDisplayDate(key);
@@ -4105,6 +4137,14 @@ async function copyClinicDay(){
     return;
   }
 
+  let copyHoursError=clinicHoursValidationMessage(date,source.start,source.end);
+  if(copyHoursError){
+    let h=clinicShopHoursForDate(date);
+    err.textContent=`The copied clinic hours (${source.start}–${source.end}) do not fit the shop hours${h?` (${h.open}–${h.close})`:''} on ${formatSunbedDisplayDate(date)}. Create the Clinic Day manually so you can choose valid hours.`;
+    err.style.display='block';
+    return;
+  }
+
   let existing=data.clinicDays.find(x=>x.date===date);
   if(existing){
     let existingClinician=data.renters.find(r=>r.id===existing.renterId);
@@ -4148,6 +4188,7 @@ function openClinicEdit(id){
   document.getElementById('clinicEditRenter').value=String(c.renterId);
   document.getElementById('clinicEditStart').value=c.start;
   document.getElementById('clinicEditEnd').value=c.end;
+  setClinicTimeInputBounds('clinicEditStart','clinicEditEnd',c.date,'clinicEditHoursHint',false);
   document.getElementById('clinicEditDiscount').value=+c.discountPercent||0;document.getElementById('clinicEditRentalCharge').value=(+c.rentalCharge||0).toFixed(2);
 }
 function closeClinicEdit(){document.getElementById('clinicEditModal').classList.remove('show');editingClinicId=null}
@@ -4155,7 +4196,8 @@ async function saveClinicDayEdits(){
   let c=data.clinicDays.find(x=>x.id===editingClinicId);if(!c)return;
   let renterId=document.getElementById('clinicEditRenter').value,r=data.renters.find(x=>x.id===renterId);
   let start=document.getElementById('clinicEditStart').value,end=document.getElementById('clinicEditEnd').value,discount=+document.getElementById('clinicEditDiscount').value,rentalCharge=+document.getElementById('clinicEditRentalCharge').value;
-  if(!r)return alert('Please select a clinician.');if(!start||!end||minutesFromTime(end)<=minutesFromTime(start))return alert('Please enter valid clinic start and end times.');
+  if(!r)return alert('Please select a clinician.');
+  let hoursError=clinicHoursValidationMessage(c.date,start,end);if(hoursError)return alert(hoursError);
   let {error}=await sb.from('clinic_days').update({renter_id:renterId,product_id:r.productId,start_time:start,end_time:end,provided_discount_percent:discount,rental_charge:rentalCharge}).eq('id',c.id);
   if(error)return alert(error.message);closeClinicEdit();await loadLiveData();renderAll();
 }
@@ -4170,8 +4212,7 @@ function addClinic(){
       saveBtn=document.getElementById('clinicCreateSaveBtn');
 
   document.getElementById('clinicCreateDate').value=localDateKey();document.getElementById('clinicCreateDateDisplay').value=formatSunbedDisplayDate(localDateKey());
-  document.getElementById('clinicCreateStart').value='09:00';
-  document.getElementById('clinicCreateEnd').value='18:00';
+  setClinicTimeInputBounds('clinicCreateStart','clinicCreateEnd',localDateKey(),'clinicCreateHoursHint',true);
   document.getElementById('clinicCreateDiscount').value='0';
   document.getElementById('clinicCreateRental').value='0.00';
 
@@ -4206,7 +4247,8 @@ async function saveNewClinicDay(){
   if(!renter.productId)return showClinicCreateError('This clinician is not linked to a Treatment Type.');
   if(!date)return showClinicCreateError('Please select a date.');
   if(data.clinicDays.some(x=>x.date===date))return showClinicCreateError(`A Clinic Day already exists on ${formatSunbedDisplayDate(date)}.`);
-  if(!start||!end||minutesFromTime(end)<=minutesFromTime(start))return showClinicCreateError('Please enter valid start and end times.');
+  let hoursError=clinicHoursValidationMessage(date,start,end);
+  if(hoursError)return showClinicCreateError(hoursError);
   if(discount<0||discount>100)return showClinicCreateError('Discount must be between 0 and 100.');
   if(rental<0)return showClinicCreateError('Rental Charge cannot be negative.');
 
