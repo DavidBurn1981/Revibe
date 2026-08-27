@@ -862,7 +862,12 @@ body.loading .app{visibility:hidden}
       </div>
       <div id='userClinicianLinkWrap' style='display:none'>
         <label>Linked Clinician</label>
-        <select id='userClinicianLink'></select>
+        <select id='userClinicianLink' onchange='populateUserTreatmentTypeChoices()'></select>
+      </div>
+      <div id='userTreatmentTypesWrap' style='display:none;grid-column:1/-1'>
+        <label>Treatment Types</label>
+        <div id='userTreatmentTypeChoices' class='checkrow'></div>
+        <div class='muted' style='margin-top:6px'>Choose one or more Treatment Types this clinician is allowed to run Clinic Days for.</div>
       </div>
       <div id='userActiveWrap' style='display:none'>
         <label class='fieldInlineCheck'>
@@ -1061,7 +1066,7 @@ body.loading .app{visibility:hidden}
     <div class='top'><div><h1>Add Clinician</h1><div class='muted'>Create a treatment-room clinician and link their Product.</div></div><button onclick='closeRenterCreate()'>✕</button></div>
     <div class='formgrid' style='grid-template-columns:1fr 1fr'>
       <div><label>Name</label><input id='renterCreateName' placeholder='Clinician name'></div>
-      <div><label>Treatment Type</label><select id='renterCreateProduct'></select></div>
+      <div><label>Treatment Types</label><select id='renterCreateProduct' multiple size='4'></select><div class='muted' style='margin-top:5px'>Hold Ctrl/Cmd to select more than one.</div></div>
       <div><label>Phone</label><input id='renterCreatePhone' type='tel' placeholder='Optional'></div>
       <div><label>Email</label><input id='renterCreateEmail' type='email' placeholder='Optional'></div>
     </div>
@@ -1113,7 +1118,8 @@ body.loading .app{visibility:hidden}
   </div>
   <input id='clinicCreateDate' type='hidden'>
 </div>
-      <div><label>Clinician</label><select id='clinicCreateRenter'></select></div>
+      <div><label>Clinician</label><select id='clinicCreateRenter' onchange='refreshClinicCreateProductOptions()'></select></div>
+      <div><label>Treatment Type</label><select id='clinicCreateProduct'></select></div>
       <div><label>Start Time</label><input id='clinicCreateStart' type='time' value='09:00'></div>
       <div><label>End Time</label><input id='clinicCreateEnd' type='time' value='18:00'></div>
       <div id='clinicCreateHoursHint' class='muted' style='grid-column:1/-1;margin-top:-4px'>Clinic hours must sit within the shop opening hours for the selected date.</div>
@@ -1166,7 +1172,8 @@ body.loading .app{visibility:hidden}
     <div class='top'><div><h1>Edit Clinic Day</h1><div class='muted' id='clinicEditSubtitle'></div></div><button onclick='closeClinicEdit()'>✕</button></div>
     <div class='formgrid'>
       <div><label>Date</label><input id='clinicEditDate' readonly></div>
-      <div><label>Clinician</label><select id='clinicEditRenter'></select></div>
+      <div><label>Clinician</label><select id='clinicEditRenter' onchange='refreshClinicEditProductOptions()'></select></div>
+      <div><label>Treatment Type</label><select id='clinicEditProduct'></select></div>
       <div><label>Start Time</label><input id='clinicEditStart' type='time'></div>
       <div><label>End Time</label><input id='clinicEditEnd' type='time'></div>
       <div id='clinicEditHoursHint' class='muted' style='grid-column:1/-1;margin-top:-4px'></div>
@@ -1651,10 +1658,33 @@ const REVIBE_ROLE_DESCRIPTIONS={
   customer:'Customer portal login. Access is controlled from Admin → Roles & Permissions.'
 };
 
+function selectedUserTreatmentProductIds(){
+  return [...document.querySelectorAll('#userTreatmentTypeChoices input[type="checkbox"]:checked')].map(x=>x.value);
+}
+function populateUserTreatmentTypeChoices(selectedIds=null){
+  let host=document.getElementById('userTreatmentTypeChoices');if(!host)return;
+  let clinicianId=document.getElementById('userClinicianLink')?.value||'',
+      clinician=data.renters.find(r=>r.id===clinicianId);
+  if(selectedIds==null)selectedIds=clinician?.productIds||[];
+  let products=(data.products||[]).filter(p=>p.active!==false);
+  host.innerHTML=products.length?products.map(p=>`<label class='checkchoice'><input type='checkbox' value='${p.id}' ${selectedIds.includes(p.id)?'checked':''}><span>${escapeHtml(p.name)}</span></label>`).join(''):`<div class='muted'>No Treatment Types have been configured.</div>`;
+}
+async function saveClinicianTreatmentAssignments(renterId,productIds){
+  if(!renterId)return;
+  let del=await sb.from('renter_products').delete().eq('renter_id',renterId);
+  if(del.error)throw del.error;
+  if(productIds.length){
+    let ins=await sb.from('renter_products').insert(productIds.map(productId=>({renter_id:renterId,product_id:productId})));
+    if(ins.error)throw ins.error;
+  }
+}
 function updateUserRoleFields(){
   let role=document.getElementById('userRole').value,
-      wrap=document.getElementById('userClinicianLinkWrap');
+      wrap=document.getElementById('userClinicianLinkWrap'),
+      typesWrap=document.getElementById('userTreatmentTypesWrap');
   wrap.style.display=role==='renter'?'block':'none';
+  typesWrap.style.display=role==='renter'?'block':'none';
+  if(role==='renter')populateUserTreatmentTypeChoices();
   document.getElementById('userRoleDescription').innerHTML=
     `<b>${REVIBE_ROLE_LABELS[role]}</b><div class='muted' style='margin-top:6px'>${REVIBE_ROLE_DESCRIPTIONS[role]}</div>`;
 }
@@ -2042,6 +2072,7 @@ function openCreateUserModal(){
   document.getElementById('userEmail').value='';
   document.getElementById('userEmail').readOnly=false;
   document.getElementById('userRole').value='staff';
+  document.getElementById('userClinicianLink').value='';
   document.getElementById('userActiveWrap').style.display='none';
   document.getElementById('userSaveButton').textContent='Create User';
   document.getElementById('userFormError').style.display='none';
@@ -2081,6 +2112,7 @@ async function saveUser(){
       email=document.getElementById('userEmail').value.trim(),
       role=document.getElementById('userRole').value,
       clinicianId=role==='renter'?(document.getElementById('userClinicianLink').value||null):null,
+      clinicianProductIds=role==='renter'?selectedUserTreatmentProductIds():[],
       err=document.getElementById('userFormError'),
       btn=document.getElementById('userSaveButton');
 
@@ -2100,6 +2132,11 @@ async function saveUser(){
 
   if(role==='renter'&&!clinicianId){
     err.textContent='Please link this Clinician login to a Clinician record.';
+    err.style.display='block';
+    return;
+  }
+  if(role==='renter'&&!clinicianProductIds.length){
+    err.textContent='Please select at least one Treatment Type for this Clinician.';
     err.style.display='block';
     return;
   }
@@ -2173,8 +2210,10 @@ async function saveUser(){
       if(data?.error)throw new Error(data.error);
     }
 
+    if(role==='renter')await saveClinicianTreatmentAssignments(clinicianId,clinicianProductIds);
+    await loadLiveData();
     await loadRevibeUsers();
-    renderUsers();
+    renderAll();
 
     let createdEmail=email;
     let wasNew=!editingUserId;
@@ -2595,11 +2634,23 @@ async function saveTanningProduct(){let type=document.getElementById('tanningPro
 function sessionCustomerChanged(){let c=data.customers.find(x=>x.id===document.getElementById('sessionCustomer').value);document.getElementById('sessionCustomerBalance').textContent=c?`${c.minutesLeft} minutes left on account.`:'Select a customer to see account minutes.'}
 function purchaseMoreFromSession(){let id=document.getElementById('sessionCustomer').value;document.getElementById('insufficientMinutesModal').classList.remove('show');if(id)openCustomer(id)}
 function buyPaygRemainder(){let c=data.customers.find(x=>x.id===document.getElementById('sessionCustomer').value),len=+document.getElementById('sessionLength').value;if(!c)return;let use=confirm(`Use the customer's remaining ${c.minutesLeft} account minutes and pay for the remaining ${Math.max(0,len-c.minutesLeft)} minutes?`);if(use){pendingPaygSplit={account:Math.min(c.minutesLeft,len),payg:Math.max(0,len-c.minutesLeft)};let pp=data.tanningProducts.find(p=>p.active&&p.type==='PAYG Minutes'&&p.minutes===pendingPaygSplit.payg),priceText=pp?` (£${pp.price.toFixed(2)})`:'';document.getElementById('sessionPayment').value='PAYG - Card';document.getElementById('insufficientMinutesModal').classList.remove('show');alert(`${pendingPaygSplit.payg} minutes${priceText} need to be paid for. Complete payment, then press Record Session.`)}}
+function renderClinicDays(){
+  let table=document.getElementById('clinicTable');if(!table)return;
+  let rows=[...(data.clinicDays||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+  table.innerHTML='<tr><th>Date</th><th>Treatment Type</th><th>Clinician</th><th>Hours</th><th>Provided Discount</th><th>Rental Charge</th></tr>'+
+    (rows.length?rows.map(x=>{
+      let r=data.renters.find(z=>z.id===x.renterId),
+          d=parseLocalDateKey(x.date),
+          label=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+      return `<tr class='clinicRow' onclick="openClinicEdit('${x.id}')"><td><b>${label}</b></td><td>${escapeHtml(x.product||'')}</td><td>${escapeHtml(r?.name||'')}</td><td>${escapeHtml(x.start||'')}–${escapeHtml(x.end||'')}</td><td>${(+x.discountPercent||0)>0?`${+x.discountPercent}%`:'None'}</td><td>£${(+x.rentalCharge||0).toFixed(2)}</td></tr>`;
+    }).join(''):`<tr><td colspan='6' class='muted'>No Clinic Days have been created yet.</td></tr>`);
+}
 function renderTables(){
   renderProducts();renderProductDetail();
   renderCustomers();renderTanningProducts();
-  document.getElementById('renterTable').innerHTML='<tr><th>Name</th><th>Treatment Type</th><th>Phone</th><th>Email</th></tr>'+data.renters.map(x=>`<tr class='clinicRow' onclick="openRenterEdit('${x.id}')"><td><b>${escapeHtml(x.name)}</b></td><td>${escapeHtml(x.product||'')}</td><td>${escapeHtml(x.phone||'')}</td><td>${escapeHtml(x.email||'')}</td></tr>`).join('');
-  document.getElementById('clinicTable').innerHTML='<tr><th>Date</th><th>Treatment Type</th><th>Clinician</th><th>Hours</th><th>Provided Discount</th><th>Rental Charge</th></tr>'+data.clinicDays.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{let r=data.renters.find(z=>z.id===x.renterId),d=parseLocalDateKey(x.date),label=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});return `<tr class='clinicRow' onclick="openClinicEdit('${x.id}')"><td><b>${label}</b></td><td>${escapeHtml(x.product)}</td><td>${escapeHtml(r?.name||'')}</td><td>${x.start}–${x.end}</td><td>${(+x.discountPercent||0)>0?`${+x.discountPercent}%`:'None'}</td><td>£${(+x.rentalCharge||0).toFixed(2)}</td></tr>`}).join('');
+  document.getElementById('renterTable').innerHTML='<tr><th>Name</th><th>Treatment Types</th><th>Phone</th><th>Email</th></tr>'+
+    data.renters.map(x=>`<tr class='clinicRow' onclick="openRenterEdit('${x.id}')"><td><b>${escapeHtml(x.name)}</b></td><td>${escapeHtml((x.productNames||[]).join(', ')||x.product||'')}</td><td>${escapeHtml(x.phone||'')}</td><td>${escapeHtml(x.email||'')}</td></tr>`).join('');
+  renderClinicDays();
 }
 function openProduct(id){currentProduct=id;document.getElementById('productListView').style.display='none';document.getElementById('productDetailView').style.display='block';renderProductDetail()}
 function backToProducts(){currentProduct=null;document.getElementById('productDetailView').style.display='none';document.getElementById('productListView').style.display='block';renderProducts()}
@@ -2692,7 +2743,7 @@ async function saveNewTreatment(){
 }
 function showTreatmentCreateError(msg){let el=document.getElementById('treatmentCreateError');el.textContent=msg;el.style.display='block'}
 function resetPageScroll(){window.scrollTo({top:0,left:0,behavior:'instant'});document.querySelector('.main')?.scrollTo?.({top:0,left:0,behavior:'instant'})}
-function goToPage(pageId){resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders();if(pageId==='openinghours')renderOpeningHours();if(pageId==='dailysessions'){
+function goToPage(pageId){resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));let page=document.getElementById(pageId);if(page)page.classList.add('active');let navBtn=document.querySelector(`[data-page="${pageId}"]`);if(navBtn)navBtn.classList.add('active');if(pageId==='monthlytargets')renderMonthlyTargets();if(pageId==='performancereporting')renderPerformanceReporting();if(pageId==='rolespermissions')renderRolesPermissions();if(pageId==='users')renderUsers();if(pageId==='finance')renderFinance();if(pageId==='orders')renderOrders();if(pageId==='openinghours')renderOpeningHours();if(pageId==='clinic')renderClinicDays();if(pageId==='dailysessions'){
   let dailyPicker=document.getElementById('dailySessionsDatePicker');
   if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
   renderDailySessionsPage(dailyPicker?.value||localDateKey());
@@ -2709,7 +2760,7 @@ function renderAll(){renderCalendar();renderSunbedCalendar();renderStaffMembers(
     let dailyPicker=document.getElementById('dailySessionsDatePicker');
     if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
     renderDailySessionsPage(dailyPicker?.value||localDateKey());
-  }}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders();if(e.target.dataset.page==='openinghours')renderOpeningHours();
+  }}document.getElementById('nav').onclick=e=>{if(!e.target.dataset.page)return;resetPageScroll();document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');document.getElementById(e.target.dataset.page).classList.add('active');if(e.target.dataset.page==='performancereporting')renderPerformanceReporting();if(e.target.dataset.page==='monthlytargets')renderMonthlyTargets();if(e.target.dataset.page==='users')renderUsers();if(e.target.dataset.page==='rolespermissions')renderRolesPermissions();if(e.target.dataset.page==='finance')renderFinance();if(e.target.dataset.page==='orders')renderOrders();if(e.target.dataset.page==='openinghours')renderOpeningHours();if(e.target.dataset.page==='clinic')renderClinicDays();
 if(e.target.dataset.page==='dailysessions'){
   let dailyPicker=document.getElementById('dailySessionsDatePicker');
   if(dailyPicker)dailyPicker.value=localDateKey();
@@ -3982,13 +4033,20 @@ async function recordBedSession(){
    console.error('Session saved but REVIBE refresh failed:',refreshError);
  }
 }
+function populateRenterProductSelect(selectedIds=[]){
+  let sel=document.getElementById('renterCreateProduct');if(!sel)return;
+  sel.innerHTML=data.products.filter(p=>p.active!==false).map(p=>`<option value='${p.id}' ${selectedIds.includes(p.id)?'selected':''}>${escapeHtml(p.name)}</option>`).join('');
+}
+function selectedRenterProductIds(){
+  return [...document.getElementById('renterCreateProduct').selectedOptions].map(x=>x.value);
+}
 function addRenter(){
   if(!data.products.length)return alert('Create at least one Treatment Type before creating a Clinician.');
   editingRenterId=null;
   document.getElementById('renterModalTitle').textContent='Add Clinician';
-  document.getElementById('renterModalSubtitle').textContent='Create a treatment-room clinician and link their Treatment Type.';
+  document.getElementById('renterModalSubtitle').textContent='Create a treatment-room clinician and link their Treatment Types.';
   document.getElementById('renterCreateName').value='';document.getElementById('renterCreatePhone').value='';document.getElementById('renterCreateEmail').value='';
-  document.getElementById('renterCreateProduct').innerHTML=data.products.filter(p=>p.active!==false).map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
+  populateRenterProductSelect([]);
   document.getElementById('renterCreateSaveBtn').textContent='Create Clinician';
   document.getElementById('renterCreateError').style.display='none';
   document.getElementById('deleteRenterBtn').style.display='none';document.getElementById('renterCreateModal').classList.add('show');
@@ -3997,10 +4055,9 @@ function openRenterEdit(id){
   let r=data.renters.find(x=>x.id===id);if(!r)return;
   editingRenterId=id;
   document.getElementById('renterModalTitle').textContent='Edit Clinician';
-  document.getElementById('renterModalSubtitle').textContent='Update clinician details and Treatment Type.';
+  document.getElementById('renterModalSubtitle').textContent='Update clinician details and Treatment Types.';
   document.getElementById('renterCreateName').value=r.name||'';document.getElementById('renterCreatePhone').value=r.phone||'';document.getElementById('renterCreateEmail').value=r.email||'';
-  document.getElementById('renterCreateProduct').innerHTML=data.products.filter(p=>p.active!==false).map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
-  document.getElementById('renterCreateProduct').value=r.productId||'';
+  populateRenterProductSelect(r.productIds||[]);
   document.getElementById('renterCreateSaveBtn').textContent='Save Changes';
   document.getElementById('renterCreateError').style.display='none';
   document.getElementById('deleteRenterBtn').style.display='inline-block';
@@ -4010,25 +4067,25 @@ async function deleteRenter(){if(!editingRenterId)return alert('Save the clinici
 function closeRenterCreate(){document.getElementById('renterCreateModal').classList.remove('show');editingRenterId=null}
 async function saveNewRenter(){
   let name=document.getElementById('renterCreateName').value.trim(),phone=document.getElementById('renterCreatePhone').value.trim(),
-      email=document.getElementById('renterCreateEmail').value.trim(),productId=document.getElementById('renterCreateProduct').value,
+      email=document.getElementById('renterCreateEmail').value.trim(),productIds=selectedRenterProductIds(),
       err=document.getElementById('renterCreateError'),btn=document.getElementById('renterCreateSaveBtn'),id=editingRenterId;
   err.style.display='none';
   if(!name)return showRenterCreateError('Please enter a clinician name.');
-  if(!productId)return showRenterCreateError('Please select a Treatment Type.');
+  if(!productIds.length)return showRenterCreateError('Please select at least one Treatment Type.');
   btn.disabled=true;btn.textContent=id?'Saving...':'Creating...';
   try{
+    let renterId=id;
     if(id){
       let {error}=await sb.from('renters').update({name,phone:phone||null,email:email||null}).eq('id',id);if(error)throw error;
-      let del=await sb.from('renter_products').delete().eq('renter_id',id);if(del.error)throw del.error;
-      let link=await sb.from('renter_products').insert({renter_id:id,product_id:productId});if(link.error)throw link.error;
     }else{
       let {data:row,error}=await sb.from('renters').insert({name,phone:phone||null,email:email||null,active:true}).select().single();if(error)throw error;
-      let link=await sb.from('renter_products').insert({renter_id:row.id,product_id:productId});if(link.error)throw link.error;
+      renterId=row.id;
     }
+    await saveClinicianTreatmentAssignments(renterId,productIds);
     document.getElementById('renterCreateModal').classList.remove('show');editingRenterId=null;
     await loadLiveData();renderAll();
   }catch(e){showRenterCreateError(e.message||'Could not save Clinician.')}
-  finally{btn.disabled=false;btn.textContent='Create Clinician';}
+  finally{btn.disabled=false;btn.textContent=id?'Save Changes':'Create Clinician';}
 }
 function showRenterCreateError(msg){let el=document.getElementById('renterCreateError');el.textContent=msg;el.style.display='block'}
 
@@ -4131,6 +4188,17 @@ async function copyClinicDay(){
 
   err.style.display='none';
   if(!source)return;
+  if(currentProfile?.role==='renter'&&source.renterId!==currentProfile?.renter_id){
+    err.textContent='Clinicians can only copy their own Clinic Days.';
+    err.style.display='block';
+    return;
+  }
+  let sourceRenter=data.renters.find(r=>r.id===source.renterId);
+  if(!sourceRenter||(sourceRenter.productIds||[]).includes(source.productId)===false){
+    err.textContent='The Treatment Type on this Clinic Day is no longer assigned to the clinician.';
+    err.style.display='block';
+    return;
+  }
   if(!date){
     err.textContent='Please select the date for the copied Clinic Day.';
     err.style.display='block';
@@ -4177,54 +4245,108 @@ async function copyClinicDay(){
     btn.disabled=false;btn.textContent='Create Copy';
   }
 }
+function clinicianAllowedProducts(renter){
+  if(!renter)return [];
+  let ids=renter.productIds||[];
+  return (data.products||[]).filter(p=>ids.includes(p.id)&&p.active!==false);
+}
+function refreshClinicCreateProductOptions(selectedProductId=null){
+  let renterId=document.getElementById('clinicCreateRenter')?.value||'',
+      renter=data.renters.find(r=>r.id===renterId),
+      sel=document.getElementById('clinicCreateProduct'),
+      saveBtn=document.getElementById('clinicCreateSaveBtn'),
+      errBox=document.getElementById('clinicCreateError');
+  if(!sel)return;
+  let products=clinicianAllowedProducts(renter);
+  sel.innerHTML=products.length?products.map(p=>`<option value='${p.id}'>${escapeHtml(p.name)}</option>`).join(''):`<option value=''>No Treatment Types assigned</option>`;
+  if(selectedProductId&&products.some(p=>p.id===selectedProductId))sel.value=selectedProductId;
+  if(saveBtn)saveBtn.disabled=!products.length;
+  if(errBox){
+    if(products.length){
+      if(errBox.textContent.includes('Treatment Type'))errBox.style.display='none';
+    }else if(renter){
+      errBox.textContent='This clinician does not have any Treatment Types assigned. Update the Clinician user first.';
+      errBox.style.display='block';
+    }
+  }
+}
+function refreshClinicEditProductOptions(selectedProductId=null){
+  let renterId=document.getElementById('clinicEditRenter')?.value||'',
+      renter=data.renters.find(r=>r.id===renterId),
+      sel=document.getElementById('clinicEditProduct');if(!sel)return;
+  let products=clinicianAllowedProducts(renter);
+  sel.innerHTML=products.length?products.map(p=>`<option value='${p.id}'>${escapeHtml(p.name)}</option>`).join(''):`<option value=''>No Treatment Types assigned</option>`;
+  if(selectedProductId&&products.some(p=>p.id===selectedProductId))sel.value=selectedProductId;
+}
+function currentClinicianRenter(){
+  if(currentProfile?.role!=='renter')return null;
+  return data.renters.find(r=>r.id===currentProfile?.renter_id)||null;
+}
 function openClinicEdit(id){
   let c=data.clinicDays.find(x=>x.id===id);if(!c)return;
+  if(currentProfile?.role==='renter'&&c.renterId!==currentProfile?.renter_id)return alert('Clinicians can only edit their own Clinic Days.');
   editingClinicId=id;
   document.getElementById('clinicEditModal').classList.add('show');
   let d=parseLocalDateKey(c.date);
   document.getElementById('clinicEditSubtitle').textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('clinicEditDate').value=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
-  document.getElementById('clinicEditRenter').innerHTML=data.renters.map(r=>`<option value='${r.id}'>${r.name} — ${r.product}</option>`).join('');
-  document.getElementById('clinicEditRenter').value=String(c.renterId);
+  let renterSelect=document.getElementById('clinicEditRenter'),
+      allowedRenters=currentProfile?.role==='renter'?[currentClinicianRenter()].filter(Boolean):data.renters;
+  renterSelect.innerHTML=allowedRenters.map(r=>`<option value='${r.id}'>${escapeHtml(r.name)} — ${escapeHtml((r.productNames||[]).join(', ')||'No Treatment Types')}</option>`).join('');
+  renterSelect.disabled=currentProfile?.role==='renter';
+  renterSelect.value=String(c.renterId);
+  refreshClinicEditProductOptions(c.productId);
   document.getElementById('clinicEditStart').value=c.start;
   document.getElementById('clinicEditEnd').value=c.end;
   setClinicTimeInputBounds('clinicEditStart','clinicEditEnd',c.date,'clinicEditHoursHint',false);
-  document.getElementById('clinicEditDiscount').value=+c.discountPercent||0;document.getElementById('clinicEditRentalCharge').value=(+c.rentalCharge||0).toFixed(2);
+  document.getElementById('clinicEditDiscount').value=+c.discountPercent||0;
+  document.getElementById('clinicEditRentalCharge').value=(+c.rentalCharge||0).toFixed(2);
 }
 function closeClinicEdit(){document.getElementById('clinicEditModal').classList.remove('show');editingClinicId=null}
 async function saveClinicDayEdits(){
   let c=data.clinicDays.find(x=>x.id===editingClinicId);if(!c)return;
-  let renterId=document.getElementById('clinicEditRenter').value,r=data.renters.find(x=>x.id===renterId);
-  let start=document.getElementById('clinicEditStart').value,end=document.getElementById('clinicEditEnd').value,discount=+document.getElementById('clinicEditDiscount').value,rentalCharge=+document.getElementById('clinicEditRentalCharge').value;
+  let renterId=document.getElementById('clinicEditRenter').value,
+      productId=document.getElementById('clinicEditProduct').value,
+      r=data.renters.find(x=>x.id===renterId),
+      start=document.getElementById('clinicEditStart').value,
+      end=document.getElementById('clinicEditEnd').value,
+      discount=+document.getElementById('clinicEditDiscount').value,
+      rentalCharge=+document.getElementById('clinicEditRentalCharge').value;
   if(!r)return alert('Please select a clinician.');
+  if(currentProfile?.role==='renter'&&r.id!==currentProfile?.renter_id)return alert('Clinicians can only manage their own Clinic Days.');
+  if(!productId||!(r.productIds||[]).includes(productId))return alert('Please select a Treatment Type assigned to this clinician.');
   let hoursError=clinicHoursValidationMessage(c.date,start,end);if(hoursError)return alert(hoursError);
-  let {error}=await sb.from('clinic_days').update({renter_id:renterId,product_id:r.productId,start_time:start,end_time:end,provided_discount_percent:discount,rental_charge:rentalCharge}).eq('id',c.id);
-  if(error)return alert(error.message);closeClinicEdit();await loadLiveData();renderAll();
+  let {error}=await sb.from('clinic_days').update({renter_id:renterId,product_id:productId,start_time:start,end_time:end,provided_discount_percent:discount,rental_charge:rentalCharge}).eq('id',c.id);
+  if(error)return alert(error.message);closeClinicEdit();await loadLiveData();renderAll();renderClinicDays();
 }
 async function deleteClinicDay(){
   if(editingClinicId==null)return;if(!confirm('Delete this clinic day?'))return;
   let {error}=await sb.from('clinic_days').delete().eq('id',editingClinicId);if(error)return alert(error.message);
-  closeClinicEdit();await loadLiveData();renderAll();
+  closeClinicEdit();await loadLiveData();renderAll();renderClinicDays();
 }
 function addClinic(){
   let renterSelect=document.getElementById('clinicCreateRenter'),
       errBox=document.getElementById('clinicCreateError'),
       saveBtn=document.getElementById('clinicCreateSaveBtn');
 
-  document.getElementById('clinicCreateDate').value=localDateKey();document.getElementById('clinicCreateDateDisplay').value=formatSunbedDisplayDate(localDateKey());
+  document.getElementById('clinicCreateDate').value=localDateKey();
+  document.getElementById('clinicCreateDateDisplay').value=formatSunbedDisplayDate(localDateKey());
   setClinicTimeInputBounds('clinicCreateStart','clinicCreateEnd',localDateKey(),'clinicCreateHoursHint',true);
   document.getElementById('clinicCreateDiscount').value='0';
   document.getElementById('clinicCreateRental').value='0.00';
 
-  if(data.renters.length){
-    renterSelect.innerHTML=data.renters.map(r=>`<option value='${r.id}'>${r.name} — ${r.product||'No Product linked'}</option>`).join('');
-    saveBtn.disabled=false;
-    errBox.style.display='none';
+  let allowedRenters=currentProfile?.role==='renter'?[currentClinicianRenter()].filter(Boolean):data.renters.filter(r=>r.active!==false);
+  if(allowedRenters.length){
+    renterSelect.innerHTML=allowedRenters.map(r=>`<option value='${r.id}'>${escapeHtml(r.name)} — ${escapeHtml((r.productNames||[]).join(', ')||'No Treatment Types linked')}</option>`).join('');
+    renterSelect.disabled=currentProfile?.role==='renter';
+    refreshClinicCreateProductOptions();
     document.getElementById('clinicCreateRenterShortcut').style.display='none';
   }else{
     renterSelect.innerHTML=`<option value=''>No clinicians configured</option>`;
+    renterSelect.disabled=false;
+    document.getElementById('clinicCreateProduct').innerHTML=`<option value=''>No Treatment Types available</option>`;
     saveBtn.disabled=true;
-    errBox.textContent='You need to create a Clinician before you can create a Clinic Day. Go to Renters → Add Clinician, then come back here.';
+    errBox.textContent=currentProfile?.role==='renter'?'Your login is not linked to a Clinician record.':'You need to create a Clinician before you can create a Clinic Day.';
     errBox.style.display='block';
   }
 
@@ -4233,6 +4355,7 @@ function addClinic(){
 function closeClinicCreate(){document.getElementById('clinicCreateModal').classList.remove('show')}
 async function saveNewClinicDay(){
   let renterId=document.getElementById('clinicCreateRenter').value,
+      productId=document.getElementById('clinicCreateProduct').value,
       renter=data.renters.find(r=>r.id===renterId),
       date=document.getElementById('clinicCreateDate').value,
       start=document.getElementById('clinicCreateStart').value,
@@ -4244,7 +4367,8 @@ async function saveNewClinicDay(){
 
   errBox.style.display='none';
   if(!renter)return showClinicCreateError('Please select a clinician.');
-  if(!renter.productId)return showClinicCreateError('This clinician is not linked to a Treatment Type.');
+  if(currentProfile?.role==='renter'&&renter.id!==currentProfile?.renter_id)return showClinicCreateError('Clinicians can only create Clinic Days for their own Clinician record.');
+  if(!productId||!(renter.productIds||[]).includes(productId))return showClinicCreateError('Please select a Treatment Type assigned to this clinician.');
   if(!date)return showClinicCreateError('Please select a date.');
   if(data.clinicDays.some(x=>x.date===date))return showClinicCreateError(`A Clinic Day already exists on ${formatSunbedDisplayDate(date)}.`);
   let hoursError=clinicHoursValidationMessage(date,start,end);
@@ -4257,7 +4381,7 @@ async function saveNewClinicDay(){
     let {error}=await sb.from('clinic_days').insert({
       clinic_date:date,
       renter_id:renter.id,
-      product_id:renter.productId,
+      product_id:productId,
       start_time:start,
       end_time:end,
       provided_discount_percent:discount,
@@ -4268,6 +4392,7 @@ async function saveNewClinicDay(){
     closeClinicCreate();
     await loadLiveData();
     renderAll();
+    renderClinicDays();
   }catch(e){
     showClinicCreateError(e.message||'Could not create Clinic Day.');
   }finally{
@@ -4309,7 +4434,14 @@ async function loadLiveData(){
   if(err)throw err;
   data.products=products.data.map(x=>({id:x.id,name:x.name,active:x.active}));
   data.treatments=treatments.data.map(x=>({id:x.id,productId:x.product_id,product:data.products.find(p=>p.id===x.product_id)?.name||'',name:x.name,duration:x.duration_minutes,buffer:x.buffer_minutes,price:+x.price,active:x.active}));
-  data.renters=renters.data.map(x=>{let rp=renterProducts.data.find(y=>y.renter_id===x.id),p=data.products.find(z=>z.id===rp?.product_id);return {id:x.id,name:x.name,phone:x.phone,email:x.email,active:x.active,productId:p?.id||null,product:p?.name||''}});
+  data.renters=renters.data.map(x=>{
+    let links=renterProducts.data.filter(y=>y.renter_id===x.id),
+        productIds=links.map(y=>y.product_id).filter(Boolean),
+        productNames=productIds.map(id=>data.products.find(p=>p.id===id)?.name).filter(Boolean),
+        firstId=productIds[0]||null,
+        firstName=productNames[0]||'';
+    return {id:x.id,name:x.name,phone:x.phone,email:x.email,active:x.active,productIds,productNames,productId:firstId,product:firstName};
+  });
   data.clinicDays=clinics.data.map(x=>({id:x.id,date:x.clinic_date,renterId:x.renter_id,productId:x.product_id,product:data.products.find(p=>p.id===x.product_id)?.name||'',start:(x.start_time||'').slice(0,5),end:(x.end_time||'').slice(0,5),discountPercent:+x.provided_discount_percent||0,rentalCharge:+x.rental_charge||0}));
   data.appointments=bookings.data.map(x=>({id:x.id,date:x.booking_date,time:(x.start_time||'').slice(0,5),treatmentId:x.treatment_id,customerName:x.customer_name,customerPhone:x.customer_phone,price:+x.price,clinicDiscountPercent:+x.clinic_discount_percent,amountPayable:+x.amount_payable,notes:x.notes,status:x.status}));
   data.beds=beds.data.map(x=>({id:x.id,name:x.name,number:x.bed_number,type:x.bed_type,active:x.active}));
