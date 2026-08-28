@@ -1288,6 +1288,7 @@ const SUPABASE_KEY='sb_publishable_ciDrF9_Fo5_tVL9E9m8EZw_R0QStFpc';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,currentProfile=null;let temporaryPasswordUserId=null;let temporaryPasswordUserEmail='';let editingOrderId=null;let editingProductId=null;let editingTreatmentId=null;let editingRenterId=null;let editingStaffId=null;let universalDatePickerTarget=null;let universalDatePickerMonth=new Date();let editingUserId=null;let revibeUsers=[];let revibeRolePermissions=[];let editingPermissionRole=null;let workingRolePermissions={};let editingMonthlyTargetId=null;let editingHolidayRequestId=null;let holidayPickerMode='start';let holidayPickerMonth=new Date();
 let data={products:[],renters:[],treatments:[],customers:[],clinicDays:[],appointments:[],bedSessions:[],sunbedBookings:[],staffMembers:[],staffShifts:[],monthlyTargets:[],monthlyReviewCounts:[],holidayRequests:[],dailyTakings:[],orders:[],financeOutgoings:[],tanningProducts:[],customerTransactions:[],openingHours:null,openingHoursHistory:[]};
+let financeMonth=new Date().getMonth()+1,financeYear=new Date().getFullYear();
 let booking={date:null,treatment:null,product:null,clinicId:null};let editingCustomerId=null,editingTanningProductId=null,purchaseProductId=null,pendingPaygSplit=null;let currentProduct=null;let editingClinicId=null;
 let weekStart=startMonday(new Date());let staffRotaWeekStart=startMonday(new Date());let shiftPickerMonth=new Date();let staffJoinPickerMonth=new Date();let sunbedWeekStart=startMonday(new Date());let sunbedSessionType='Red Light Therapy';let pendingSunbedBooking=null;let sunbedPickerMonth=new Date();let displayDays=7;
 const DEFAULT_OPENING_HOURS={0:{open:'09:00',close:'21:00'},1:{open:'09:00',close:'21:00'},2:{open:'09:00',close:'21:00'},3:{open:'09:00',close:'21:00'},4:{open:'09:00',close:'21:00'},5:{open:'09:00',close:'21:00'},6:{open:'09:00',close:'21:00'}};
@@ -4521,6 +4522,32 @@ function showClinicCreateError(msg){
 }
 function resetDemo(){alert('Prototype reset is disabled in the live system.')}
 
+async function loadAllBedSessions(){
+  const pageSize=1000;
+  let allRows=[];
+  let from=0;
+
+  while(true){
+    let {data:rows,error}=await sb
+      .from('bed_sessions')
+      .select('*')
+      .order('session_date',{ascending:true})
+      .order('session_time',{ascending:true})
+      .order('id',{ascending:true})
+      .range(from,from+pageSize-1);
+
+    if(error)return {data:null,error};
+
+    rows=rows||[];
+    allRows.push(...rows);
+
+    if(rows.length<pageSize)break;
+    from+=pageSize;
+  }
+
+  return {data:allRows,error:null};
+}
+
 async function loadLiveData(){
   let [products,treatments,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist]=await Promise.all([
     sb.from('products').select('*').order('name'),
@@ -4531,7 +4558,7 @@ async function loadLiveData(){
     sb.from('treatment_bookings').select('*').order('booking_date'),
     sb.from('beds').select('*').order('bed_number'),
     sb.from('sunbed_bookings').select('*').order('booking_date'),
-    sb.from('bed_sessions').select('*').order('session_date'),
+    loadAllBedSessions(),
     sb.from('staff_members').select('*').order('name'),
     sb.from('staff_shifts').select('*').order('shift_date'),
     sb.from('monthly_targets').select('*').order('target_month'),
