@@ -574,7 +574,7 @@ body.loading .app{visibility:hidden}
       <div style='min-width:220px'>
         <label for='dailySessionsDatePicker' style='text-align:right'>Select Date</label>
         <div style='display:flex;gap:8px'>
-          <input id='dailySessionsDatePicker' type='date' onchange='renderDailySessionsPage(this.value)' style='flex:1'>
+          <input id='dailySessionsDatePicker' type='date' onchange='renderDailySessionsPage(this.value);refreshDailySessionsPage(this.value)' style='flex:1'>
           <button type='button' class='calendarBtn' aria-label='Open calendar' onclick="openDailySessionsCalendar()">📅</button>
         </div>
       </div>
@@ -588,6 +588,7 @@ body.loading .app{visibility:hidden}
       <div class='value' id='dailySessionsKpiValue'>0.0</div>
     </div>
   </div>
+  <div id='dailySessionsLoadStatus' class='muted' style='min-height:18px;margin:-6px 0 12px'></div>
 
   <div class='card' style='padding:0;overflow:hidden'>
     <div class='bedSessionsTableWrap' style='max-height:calc(100vh - 270px);min-height:420px'>
@@ -2786,9 +2787,11 @@ function renderPageForNavigation(pageId){
       renderHolidayRequests();
       break;
     case 'dailysessions': {
-      let dailyPicker=document.getElementById('dailySessionsDatePicker');
-      if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
-      renderDailySessionsPage(dailyPicker?.value||localDateKey());
+      let today=localDateKey(),
+          dailyPicker=document.getElementById('dailySessionsDatePicker');
+      if(dailyPicker)dailyPicker.value=today;
+      renderDailySessionsPage(today);
+      refreshDailySessionsPage(today);
       break;
     }
     case 'bedtracker':
@@ -3745,7 +3748,15 @@ function renderDailyAverageComparison(){
 function renderBedTracker(){
   if(!data.bedSessions)data.bedSessions=[];
   if(!data.sunbedBookings)data.sunbedBookings=[];
-  let sd=document.getElementById('sessionDate');if(sd&&!sd.value){sd.value=localDateKey();document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(sd.value)}
+  let sd=document.getElementById('sessionDate');
+  if(sd){
+    let todayKey=localDateKey();
+    if(!sd.value||(sd.dataset.manuallySelected!=='1'&&sd.value!==todayKey)){
+      sd.value=todayKey;
+      sd.dataset.manuallySelected='0';
+      document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(sd.value);
+    }
+  }
   let td=document.getElementById('dailyTakingsDate');if(td&&!td.value){td.value=localDateKey();document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(td.value)}
 
   let today=localDateKey(),
@@ -3862,6 +3873,47 @@ function openBonusPerformance(){
 }
 function openPerformance(mode){document.getElementById('performanceOverlay').classList.add('show');if(mode==='charts')renderPerformanceCharts();else renderPeriodPerformance(mode)}
 function closePerformance(){document.getElementById('performanceOverlay').classList.remove('show')}
+function mapBedSessionDbRow(x){
+  return {
+    id:x.id,
+    date:x.session_date||x.date||'',
+    time:String(x.session_time||x.time||'').slice(0,5),
+    length:+(x.session_length_minutes??x.length)||0,
+    payment:x.payment_type??x.payment??'',
+    newSignup:x.new_sign_up??x.newSignup??false,
+    purchasedBlockBooking:x.purchased_block_booking??x.purchasedBlockBooking??false,
+    sessionType:x.session_type??x.sessionType??'',
+    createdAt:x.created_at??x.createdAt??null
+  };
+}
+
+async function loadBedSessionsOnly(){
+  let {data:rows,error}=await sb.from('bed_sessions').select('*').order('session_date').order('session_time');
+  if(error)throw error;
+  data.bedSessions=(rows||[]).map(mapBedSessionDbRow);
+  return data.bedSessions;
+}
+
+async function refreshDailySessionsPage(key){
+  key=key||localDateKey();
+  let status=document.getElementById('dailySessionsLoadStatus');
+  if(status){
+    status.textContent='Refreshing sessions…';
+    status.style.color='';
+  }
+  try{
+    await loadBedSessionsOnly();
+    renderDailySessionsPage(key);
+    if(status)status.textContent='';
+  }catch(e){
+    console.error('Could not refresh Daily Sessions:',e);
+    if(status){
+      status.textContent='Could not refresh sessions from the database. Please try again.';
+      status.style.color='#ff8c9d';
+    }
+  }
+}
+
 function bedSessionHistoryRows(){
   return (data.bedSessions||[]).map(x=>({
     id:x.id,
@@ -3891,10 +3943,13 @@ async function deleteBedSessionFromHistory(id){
   if(error)return {ok:false,error:error.message};
 
   try{
-    await loadLiveData();
+    await loadBedSessionsOnly();
     renderBedTracker();
   }catch(refreshError){
-    console.error('Session deleted but REVIBE refresh failed:',refreshError);
+    // The delete RPC succeeded; remove it locally even if refresh fails.
+    data.bedSessions=(data.bedSessions||[]).filter(x=>String(x.id)!==String(id));
+    renderBedTracker();
+    console.error('Session deleted, but bed_sessions refresh failed:',refreshError);
   }
   return {ok:true,sessions:bedSessionHistoryRows()};
 }
@@ -4090,6 +4145,7 @@ function showSessionLoggedConfirmation(date){
 function resetBedSessionForm(){
   let today=localDateKey();
   document.getElementById('sessionDate').value=today;
+  document.getElementById('sessionDate').dataset.manuallySelected='0';
   document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(today);
   document.getElementById('sessionLength').value='';
   document.getElementById('sessionPayment').value='Account Minutes';
@@ -4104,23 +4160,52 @@ async function recordBedSession(){
  let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),length=+document.getElementById('sessionLength').value,payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
  if(!Number.isInteger(length)||length<1)return alert('Please enter a valid Session Length.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
  if(!c){
-   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:(payment==='Account Minutes'||payment==='Free'||payment==='Free Session')?0:length};
-   let {error}=await sb.from('bed_sessions').insert(payload);
-   if(error)return alert(error.message);
+   let sessionId=crypto.randomUUID(),
+       now=new Date(),
+       payload={
+         id:sessionId,
+         session_date:date,
+         session_time:now.toTimeString().slice(0,8),
+         session_length_minutes:length,
+         payment_type:payment,
+         new_sign_up:newSignup,
+         purchased_block_booking:purchasedBlock,
+         session_type:rlt?'Red Light Therapy':'Hybrid',
+         account_minutes_used:0,
+         payg_minutes:(payment==='Account Minutes'||payment==='Free'||payment==='Free Session')?0:length
+       };
 
-   // Confirm immediately after Supabase has created the record.
-   // Do not make the user wait for the full REVIBE refresh.
+   let {error}=await sb.from('bed_sessions').insert(payload);
+   if(error)return alert('Session was NOT saved: '+error.message);
+
+   // The insert has committed. Put the exact saved session into local state immediately,
+   // so Daily Sessions and KPIs do not depend on a full-system refresh succeeding.
+   let created=mapBedSessionDbRow({...payload,created_at:now.toISOString()});
+   data.bedSessions=[
+     ...(data.bedSessions||[]).filter(x=>String(x.id)!==String(sessionId)),
+     created
+   ];
+
    resetBedSessionForm();
+   renderBedTracker();
    showSessionLoggedConfirmation(date);
 
+   if(document.getElementById('dailysessions')?.classList.contains('active')){
+     let key=document.getElementById('dailySessionsDatePicker')?.value||date;
+     renderDailySessionsPage(key);
+   }
+
+   // Reconcile just the bed_sessions table with Supabase.
+   // Failure here cannot erase the locally confirmed committed session.
    try{
-     await loadLiveData();
+     await loadBedSessionsOnly();
      renderBedTracker();
-     // renderBedTracker may rebuild the panel, so surface confirmation again
-     // on the refreshed DOM for the remainder of the 2-second confirmation.
+     if(document.getElementById('dailysessions')?.classList.contains('active')){
+       renderDailySessionsPage(document.getElementById('dailySessionsDatePicker')?.value||date);
+     }
      showSessionLoggedConfirmation(date);
    }catch(refreshError){
-     console.error('Session saved but REVIBE refresh failed:',refreshError);
+     console.error('Session saved, but bed_sessions refresh failed:',refreshError);
    }
    return
  }
@@ -4133,13 +4218,14 @@ async function recordBedSession(){
  showSessionLoggedConfirmation(date);
 
  try{
-   await loadLiveData();
+   await loadBedSessionsOnly();
+   if(c&&Number.isFinite(+bal))c.minutesLeft=+bal;
    renderBedTracker();
    renderCustomers();
    sessionCustomerChanged();
    showSessionLoggedConfirmation(date);
  }catch(refreshError){
-   console.error('Session saved but REVIBE refresh failed:',refreshError);
+   console.error('Customer session saved, but bed_sessions refresh failed:',refreshError);
  }
 }
 function populateRenterProductSelect(selectedIds=[]){
@@ -4237,7 +4323,11 @@ function selectUniversalDate(key){
     document.getElementById('clinicCopyDate').value=key;
     document.getElementById('clinicCopyDateDisplay').value=formatSunbedDisplayDate(key);
   }else if(universalDatePickerTarget==='order'){document.getElementById('orderDate').value=key;document.getElementById('orderDateDisplay').value=formatSunbedDisplayDate(key);
-  }else if(universalDatePickerTarget==='session'){document.getElementById('sessionDate').value=key;document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(key);
+  }else if(universalDatePickerTarget==='session'){
+    let sessionDate=document.getElementById('sessionDate');
+    sessionDate.value=key;
+    sessionDate.dataset.manuallySelected='1';
+    document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(key);
   }else if(universalDatePickerTarget==='takings'){setDailyTakingsDate(key);
   }
   closeUniversalDatePicker();
@@ -4555,7 +4645,7 @@ async function loadLiveData(){
   data.appointments=bookings.data.map(x=>({id:x.id,date:x.booking_date,time:(x.start_time||'').slice(0,5),treatmentId:x.treatment_id,customerName:x.customer_name,customerPhone:x.customer_phone,price:+x.price,clinicDiscountPercent:+x.clinic_discount_percent,amountPayable:+x.amount_payable,notes:x.notes,status:x.status}));
   data.beds=beds.data.map(x=>({id:x.id,name:x.name,number:x.bed_number,type:x.bed_type,active:x.active}));
   data.sunbedBookings=sunbeds.data.map(x=>{let b=data.beds.find(y=>y.id===x.bed_id);return {id:x.id,name:x.customer_name,phone:x.customer_phone,date:x.booking_date,time:(x.start_time||'').slice(0,5),length:x.session_length_minutes,totalMinutes:x.session_length_minutes+x.turnaround_minutes,bed:b?.name||'',bedType:b?.type||'',sessionType:x.session_type,status:x.status}});
-  data.bedSessions=sessions.data.map(x=>({id:x.id,date:x.session_date,time:(x.session_time||'').slice(0,5),length:x.session_length_minutes,payment:x.payment_type,newSignup:x.new_sign_up,purchasedBlockBooking:x.purchased_block_booking,sessionType:x.session_type,createdAt:x.created_at}));data.staffMembers=staffMembers.data.map(x=>({id:x.id,name:x.name,address:x.address||'',phone:x.phone_number||'',dateOfJoining:x.date_of_joining,holidayEntitlement:+x.holiday_entitlement_this_year||0,holidaysRemaining:+x.holidays_remaining||0,colour:x.rota_colour||'#18d7e8',active:x.active}));data.staffShifts=staffShifts.data.map(x=>({id:x.id,staffId:x.staff_member_id,date:x.shift_date,start:(x.start_time||'').slice(0,5),end:(x.end_time||'').slice(0,5),hours:+x.shift_hours||0}));data.monthlyTargets=monthlyTargets.data.map(x=>({
+  data.bedSessions=sessions.data.map(mapBedSessionDbRow);data.staffMembers=staffMembers.data.map(x=>({id:x.id,name:x.name,address:x.address||'',phone:x.phone_number||'',dateOfJoining:x.date_of_joining,holidayEntitlement:+x.holiday_entitlement_this_year||0,holidaysRemaining:+x.holidays_remaining||0,colour:x.rota_colour||'#18d7e8',active:x.active}));data.staffShifts=staffShifts.data.map(x=>({id:x.id,staffId:x.staff_member_id,date:x.shift_date,start:(x.start_time||'').slice(0,5),end:(x.end_time||'').slice(0,5),hours:+x.shift_hours||0}));data.monthlyTargets=monthlyTargets.data.map(x=>({
     id:x.id,
     month:x.target_month,
     monthNumber:+x.target_month_number || new Date(x.target_month+'T00:00:00').getMonth()+1,
