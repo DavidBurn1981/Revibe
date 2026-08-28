@@ -1,0 +1,9 @@
+let currentUser=null,currentProfile=null;let temporaryPasswordUserId=null;let temporaryPasswordUserEmail='';let editingOrderId=null;let editingProductId=null;let editingTreatmentId=null;let editingRenterId=null;let editingStaffId=null;let universalDatePickerTarget=null;let universalDatePickerMonth=new Date();let editingUserId=null;let revibeUsers=[];let revibeRolePermissions=[];let editingPermissionRole=null;let workingRolePermissions={};let editingMonthlyTargetId=null;let editingHolidayRequestId=null;let holidayPickerMode='start';let holidayPickerMonth=new Date();
+let data={products:[],renters:[],treatments:[],customers:[],clinicDays:[],appointments:[],bedSessions:[],sunbedBookings:[],staffMembers:[],staffShifts:[],monthlyTargets:[],monthlyReviewCounts:[],holidayRequests:[],dailyTakings:[],orders:[],financeOutgoings:[],tanningProducts:[],customerTransactions:[],openingHours:null,openingHoursHistory:[]};
+let financeMonth=new Date().getMonth()+1,financeYear=new Date().getFullYear();
+let booking={date:null,treatment:null,product:null,clinicId:null};let editingCustomerId=null,editingTanningProductId=null,purchaseProductId=null,pendingPaygSplit=null;let currentProduct=null;let editingClinicId=null;
+let weekStart=startMonday(new Date());let staffRotaWeekStart=startMonday(new Date());let shiftPickerMonth=new Date();let staffJoinPickerMonth=new Date();let sunbedWeekStart=startMonday(new Date());let sunbedSessionType='Red Light Therapy';let pendingSunbedBooking=null;let sunbedPickerMonth=new Date();let displayDays=7;
+const DEFAULT_OPENING_HOURS={0:{open:'09:00',close:'21:00'},1:{open:'09:00',close:'21:00'},2:{open:'09:00',close:'21:00'},3:{open:'09:00',close:'21:00'},4:{open:'09:00',close:'21:00'},5:{open:'09:00',close:'21:00'},6:{open:'09:00',close:'21:00'}};
+if(!data.openingHours)data.openingHours=structuredClone(DEFAULT_OPENING_HOURS);
+if(!data.openingHoursHistory)data.openingHoursHistory=[];
+const BED_COUNT=4;
