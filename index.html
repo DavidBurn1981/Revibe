@@ -4156,11 +4156,37 @@ function resetBedSessionForm(){
   document.getElementById('sessionHybrid').checked=false;
   pendingPaygSplit=null;
 }
+function createRevibeUuid(){
+  // crypto.randomUUID is not available in some tablet/webview contexts.
+  // Use it when present, otherwise create a valid UUID v4 without depending on it.
+  try{
+    if(window.crypto&&typeof window.crypto.randomUUID==='function'){
+      return window.crypto.randomUUID();
+    }
+    if(window.crypto&&typeof window.crypto.getRandomValues==='function'){
+      let bytes=new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      bytes[6]=(bytes[6]&0x0f)|0x40;
+      bytes[8]=(bytes[8]&0x3f)|0x80;
+      let h=[...bytes].map(b=>b.toString(16).padStart(2,'0'));
+      return `${h.slice(0,4).join('')}-${h.slice(4,6).join('')}-${h.slice(6,8).join('')}-${h.slice(8,10).join('')}-${h.slice(10,16).join('')}`;
+    }
+  }catch(_){}
+  // Final fallback for older embedded browsers. Still produces UUID-v4-shaped value.
+  let seed=Date.now().toString(16)+Math.random().toString(16).slice(2)+Math.random().toString(16).slice(2);
+  seed=(seed+'00000000000000000000000000000000').slice(0,32).split('');
+  seed[12]='4';
+  seed[16]=(['8','9','a','b'])[Math.floor(Math.random()*4)];
+  return `${seed.slice(0,8).join('')}-${seed.slice(8,12).join('')}-${seed.slice(12,16).join('')}-${seed.slice(16,20).join('')}-${seed.slice(20,32).join('')}`;
+}
+
 async function recordBedSession(){
+ try{
+
  let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),length=+document.getElementById('sessionLength').value,payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
  if(!Number.isInteger(length)||length<1)return alert('Please enter a valid Session Length.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
  if(!c){
-   let sessionId=crypto.randomUUID(),
+   let sessionId=createRevibeUuid(),
        now=new Date(),
        payload={
          id:sessionId,
@@ -4226,6 +4252,11 @@ async function recordBedSession(){
    showSessionLoggedConfirmation(date);
  }catch(refreshError){
    console.error('Customer session saved, but bed_sessions refresh failed:',refreshError);
+ }
+
+ }catch(unexpectedError){
+   console.error('REVIBE Record Session failed before completion:',unexpectedError);
+   alert('SESSION WAS NOT SAVED.\n\n'+(unexpectedError?.message||String(unexpectedError))+'\n\nPlease try again. If this repeats, contact the system administrator.');
  }
 }
 function populateRenterProductSelect(selectedIds=[]){
