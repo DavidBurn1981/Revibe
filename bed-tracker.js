@@ -79,9 +79,12 @@ function periodRevenue(keys){
 }
 function renderDailyAverageComparison(){
  let out=document.getElementById('metricDailyAverage'),detail=document.getElementById('metricDailyAverageDetail');if(!out)return;
- let now=new Date(),today=localDateKey(),weekday=now.getDay(),actual=performanceSessions(data.bedSessions.filter(x=>x.date===today)).reduce((s,x)=>s+x.length,0),elapsed=getElapsedOpeningHours(now),day=now.toLocaleDateString('en-GB',{weekday:'long'});
+ let now=new Date(),today=localDateKey(),weekday=now.getDay(),
+     nowMin=now.getHours()*60+now.getMinutes(),
+     actual=performanceSessions(data.bedSessions.filter(x=>x.date===today)).reduce((s,x)=>s+x.length,0),
+     day=now.toLocaleDateString('en-GB',{weekday:'long'});
  let historical=[...new Set(data.bedSessions.map(x=>x.date))].filter(k=>k!==today&&parseLocalDateKey(k).getDay()===weekday).sort().slice(-8);
- let vals=historical.map(k=>{let oh=effectiveHoursForDate(k),open=oh?.open||'09:00',limit=timeToMinutes(open)+elapsed*60;return performanceSessions(data.bedSessions.filter(x=>x.date===k&&timeToMinutes(x.time)<=limit)).reduce((s,x)=>s+x.length,0)});
+ let vals=historical.map(k=>performanceSessions(data.bedSessions.filter(x=>x.date===k&&timeToMinutes(x.time)<=nowMin)).reduce((s,x)=>s+x.length,0));
  if(!vals.length){out.textContent='—';detail.textContent=`No previous ${day} data yet.`;return}
  let avg=vals.reduce((a,b)=>a+b,0)/vals.length,diff=Math.round(actual-avg);out.textContent=`${diff>=0?'+':''}${diff} mins`;detail.textContent=`${diff>=0?'+':''}${diff} mins v Average ${day}`;out.style.color=diff>=0?'var(--green)':'#ff7777';
 }
