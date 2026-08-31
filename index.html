@@ -36,6 +36,7 @@
 .loginGate{position:fixed;inset:0;z-index:1000;background:#0d0f12;display:flex;align-items:center;justify-content:center;padding:20px}
 .loginCard{width:min(430px,94vw);background:#171a1f;border:1px solid #30353d;border-radius:14px;padding:28px}
 .loginBrand{font-size:30px;font-weight:900;letter-spacing:1.5px;margin-bottom:6px}
+.loginLogo{display:block;width:220px;max-width:100%;height:auto;margin-bottom:14px}
 .loginCard input{font-size:15px;padding:12px;margin-bottom:12px}
 .loginCard .primary{width:100%;padding:12px}
 .loginError{display:none;margin-top:12px;padding:10px;background:#321a20;border:1px solid #6d2d3d;border-radius:7px;color:#ffb8c8}
@@ -459,7 +460,7 @@ body.loading .app{visibility:hidden}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
-    <div class='loginBrand'>REVIBE</div>
+    <img class='loginLogo' src='LOGO.svg' alt='REVIBE'>
     <div class='muted' style='margin-bottom:22px'>Shop Management</div>
     <label>Email</label><input id='loginEmail' type='email' autocomplete='username' placeholder='you@revibe...'>
     <label>Password</label><input id='loginPassword' type='password' autocomplete='current-password' placeholder='Password'>
@@ -1063,7 +1064,7 @@ body.loading .app{visibility:hidden}
 </div>
 <div class='modal' id='renterCreateModal'>
   <div class='modalbox' style='max-width:560px'>
-    <div class='top'><div><h1>Add Clinician</h1><div class='muted'>Create a treatment-room clinician and link their Product.</div></div><button onclick='closeRenterCreate()'>✕</button></div>
+    <div class='top'><div><h1 id='renterModalTitle'>Add Clinician</h1><div class='muted' id='renterModalSubtitle'>Create a treatment-room clinician and link their Product.</div></div><button onclick='closeRenterCreate()'>✕</button></div>
     <div class='formgrid' style='grid-template-columns:1fr 1fr'>
       <div><label>Name</label><input id='renterCreateName' placeholder='Clinician name'></div>
       <div><label>Treatment Types</label><select id='renterCreateProduct' multiple size='4'></select><div class='muted' style='margin-top:5px'>Hold Ctrl/Cmd to select more than one.</div></div>
