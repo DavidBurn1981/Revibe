@@ -8,13 +8,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d0f12;--panel:#171a1f;--panel2:#20242b;--text:#f5f5f7;--muted:#a7adb7;--pink:#ff2d78;--cyan:#19d9e7;--violet:#9b2fff;--line:#30353d;--green:#2bd576}
+:root{--bg:#0d0f12;--panel:#171a1f;--panel2:#20242b;--text:#f5f5f7;--muted:#a7adb7;--pink:#ff2d78;--cyan:#19d9e7;--violet:#9b2fff;--red:#ff3131;--yellow:#ffd60a;--line:#30353d;--green:#2bd576}
 *{box-sizing:border-box}
 html,body{width:100%;max-width:100%;overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--text);font:15px Montserrat,Arial,sans-serif;min-height:100vh;text-align:center;letter-spacing:-.01em}
 h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{color:var(--muted);margin:0 auto 34px;line-height:1.6;max-width:650px;font-weight:500}
 .section{display:none}.section.active{display:block}.sectionTitle{font-size:22px;font-weight:900;letter-spacing:-.025em;margin:0 0 12px}.sectionSub{color:var(--muted);margin:0 auto 22px;line-height:1.55;font-weight:500}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:6px 0 0}.tile{width:100%;text-align:center;background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);color:#fff;border-radius:16px;padding:22px 16px;cursor:pointer;min-height:112px;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:transform .15s,border-color .15s,filter .15s;font-family:inherit}.tile:hover,.tile:focus{border-color:#fff;outline:none;transform:translateY(-3px);filter:brightness(1.04)}.tile h3{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}.tile .small{color:rgba(255,255,255,.88);font-size:12px;line-height:1.5;font-weight:500}.productTile.pink,.themePink{background:var(--pink);border-color:var(--pink)}.productTile.cyan,.themeCyan{background:var(--cyan);border-color:var(--cyan);color:#061316}.productTile.cyan .small,.themeCyan .small{color:rgba(6,19,22,.76)}.themeCyan .price,.themeCyan h3{color:#061316}.themeCyan .price del{color:rgba(6,19,22,.55)}
+.themeViolet{background:var(--violet);border-color:var(--violet)}
+.themeRed{background:var(--red);border-color:var(--red)}
+.themeGreen{background:var(--green);border-color:var(--green);color:#062012}.themeGreen .small{color:rgba(6,32,18,.76)}
+.themeYellow{background:var(--yellow);border-color:var(--yellow);color:#3a2e00}.themeYellow .small{color:rgba(58,46,0,.76)}
+.comingSoonTile{cursor:default}.comingSoonTile:hover{transform:none;filter:none}.comingSoonTile .small{font-weight:800;letter-spacing:.04em}
 .discount{display:inline-block;margin-top:11px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.34);color:inherit;border-radius:20px;padding:7px 11px;font-size:11px;font-weight:800}.price{font-size:19px;font-weight:900;margin-top:8px}.price del{color:#8c929c;font-weight:600;margin-right:7px}
 .timeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.timeBtn{background:#20242b;border:1px solid #3a404a;color:#fff;border-radius:9px;padding:14px 6px;font-size:14px;font-weight:850;cursor:pointer}.timeBtn:hover,.timeBtn:focus{border-color:var(--pink);outline:none}
 .summary{background:#20242b;border:1px solid var(--line);border-radius:11px;padding:16px;margin:0 0 16px;line-height:1.7;text-align:left}.summary b{color:#fff}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;color:#d5d7dc;font-size:12px;margin-bottom:6px;text-align:left}input{width:100%;background:#111318;border:1px solid #363b44;color:#fff;padding:12px;border-radius:7px;font-size:16px;text-align:left}.primary,.back{border:1px solid var(--line);border-radius:8px;padding:13px 16px;color:#fff;cursor:pointer;font-weight:850}.primary{background:var(--pink);border-color:var(--pink)}.primary:disabled{opacity:.5;cursor:not-allowed}.back{background:#252932;margin:0 0 16px;display:inline-block}.notice{padding:12px;border-radius:8px;margin:0 0 16px;display:none;text-align:left}.error{display:block;background:#321a20;border:1px solid #6d2d3d;color:#ffb8c8}.loading{display:block;background:#20242b;border:1px solid var(--line);color:#cbd0d7}.success{text-align:center;padding:10px 0}.successMark{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#173323;border:1px solid #285d3d;color:#81e9aa;font-size:28px;margin:0 auto 16px}.empty{background:#171a1f;border:1px solid var(--line);border-radius:10px;padding:16px;color:var(--muted);grid-column:1/-1;text-align:center}
@@ -86,6 +91,12 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 
       <section id="step1" class="section active">
         <div id="productTiles" class="tiles"></div>
+        <div class="tiles" style="margin-top:16px">
+          <div class="tile comingSoonTile themeViolet"><h3>Lashes &amp; Brows</h3><div class="small">COMING SOON</div></div>
+          <div class="tile comingSoonTile themeRed"><h3>Tattoos</h3><div class="small">COMING SOON</div></div>
+          <div class="tile comingSoonTile themeGreen"><h3>Massage</h3><div class="small">COMING SOON</div></div>
+          <div class="tile comingSoonTile themeYellow"><h3>Others</h3><div class="small">COMING SOON</div></div>
+        </div>
       </section>
 
       <section id="step2" class="section">
