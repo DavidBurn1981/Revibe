@@ -8,70 +8,129 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d0f12;--panel:#171a1f;--panel2:#20242b;--text:#f5f5f7;--muted:#a7adb7;--pink:#ff2d78;--cyan:#19d9e7;--line:#30353d;--green:#2bd576}
+:root{--bg:#0d0f12;--panel:#171a1f;--panel2:#20242b;--text:#f5f5f7;--muted:#a7adb7;--pink:#ff2d78;--cyan:#19d9e7;--violet:#9b2fff;--line:#30353d;--green:#2bd576}
 *{box-sizing:border-box}
 html,body{width:100%;max-width:100%;overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--text);font:15px Montserrat,Arial,sans-serif;min-height:100vh;text-align:center;letter-spacing:-.01em}
-.wrap{width:min(920px,100%);margin:auto;padding:28px 20px 74px}
-.brandLogo{display:block;width:min(330px,72vw);max-height:120px;object-fit:contain;margin:0 auto 28px}
 h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{color:var(--muted);margin:0 auto 34px;line-height:1.6;max-width:650px;font-weight:500}
-.section{display:none}.section.active{display:block}.sectionTitle{font-size:23px;font-weight:900;letter-spacing:-.025em;margin:0 0 12px}.sectionSub{color:var(--muted);margin:0 auto 24px;line-height:1.55;max-width:650px;font-weight:500}
-.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:780px;margin:6px auto 0}.tile{width:100%;text-align:center;background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);color:#fff;border-radius:16px;padding:26px 20px;cursor:pointer;min-height:126px;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:transform .15s,border-color .15s,filter .15s;font-family:inherit}.tile:hover,.tile:focus{border-color:#fff;outline:none;transform:translateY(-3px);filter:brightness(1.04)}.tile h3{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 9px}.tile .small{color:rgba(255,255,255,.88);font-size:12px;line-height:1.5;font-weight:500}.productTile.pink,.themePink{background:var(--pink);border-color:var(--pink)}.productTile.cyan,.themeCyan{background:var(--cyan);border-color:var(--cyan);color:#061316}.productTile.cyan .small,.themeCyan .small{color:rgba(6,19,22,.76)}.themeCyan .price,.themeCyan h3{color:#061316}.themeCyan .price del{color:rgba(6,19,22,.55)}
-.discount{display:inline-block;margin-top:11px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.34);color:inherit;border-radius:20px;padding:7px 11px;font-size:11px;font-weight:800}.price{font-size:20px;font-weight:900;margin-top:10px}.price del{color:#8c929c;font-weight:600;margin-right:7px}
-.timeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:620px;margin:0 auto}.timeBtn{background:#20242b;border:1px solid #3a404a;color:#fff;border-radius:9px;padding:15px 8px;font-size:15px;font-weight:850;cursor:pointer}.timeBtn:hover,.timeBtn:focus{border-color:var(--pink);outline:none}
-.summary{background:#20242b;border:1px solid var(--line);border-radius:11px;padding:17px;margin:0 auto 18px;line-height:1.7;max-width:620px}.summary b{color:#fff}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:620px;margin:0 auto}label{display:block;color:#d5d7dc;font-size:12px;margin-bottom:6px;text-align:center}input{width:100%;background:#111318;border:1px solid #363b44;color:#fff;padding:13px;border-radius:7px;font-size:16px;text-align:center}.primary,.back{border:1px solid var(--line);border-radius:8px;padding:13px 16px;color:#fff;cursor:pointer;font-weight:850}.primary{background:var(--pink);border-color:var(--pink)}.primary:disabled{opacity:.5;cursor:not-allowed}.back{background:#252932;margin:0 auto 18px;display:inline-block}.notice{padding:13px;border-radius:8px;margin:14px auto;display:none;max-width:620px}.error{display:block;background:#321a20;border:1px solid #6d2d3d;color:#ffb8c8}.loading{display:block;background:#20242b;border:1px solid var(--line);color:#cbd0d7}.success{text-align:center;padding:32px 10px}.successMark{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;background:#173323;border:1px solid #285d3d;color:#81e9aa;font-size:32px;margin:0 auto 18px}.empty{background:#171a1f;border:1px solid var(--line);border-radius:10px;padding:18px;color:var(--muted);grid-column:1/-1}.confirmWrap{max-width:620px;margin:16px auto 0}
-@media(max-width:650px){.wrap{padding:20px 14px 50px}.brandLogo{width:min(270px,76vw);margin-bottom:25px}h1{font-size:27px}.lead{font-size:13px;margin-bottom:30px;max-width:360px}.sectionTitle{font-size:21px;margin-bottom:13px}.sectionSub{font-size:13px;margin-bottom:20px}.tiles{grid-template-columns:1fr;gap:15px;margin-top:8px}.tile{min-height:114px;padding:22px 14px;border-radius:14px}.formgrid{grid-template-columns:1fr}.timeGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.timeBtn{padding:14px 5px}.primary,.back{min-height:44px}}
+.section{display:none}.section.active{display:block}.sectionTitle{font-size:22px;font-weight:900;letter-spacing:-.025em;margin:0 0 12px}.sectionSub{color:var(--muted);margin:0 auto 22px;line-height:1.55;font-weight:500}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:6px 0 0}.tile{width:100%;text-align:center;background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);color:#fff;border-radius:16px;padding:22px 16px;cursor:pointer;min-height:112px;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:transform .15s,border-color .15s,filter .15s;font-family:inherit}.tile:hover,.tile:focus{border-color:#fff;outline:none;transform:translateY(-3px);filter:brightness(1.04)}.tile h3{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}.tile .small{color:rgba(255,255,255,.88);font-size:12px;line-height:1.5;font-weight:500}.productTile.pink,.themePink{background:var(--pink);border-color:var(--pink)}.productTile.cyan,.themeCyan{background:var(--cyan);border-color:var(--cyan);color:#061316}.productTile.cyan .small,.themeCyan .small{color:rgba(6,19,22,.76)}.themeCyan .price,.themeCyan h3{color:#061316}.themeCyan .price del{color:rgba(6,19,22,.55)}
+.discount{display:inline-block;margin-top:11px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.34);color:inherit;border-radius:20px;padding:7px 11px;font-size:11px;font-weight:800}.price{font-size:19px;font-weight:900;margin-top:8px}.price del{color:#8c929c;font-weight:600;margin-right:7px}
+.timeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.timeBtn{background:#20242b;border:1px solid #3a404a;color:#fff;border-radius:9px;padding:14px 6px;font-size:14px;font-weight:850;cursor:pointer}.timeBtn:hover,.timeBtn:focus{border-color:var(--pink);outline:none}
+.summary{background:#20242b;border:1px solid var(--line);border-radius:11px;padding:16px;margin:0 0 16px;line-height:1.7;text-align:left}.summary b{color:#fff}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;color:#d5d7dc;font-size:12px;margin-bottom:6px;text-align:left}input{width:100%;background:#111318;border:1px solid #363b44;color:#fff;padding:12px;border-radius:7px;font-size:16px;text-align:left}.primary,.back{border:1px solid var(--line);border-radius:8px;padding:13px 16px;color:#fff;cursor:pointer;font-weight:850}.primary{background:var(--pink);border-color:var(--pink)}.primary:disabled{opacity:.5;cursor:not-allowed}.back{background:#252932;margin:0 0 16px;display:inline-block}.notice{padding:12px;border-radius:8px;margin:0 0 16px;display:none;text-align:left}.error{display:block;background:#321a20;border:1px solid #6d2d3d;color:#ffb8c8}.loading{display:block;background:#20242b;border:1px solid var(--line);color:#cbd0d7}.success{text-align:center;padding:10px 0}.successMark{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#173323;border:1px solid #285d3d;color:#81e9aa;font-size:28px;margin:0 auto 16px}.empty{background:#171a1f;border:1px solid var(--line);border-radius:10px;padding:16px;color:var(--muted);grid-column:1/-1;text-align:center}
+
+.pageWrap{display:grid;grid-template-columns:1.15fr 1fr;gap:52px;max-width:1180px;margin:0 auto;padding:36px 24px 74px;align-items:start;text-align:left}
+.leftCol{padding-top:6px}
+.brandLogo{display:block;width:230px;max-height:100px;object-fit:contain;margin:0 0 34px}
+
+.hero{position:relative}
+.heroGlow{position:absolute;top:-50px;left:-60px;width:460px;height:380px;background:radial-gradient(ellipse at center,rgba(255,45,120,.26) 0%,rgba(155,47,255,.15) 45%,rgba(155,47,255,0) 75%);filter:blur(10px);pointer-events:none;z-index:0}
+.hero h1{position:relative;z-index:1;font-size:44px;line-height:1.04;text-transform:uppercase;letter-spacing:-.02em;margin:0 0 22px;text-shadow:0 0 40px rgba(255,45,120,.4)}
+.serviceTags{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:9px;margin:0 0 24px}
+.serviceTags span{border-radius:20px;padding:7px 15px;font-size:13px;font-weight:700;border:1px solid rgba(255,45,120,.4);color:#ffb0cd}
+.serviceTags span:nth-child(even){border-color:rgba(25,217,231,.4);color:#a6f3f9}
+.roomLede{position:relative;z-index:1;color:#d5d7dc;line-height:1.7;font-weight:500;max-width:480px;margin:0 0 42px}
+
+.howSteps{display:flex;flex-direction:column;gap:20px;margin:0 0 22px}
+.bookingNote{color:var(--muted);font-size:14px;line-height:1.6;font-weight:500;max-width:480px;margin:0 0 40px}
+.howStep{position:relative;display:flex;align-items:center;gap:16px}
+.howStep:not(:last-child)::after{content:'';position:absolute;left:19px;top:40px;width:2px;height:20px;background:var(--line)}
+.howStepNum{width:40px;height:40px;flex-shrink:0;border-radius:50%;background:var(--bg);border:2px solid var(--pink);color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center}
+.howStep p{margin:0;font-weight:700;font-size:14.5px;color:var(--text)}
+
+.clinicianCallout{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px 26px 24px;margin-top:24px}
+.clinicianCallout p{margin:0 0 16px;font-weight:700;font-size:15px;color:var(--text)}
+.clinicianBtn{display:inline-block;background:repeating-linear-gradient(to bottom,#fff 0,#fff 10px,#111 10px,#111 20px);padding:6px;border-radius:9px;text-decoration:none;transition:transform .15s}
+.clinicianBtn:hover{transform:scale(1.03)}
+.clinicianBtn span{display:block;background:#111;color:#fff;font-weight:800;font-size:14px;letter-spacing:.01em;padding:11px 24px;border-radius:5px}
+
+.bookingPanel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:32px 28px;position:sticky;top:24px}
+.bookingPanelTitle{font-size:25px;font-weight:900;letter-spacing:-.03em;margin:0 0 6px;color:#fff}
+.bookingPanelSub{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 24px}
+
+@media(max-width:900px){.pageWrap{grid-template-columns:1fr;gap:44px;padding:28px 20px 60px}.bookingPanel{position:static}.brandLogo{margin:0 auto 30px}.leftCol{text-align:center}.hero h1{text-align:center}.heroGlow{left:50%;transform:translateX(-50%)}.serviceTags{justify-content:center}.roomLede{margin-left:auto;margin-right:auto}.bookingNote{margin-left:auto;margin-right:auto}.howSteps{max-width:320px;margin-left:auto;margin-right:auto}.clinicianCallout{max-width:400px;margin:0 auto}}
+@media(max-width:650px){.hero h1{font-size:32px}.bookingPanel{padding:26px 20px}.tiles{gap:14px}.timeGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.timeBtn{padding:13px 5px}.primary,.back{min-height:44px}.formgrid{grid-template-columns:1fr}}
 @media(max-width:370px){.timeGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <img class="brandLogo" src="LOGO.svg" alt="REVIBE">
-  <h1>Book a Treatment</h1>
-  <div class="lead">Choose your treatment and we'll show you the available clinic days and appointment times.</div>
-  <div id="message" class="notice"></div>
+<div class="pageWrap">
+  <div class="leftCol">
+    <img class="brandLogo" src="LOGO.svg" alt="REVIBE">
 
-  <section id="step1" class="section active">
-    <div class="sectionTitle">Choose a Treatment</div>
-    <div id="productTiles" class="tiles"></div>
-  </section>
+    <section class="hero">
+      <div class="heroGlow"></div>
+      <h1>Welcome to the<br>Treatment Room</h1>
+      <div class="serviceTags">
+        <span>Nails</span><span>Lashes</span><span>Massage</span><span>Aesthetics</span><span>Tattoos</span>
+      </div>
+      <p class="roomLede">Booking a Treatment at Revibe is super easy and only takes a few clicks of a button.</p>
+    </section>
 
-  <section id="step2" class="section">
-    <button class="back" onclick="goStep(1)">← Back</button>
-    <div class="sectionTitle">Choose a Clinic Day for Availability</div>
-    <div class="sectionSub" id="clinicSub"></div>
-    <div id="clinicTiles" class="tiles"></div>
-  </section>
-
-  <section id="step3" class="section">
-    <button class="back" onclick="goStep(2)">← Back</button>
-    <div class="sectionTitle">What Would You Like?</div>
-    <div class="sectionSub" id="sessionSub"></div>
-    <div id="sessionTiles" class="tiles"></div>
-  </section>
-
-  <section id="step4" class="section">
-    <button class="back" onclick="goStep(3)">← Back</button>
-    <div class="sectionTitle">Choose a Time</div>
-    <div class="sectionSub" id="timeSub">Only appointment times that can fit your full selected session are shown.</div>
-    <div id="timeGrid" class="timeGrid"></div>
-  </section>
-
-  <section id="step5" class="section">
-    <button class="back" onclick="goStep(4)">← Back</button>
-    <div class="sectionTitle">Your Details</div>
-    <div class="sectionSub">Almost done — enter your details and confirm your booking.</div>
-    <div id="bookingSummary" class="summary"></div>
-    <div class="formgrid">
-      <div><label>Your Name</label><input id="customerName" autocomplete="name" maxlength="120"></div>
-      <div><label>Mobile Number</label><input id="customerPhone" type="tel" autocomplete="tel" maxlength="40"></div>
+    <div class="howSteps">
+      <div class="howStep"><div class="howStepNum">1</div><p>Choose a treatment</p></div>
+      <div class="howStep"><div class="howStepNum">2</div><p>Choose a Clinic Day</p></div>
+      <div class="howStep"><div class="howStepNum">3</div><p>Choose your type of treatment</p></div>
+      <div class="howStep"><div class="howStepNum">4</div><p>Make your booking</p></div>
     </div>
-    <div class="confirmWrap"><button id="confirmBtn" class="primary" style="width:100%" onclick="confirmBooking()">Confirm Booking</button></div>
-  </section>
 
-  <section id="success" class="section success">
-    <div class="successMark">✓</div><h2>Booking Confirmed</h2><div class="lead" id="successText"></div><button class="primary" onclick="startAgain()">Book Another Treatment</button>
-  </section>
+    <p class="bookingNote">Alternatively, you can always just pop into the shop to book, or contact the clinicians directly who will be happy to help, and answer any questions you may have.</p>
+  </div>
+
+  <div class="rightCol">
+    <div class="bookingPanel">
+      <div class="bookingPanelTitle">Book a Treatment</div>
+      <p class="bookingPanelSub">More treatments coming very soon…</p>
+      <div id="message" class="notice"></div>
+
+      <section id="step1" class="section active">
+        <div class="sectionTitle">Select your Treatment Type</div>
+        <div id="productTiles" class="tiles"></div>
+      </section>
+
+      <section id="step2" class="section">
+        <button class="back" onclick="goStep(1)">← Back</button>
+        <div class="sectionTitle">Choose a Clinic Day</div>
+        <div class="sectionSub" id="clinicSub"></div>
+        <div id="clinicTiles" class="tiles"></div>
+      </section>
+
+      <section id="step3" class="section">
+        <button class="back" onclick="goStep(2)">← Back</button>
+        <div class="sectionTitle">What Would You Like?</div>
+        <div class="sectionSub" id="sessionSub"></div>
+        <div id="sessionTiles" class="tiles"></div>
+      </section>
+
+      <section id="step4" class="section">
+        <button class="back" onclick="goStep(3)">← Back</button>
+        <div class="sectionTitle">Choose a Time</div>
+        <div class="sectionSub" id="timeSub">Only times that fit your full session are shown.</div>
+        <div id="timeGrid" class="timeGrid"></div>
+      </section>
+
+      <section id="step5" class="section">
+        <button class="back" onclick="goStep(4)">← Back</button>
+        <div class="sectionTitle">Your Details</div>
+        <div class="sectionSub">Almost done — enter your details and confirm your booking.</div>
+        <div id="bookingSummary" class="summary"></div>
+        <div class="formgrid">
+          <div><label>Your Name</label><input id="customerName" autocomplete="name" maxlength="120"></div>
+          <div><label>Mobile Number</label><input id="customerPhone" type="tel" autocomplete="tel" maxlength="40"></div>
+        </div>
+        <div style="margin-top:16px"><button id="confirmBtn" class="primary" style="width:100%" onclick="confirmBooking()">Confirm Booking</button></div>
+      </section>
+
+      <section id="success" class="section success">
+        <div class="successMark">✓</div><h1 style="font-size:22px">Booking Confirmed</h1><div class="lead" id="successText" style="max-width:none"></div><button class="primary" onclick="startAgain()">Book Another Treatment</button>
+      </section>
+    </div>
+
+    <div class="clinicianCallout">
+      <p>Do you provide beauty or wellbeing services? Interested in running clinic days in our facility? Press the button to find out more!</p>
+      <a class="clinicianBtn" href="room-hire.html"><span>Find out more</span></a>
+    </div>
+  </div>
 </div>
 <script>
 const SUPABASE_URL='https://fjryihtrtqygpozkirqp.supabase.co';
@@ -84,7 +143,7 @@ function niceDate(s){let d=new Date(s+'T12:00:00');return d.toLocaleDateString('
 function showMessage(text,type='error'){let e=document.getElementById('message');e.textContent=text;e.className='notice '+type;e.style.display='block'}
 function hideMessage(){document.getElementById('message').style.display='none'}
 async function api(action,payload={}){let r=await fetch(FUNCTION_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({action,...payload})});let j={};try{j=await r.json()}catch(_){}if(!r.ok||j.error)throw new Error(j.error||'Booking service is temporarily unavailable.');return j}
-function goStep(n){hideMessage();document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step'+n).classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
+function goStep(n){hideMessage();document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step'+n).classList.add('active')}
 async function boot(){showMessage('Loading available treatments…','loading');try{model=await api('bootstrap');hideMessage();renderProducts()}catch(e){showMessage(e.message)}}
 function productTheme(p){return String(p?.name||'').trim().toLowerCase()==='nails'?'cyan':'pink'}
 function themeClass(){return productTheme(choice.product)==='cyan'?'themeCyan':'themePink'}
@@ -93,8 +152,8 @@ function chooseProduct(id){choice={product:model.products.find(x=>String(x.id)==
 function chooseClinic(id){choice.clinic=model.clinics.find(x=>String(x.id)===String(id));choice.treatment=null;choice.time=null;if(!choice.clinic)return;let rows=(model.treatments||[]).filter(t=>String(t.product_id)===String(choice.product.id));document.getElementById('sessionSub').textContent=`${choice.product.name} · ${niceDate(choice.clinic.date)}`;document.getElementById('sessionTiles').innerHTML=rows.map(t=>{let d=+choice.clinic.discount_percent||0,p=+t.price||0,pay=p*(1-d/100);return `<button class="tile ${themeClass()}" onclick="chooseTreatment('${t.id}')"><h3>${esc(t.name)}</h3><div class="small">${t.duration} minutes${+t.buffer>0?` · ${t.buffer} min booking buffer`:''}</div><div class="price">${d>0?`<del>${money(p)}</del> ${money(pay)}`:money(p)}</div></button>`}).join('')||'<div class="empty">There are no session types available for this clinic.</div>';goStep(3)}
 async function chooseTreatment(id){choice.treatment=model.treatments.find(x=>String(x.id)===String(id));choice.time=null;if(!choice.treatment)return;let t=choice.treatment;document.getElementById('timeSub').textContent=`${t.name} · ${t.duration} minute session. Only times with enough room for the full appointment are shown.`;document.getElementById('timeGrid').innerHTML='<div class="empty">Checking available times…</div>';goStep(4);try{let r=await api('slots',{clinic_day_id:choice.clinic.id,treatment_id:t.id});document.getElementById('timeGrid').innerHTML=r.times?.length?r.times.map(v=>`<button class="timeBtn" onclick="chooseTime('${v}')">${esc(v)}</button>`).join(''):'<div class="empty">Sorry, there are no appointment times left for this session on this clinic day.</div>'}catch(e){document.getElementById('timeGrid').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 function chooseTime(t){choice.time=t;let c=choice.clinic,s=choice.treatment,d=+c.discount_percent||0,p=+s.price||0,pay=p*(1-d/100);document.getElementById('bookingSummary').innerHTML=`<b>${esc(choice.product.name)} — ${esc(s.name)}</b><br>${niceDate(c.date)} at ${esc(t)}<br>${s.duration} minutes<br>${d>0?`${d}% clinic discount · <del>${money(p)}</del> <b>${money(pay)}</b>`:`<b>${money(p)}</b>`}`;goStep(5)}
-async function confirmBooking(){let name=document.getElementById('customerName').value.trim(),phone=document.getElementById('customerPhone').value.trim(),btn=document.getElementById('confirmBtn');if(!name)return showMessage('Please enter your name.');if(!phone)return showMessage('Please enter your mobile number.');hideMessage();btn.disabled=true;btn.textContent='Confirming…';try{let r=await api('book',{clinic_day_id:choice.clinic.id,treatment_id:choice.treatment.id,start_time:choice.time,customer_name:name,customer_phone:phone});document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('success').classList.add('active');document.getElementById('successText').innerHTML=`${esc(r.treatment_name)}<br>${niceDate(r.booking_date)} at ${esc(r.start_time)}<br><br>We look forward to seeing you at REVIBE.`;window.scrollTo({top:0,behavior:'smooth'})}catch(e){showMessage(e.message);if(/unavailable/i.test(e.message))try{await chooseTreatment(choice.treatment.id)}catch(_){} }finally{btn.disabled=false;btn.textContent='Confirm Booking'}}
-function startAgain(){choice={product:null,clinic:null,treatment:null,time:null};document.getElementById('customerName').value='';document.getElementById('customerPhone').value='';document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step1').classList.add('active');boot();window.scrollTo({top:0,behavior:'smooth'})}
+async function confirmBooking(){let name=document.getElementById('customerName').value.trim(),phone=document.getElementById('customerPhone').value.trim(),btn=document.getElementById('confirmBtn');if(!name)return showMessage('Please enter your name.');if(!phone)return showMessage('Please enter your mobile number.');hideMessage();btn.disabled=true;btn.textContent='Confirming…';try{let r=await api('book',{clinic_day_id:choice.clinic.id,treatment_id:choice.treatment.id,start_time:choice.time,customer_name:name,customer_phone:phone});document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('success').classList.add('active');document.getElementById('successText').innerHTML=`${esc(r.treatment_name)}<br>${niceDate(r.booking_date)} at ${esc(r.start_time)}<br><br>We look forward to seeing you at REVIBE.`}catch(e){showMessage(e.message);if(/unavailable/i.test(e.message))try{await chooseTreatment(choice.treatment.id)}catch(_){} }finally{btn.disabled=false;btn.textContent='Confirm Booking'}}
+function startAgain(){choice={product:null,clinic:null,treatment:null,time:null};document.getElementById('customerName').value='';document.getElementById('customerPhone').value='';document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step1').classList.add('active');boot()}
 boot();
 </script>
 </body>
