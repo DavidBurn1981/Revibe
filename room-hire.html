@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Room Hire for Clinicians | REVIBE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0f12;--panel:#171a1f;--text:#f5f5f7;--muted:#a7adb7;--pink:#ff2d78;--cyan:#19d9e7;--violet:#9b2fff;--line:#30353d}
+*{box-sizing:border-box}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font:15px Montserrat,Arial,sans-serif;min-height:100vh;text-align:center;letter-spacing:-.01em}
+.wrap{width:min(640px,100%);margin:auto;padding:34px 20px 74px}
+.brandLogo{display:block;width:min(300px,78vw);max-height:130px;object-fit:contain;margin:0 auto 30px}
+.back{display:inline-block;color:var(--muted);text-decoration:none;font-weight:700;font-size:13px;margin-bottom:30px;border-bottom:1px solid var(--line);padding-bottom:2px}
+.back:hover{color:var(--text)}
+
+.hero{position:relative}
+.heroGlow{position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:460px;height:340px;background:radial-gradient(ellipse at center,rgba(155,47,255,.26) 0%,rgba(255,45,120,.14) 45%,rgba(255,45,120,0) 75%);filter:blur(10px);pointer-events:none;z-index:0}
+h1{position:relative;z-index:1;font-size:36px;line-height:1.08;text-transform:uppercase;letter-spacing:-.02em;margin:0 0 26px;text-shadow:0 0 40px rgba(155,47,255,.4)}
+
+p.body{position:relative;z-index:1;color:#d5d7dc;line-height:1.7;font-weight:500;max-width:560px;margin:0 auto 22px;text-align:left}
+
+.sectionTitle{font-size:21px;font-weight:900;letter-spacing:-.02em;margin:36px 0 18px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto}
+
+.benefits{list-style:none;text-align:left;max-width:560px;margin:0 auto 36px;padding:0}
+.benefits li{display:flex;align-items:flex-start;gap:12px;margin:0 0 15px;line-height:1.55;color:#d5d7dc;font-weight:500}
+.benefits li:last-child{margin-bottom:0}
+.checkIcon{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--cyan);color:#061316;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+
+.contactCard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px 26px;max-width:560px;margin:0 auto}
+.contactCard p{margin:0 0 20px;font-weight:700;color:var(--text)}
+.contactRow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.contactBtn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:9px;font-weight:800;font-size:14px;text-decoration:none;border:1px solid var(--line)}
+.contactBtn.primary{background:var(--pink);border-color:var(--pink);color:#fff}
+.contactBtn.secondary{background:transparent;border-color:var(--cyan);color:var(--cyan)}
+.contactBtn.secondary:hover{background:var(--cyan);color:#061316}
+
+@media(max-width:650px){.wrap{padding:26px 18px 60px}h1{font-size:27px}.heroGlow{width:340px;height:280px}.sectionTitle{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img class="brandLogo" src="LOGO.svg" alt="REVIBE">
+  <a class="back" href="book.html">← Back to bookings</a>
+
+  <section class="hero">
+    <div class="heroGlow"></div>
+    <h1>Bring Your Business to REVIBE!</h1>
+  </section>
+
+  <p class="body">Everyone providing treatments from our room runs their own independent small business, and we're genuinely proud to be able to offer a space where people can start, grow and build.</p>
+
+  <p class="body">If you provide beauty or treatment services — or know somebody who does — we'd love to hear from you. Share this page with them, or get in touch below.</p>
+
+  <div class="sectionTitle">What Clinicians Will Get</div>
+  <ul class="benefits">
+    <li><span class="checkIcon">✓</span><span>Completely FREE use of the room for your first month</span></li>
+    <li><span class="checkIcon">✓</span><span>Fully compliant treatment space with sink, air-conditioning & ventilation</span></li>
+    <li><span class="checkIcon">✓</span><span>FREE use of our new online booking system, where you can set up your own clinic days, treatments, products, services & prices!</span></li>
+    <li><span class="checkIcon">✓</span><span>Your customers — and ours — can book directly online using the easy to use system</span></li>
+    <li><span class="checkIcon">✓</span><span>Comfortable, spacious & modern customer waiting area</span></li>
+    <li><span class="checkIcon">✓</span><span>Clean customer toilet facilities</span></li>
+    <li><span class="checkIcon">✓</span><span>Surgical-grade fridge available</span></li>
+    <li><span class="checkIcon">✓</span><span>Storage facilities</span></li>
+    <li><span class="checkIcon">✓</span><span>And, of course, a busy REVIBE customer base right outside your door!</span></li>
+  </ul>
+
+  <p class="body">Whether you're already established, just starting out, or looking for somewhere professional to run additional clinic days, we'd love to hear from you.</p>
+
+  <div class="contactCard">
+    <p>Drop us a message for more information</p>
+    <div class="contactRow">
+      <a class="contactBtn primary" href="mailto:info@revibeglowstudios.com">Email Us</a>
+      <a class="contactBtn secondary" href="tel:01913235112">Call 0191 323 5112</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>
