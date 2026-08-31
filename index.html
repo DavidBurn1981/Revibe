@@ -548,7 +548,7 @@ body.loading .app{visibility:hidden}
     </div>
   </div>
 </section>
-<section id='products' class='page'><div id='productListView'><div class='top'><div><h1>Treatment Types</h1><div class='muted'>Create a Treatment Type, then configure the Session Types available within it.</div></div><button class='primary' onclick='addProduct()'>+ Create Treatment Type</button></div><div id='productTiles' class='productgrid'></div></div><div id='productDetailView' style='display:none'><div class='top'><div><button onclick='backToProducts()'>← Treatment Types</button><h1 id='productTitle' style='margin-top:12px'></h1><div class='muted' id='productSub'></div></div><button class='primary' onclick='addTreatmentToCurrentProduct()'>+ Add Session Type</button></div><div class='card'><table class='table' id='productTreatmentTable'></table></div></div></section>
+<section id='products' class='page'><div id='productListView'><div class='top'><div><h1>Treatment Types</h1><div class='muted'>Create a Treatment Type, then configure the Session Types available within it.</div></div><button class='primary' onclick='addProduct()'>+ Create Treatment Type</button></div><div id='productTiles' class='productgrid'></div></div><div id='productDetailView' style='display:none'><div class='top'><div><button onclick='backToProducts()'>← Treatment Types</button><h1 id='productTitle' style='margin-top:12px'></h1><div class='muted' id='productSub'></div></div><div><button onclick='editCurrentProduct()'>Edit Treatment Type</button> <button class='primary' onclick='addTreatmentToCurrentProduct()'>+ Add Session Type</button></div></div><div class='card'><table class='table' id='productTreatmentTable'></table></div></div></section>
 <section id='customers' class='page'><div class='top'><div><h1>Customers</h1><div class='muted'>Customer accounts, minutes and purchase history.</div></div><button class='primary' onclick='openCustomerCreate()'>+ New Customer</button></div><div class='card'><table class='table' id='customerTable'></table></div></section>
 <section id='tanningproducts' class='page'><div class='top'><div><h1>Tanning/RLT Products</h1><div class='muted'>Configure PAYG, block minutes, RLT programmes and tangible products.</div></div><button class='primary' onclick='openTanningProduct()'>+ New Product</button></div><div class='card'><table class='table' id='tanningProductsTable'></table></div></section>
 <section id='renters' class='page'><div class='top'><h1>Clinicians</h1><button class='primary' onclick='addRenter()'>+ Add Clinician</button></div><div class='card'><table class='table' id='renterTable'></table></div></section>
@@ -1093,7 +1093,7 @@ body.loading .app{visibility:hidden}
 <div class='modal' id='productCreateModal'>
   <div class='modalbox' style='max-width:500px'>
     <div class='top'>
-      <div><h1>Create Treatment Type</h1><div class='muted'>Examples: Aesthetics, Nails, Lashes, Massage</div></div>
+      <div><h1 id='productModalTitle'>Create Treatment Type</h1><div class='muted'>Examples: Aesthetics, Nails, Lashes, Massage</div></div>
       <button onclick='closeProductCreate()'>✕</button>
     </div>
     <label>Treatment Type Name</label>
