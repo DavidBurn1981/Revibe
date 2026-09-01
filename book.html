@@ -18,9 +18,7 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 .clinicianIntro{color:#fff;font-size:15px;font-weight:700;line-height:1.6;text-align:left;margin:0 0 14px}
 .clinicianSocialRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 20px}
 .clinicianSocialLabel{font-size:15px;color:#fff;font-weight:900;margin-right:2px;text-shadow:0 0 12px rgba(255,45,120,.7)}
-.clinicianSocialBadge{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 18px;border-radius:17px;text-decoration:none;font-size:13px;font-weight:900;letter-spacing:.03em;transition:transform .15s,box-shadow .15s}
-.clinicianSocialBadge.badgePink{background:var(--pink);color:#fff;box-shadow:0 0 16px rgba(255,45,120,.6),0 0 32px rgba(255,45,120,.3)}
-.clinicianSocialBadge.badgeCyan{background:var(--cyan);color:#061316;box-shadow:0 0 16px rgba(25,217,231,.55),0 0 32px rgba(25,217,231,.28)}
+.clinicianSocialBadge{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 18px;border-radius:17px;text-decoration:none;font-size:13px;font-weight:900;letter-spacing:.03em;transition:transform .15s,box-shadow .15s;background:var(--violet);color:#fff;box-shadow:0 0 16px rgba(155,47,255,.6),0 0 32px rgba(155,47,255,.3)}
 .clinicianSocialBadge:hover{transform:scale(1.06)}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:6px 0 0}.tiles+.tiles,.sessionGroupHeading+.tiles{margin-top:16px}.sessionGroupHeading{font-size:16px;font-weight:800;letter-spacing:-.01em;margin:22px 0 12px;text-align:left}.tile{width:100%;text-align:center;background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);color:#fff;border-radius:16px;padding:22px 16px;cursor:pointer;min-height:112px;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:transform .15s,border-color .15s,filter .15s;font-family:inherit}.tile:hover,.tile:focus{border-color:#fff;outline:none;transform:translateY(-3px);filter:brightness(1.04)}.tile h3{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}.tile .small{color:rgba(255,255,255,.88);font-size:12px;line-height:1.5;font-weight:500}.productTile.pink,.themePink{background:var(--pink);border-color:var(--pink)}.productTile.cyan,.themeCyan{background:var(--cyan);border-color:var(--cyan);color:#061316}.productTile.cyan .small,.themeCyan .small{color:rgba(6,19,22,.76)}.themeCyan .price,.themeCyan h3{color:#061316}.themeCyan .price del{color:rgba(6,19,22,.55)}
 .themeViolet{background:var(--violet);border-color:var(--violet)}
@@ -112,9 +110,9 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 
       <section id="step2" class="section">
         <button class="back" onclick="goStep(1)">← Back</button>
+        <div id="clinicianAboutBlock"></div>
         <div class="sectionTitle">Choose a Clinic Day</div>
         <div class="sectionSub" id="clinicSub"></div>
-        <div id="clinicianAboutBlock"></div>
         <div id="clinicTiles" class="tiles"></div>
       </section>
 
@@ -186,7 +184,7 @@ function chooseProduct(id){choice={product:model.products.find(x=>String(x.id)==
       safeUrl(c0.renter_tiktok)?{label:'TikTok',url:c0.renter_tiktok}:null,
       safeUrl(c0.renter_website)?{label:'Web',url:c0.renter_website}:null,
     ].filter(Boolean);
-    if(socials.length)aboutHtml+=`<div class="clinicianSocialRow"><span class="clinicianSocialLabel">Follow ${esc(c0.renter_name||'this clinician')}:</span>${socials.map((s,i)=>`<a class="clinicianSocialBadge ${i%2===0?'badgePink':'badgeCyan'}" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`).join('')}</div>`;
+    if(socials.length)aboutHtml+=`<div class="clinicianSocialRow"><span class="clinicianSocialLabel">Follow ${esc(c0.renter_name||'this clinician')}:</span>${socials.map(s=>`<a class="clinicianSocialBadge" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`).join('')}</div>`;
   }
   document.getElementById('clinicianAboutBlock').innerHTML=aboutHtml;
   document.getElementById('clinicTiles').innerHTML=clinics.length?clinics.map(c=>`<button class="tile ${themeClass()}" onclick="chooseClinic('${c.id}')"><h3>${niceDate(c.date)}</h3><div class="small">${esc(c.start)}–${esc(c.end)}</div>${c.renter_name?`<div class="small">Provided by ${esc(c.renter_name)}</div>`:''}${+c.discount_percent>0?`<div class="discount">${+c.discount_percent}% off treatments this clinic</div>`:''}</button>`).join(''):'<div class="empty">There are no clinic days with appointment availability for this treatment at the moment.</div>';goStep(2)}
