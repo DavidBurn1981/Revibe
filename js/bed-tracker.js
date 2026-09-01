@@ -77,8 +77,10 @@ function periodRevenue(keys){
       beds=rows.reduce((s,x)=>s+(+x.bedCard||0),0);
   return {cash,treatments,beds,total:cash+treatments+beds};
 }
+const DAILY_AVERAGE_COMPARISON_ENABLED=false; // temporarily disabled while historic session data is added - see renderDailyAverageComparison()
 function renderDailyAverageComparison(){
  let out=document.getElementById('metricDailyAverage'),detail=document.getElementById('metricDailyAverageDetail');if(!out)return;
+ if(!DAILY_AVERAGE_COMPARISON_ENABLED){out.textContent='—';detail.textContent='Temporarily disabled while historic session data is added.';out.style.color='';return}
  let now=new Date(),today=localDateKey(),weekday=now.getDay(),
      nowMin=now.getHours()*60+now.getMinutes(),
      actual=performanceSessions(data.bedSessions.filter(x=>x.date===today)).reduce((s,x)=>s+x.length,0),
