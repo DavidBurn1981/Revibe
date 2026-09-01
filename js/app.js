@@ -87,6 +87,9 @@ function renderPageForNavigation(pageId){
     case 'businessplanner':
       renderBusinessPlanner();
       break;
+    case 'apartmentcleans':
+      renderApartmentCleans();
+      break;
   }
 }
 function goToPage(pageId){
@@ -135,6 +138,7 @@ function renderAll(){
   renderMonthlyTargets();
   renderPerformanceReporting();
   renderBusinessPlanner();
+  renderApartmentCleans();
   applyPermissionBasedActions();
 
   setTimeout(()=>{
