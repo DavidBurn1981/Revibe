@@ -59,6 +59,9 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 .clinicianBtn span{display:block;background:#111;color:#fff;font-weight:800;font-size:14px;letter-spacing:.01em;padding:11px 24px;border-radius:5px}
 
 .bookingPanel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:32px 28px;position:sticky;top:24px}
+.bookingPanelTitleRow{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.bookingPanelTitleRow .bookingPanelTitle{margin-bottom:2px}
+.bookingPanelTitleRow .bookingPanelSub{margin-bottom:0}
 .bookingPanelTitle{font-size:25px;font-weight:900;letter-spacing:-.03em;margin:0 0 6px;color:#fff}
 .bookingPanelSub{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 24px}
 
@@ -93,8 +96,13 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 
   <div class="rightCol">
     <div class="bookingPanel">
-      <div class="bookingPanelTitle">Book a Treatment</div>
-      <p class="bookingPanelSub">More treatments coming very soon…</p>
+      <div class="bookingPanelTitleRow">
+        <button class="back" id="panelBackBtn" style="display:none" onclick="goBack()">← Back</button>
+        <div>
+          <div class="bookingPanelTitle">Book a Treatment</div>
+          <p class="bookingPanelSub">More treatments coming very soon…</p>
+        </div>
+      </div>
       <div class="sectionTitle" id="step1Heading">Select your Treatment Type</div>
       <div id="message" class="notice"></div>
 
@@ -109,7 +117,6 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
       </section>
 
       <section id="step2" class="section">
-        <button class="back" onclick="goStep(1)">← Back</button>
         <div id="clinicianAboutBlock"></div>
         <div class="sectionTitle">Choose a Clinic Day</div>
         <div class="sectionSub" id="clinicSub"></div>
@@ -117,7 +124,6 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
       </section>
 
       <section id="step3" class="section">
-        <button class="back" onclick="goStep(2)">← Back</button>
         <div class="sectionTitle">What Would You Like?</div>
         <div class="sectionSub" id="sessionSub"></div>
         <div class="sessionContactNote" id="sessionContactNote"></div>
@@ -125,14 +131,12 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
       </section>
 
       <section id="step4" class="section">
-        <button class="back" onclick="goStep(3)">← Back</button>
         <div class="sectionTitle">Choose a Time</div>
         <div class="sectionSub" id="timeSub">Only times that fit your full session are shown.</div>
         <div id="timeGrid" class="timeGrid"></div>
       </section>
 
       <section id="step5" class="section">
-        <button class="back" onclick="goStep(4)">← Back</button>
         <div class="sectionTitle">Your Details</div>
         <div class="sectionSub">Almost done — enter your details and confirm your booking.</div>
         <div id="bookingSummary" class="summary"></div>
@@ -165,7 +169,8 @@ function niceDate(s){let d=new Date(s+'T12:00:00');return d.toLocaleDateString('
 function showMessage(text,type='error'){let e=document.getElementById('message');e.textContent=text;e.className='notice '+type;e.style.display='block'}
 function hideMessage(){document.getElementById('message').style.display='none'}
 async function api(action,payload={}){let r=await fetch(FUNCTION_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({action,...payload})});let j={};try{j=await r.json()}catch(_){}if(!r.ok||j.error)throw new Error(j.error||'Booking service is temporarily unavailable.');return j}
-function goStep(n){hideMessage();document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step'+n).classList.add('active');document.getElementById('step1Heading').style.display=n===1?'':'none'}
+function goStep(n){hideMessage();document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step'+n).classList.add('active');document.getElementById('step1Heading').style.display=n===1?'':'none';document.getElementById('panelBackBtn').style.display=n===1?'none':'inline-block'}
+function goBack(){for(let n=2;n<=5;n++){if(document.getElementById('step'+n).classList.contains('active')){goStep(n-1);return}}}
 async function boot(){showMessage('Loading available treatments…','loading');try{model=await api('bootstrap');hideMessage();renderProducts()}catch(e){showMessage(e.message)}}
 function productTheme(p){return String(p?.name||'').trim().toLowerCase()==='nails'?'cyan':'pink'}
 function themeClass(){return productTheme(choice.product)==='cyan'?'themeCyan':'themePink'}
@@ -200,8 +205,8 @@ function chooseClinic(id){choice.clinic=model.clinics.find(x=>String(x.id)===Str
   document.getElementById('sessionTiles').innerHTML=html||'<div class="empty">There are no session types available for this clinic.</div>';goStep(3)}
 async function chooseTreatment(id){choice.treatment=model.treatments.find(x=>String(x.id)===String(id));choice.time=null;if(!choice.treatment)return;let t=choice.treatment;document.getElementById('timeSub').textContent=`${t.name} · ${t.duration} minute session. Only times with enough room for the full appointment are shown.`;document.getElementById('timeGrid').innerHTML='<div class="empty">Checking available times…</div>';goStep(4);try{let r=await api('slots',{clinic_day_id:choice.clinic.id,treatment_id:t.id});document.getElementById('timeGrid').innerHTML=r.times?.length?r.times.map(v=>`<button class="timeBtn" onclick="chooseTime('${v}')">${esc(v)}</button>`).join(''):'<div class="empty">Sorry, there are no appointment times left for this session on this clinic day.</div>'}catch(e){document.getElementById('timeGrid').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 function chooseTime(t){choice.time=t;let c=choice.clinic,s=choice.treatment,d=+c.discount_percent||0,p=+s.price||0,pay=p*(1-d/100);document.getElementById('bookingSummary').innerHTML=`<b>${esc(choice.product.name)} — ${esc(s.name)}</b><br>${niceDate(c.date)} at ${esc(t)}<br>${s.duration} minutes<br>${d>0?`${d}% clinic discount · <del>${money(p)}</del> <b>${money(pay)}</b>`:`<b>${money(p)}</b>`}`;goStep(5)}
-async function confirmBooking(){let name=document.getElementById('customerName').value.trim(),phone=document.getElementById('customerPhone').value.trim(),btn=document.getElementById('confirmBtn');if(!name)return showMessage('Please enter your name.');if(!phone)return showMessage('Please enter your mobile number.');hideMessage();btn.disabled=true;btn.textContent='Confirming…';try{let r=await api('book',{clinic_day_id:choice.clinic.id,treatment_id:choice.treatment.id,start_time:choice.time,customer_name:name,customer_phone:phone});document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('success').classList.add('active');document.getElementById('successText').innerHTML=`${esc(r.treatment_name)}<br>${niceDate(r.booking_date)} at ${esc(r.start_time)}<br><br>We look forward to seeing you at REVIBE.`}catch(e){showMessage(e.message);if(/unavailable/i.test(e.message))try{await chooseTreatment(choice.treatment.id)}catch(_){} }finally{btn.disabled=false;btn.textContent='Confirm Booking'}}
-function startAgain(){choice={product:null,clinic:null,treatment:null,time:null};document.getElementById('customerName').value='';document.getElementById('customerPhone').value='';document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step1').classList.add('active');document.getElementById('step1Heading').style.display='';boot()}
+async function confirmBooking(){let name=document.getElementById('customerName').value.trim(),phone=document.getElementById('customerPhone').value.trim(),btn=document.getElementById('confirmBtn');if(!name)return showMessage('Please enter your name.');if(!phone)return showMessage('Please enter your mobile number.');hideMessage();btn.disabled=true;btn.textContent='Confirming…';try{let r=await api('book',{clinic_day_id:choice.clinic.id,treatment_id:choice.treatment.id,start_time:choice.time,customer_name:name,customer_phone:phone});document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('success').classList.add('active');document.getElementById('panelBackBtn').style.display='none';document.getElementById('successText').innerHTML=`${esc(r.treatment_name)}<br>${niceDate(r.booking_date)} at ${esc(r.start_time)}<br><br>We look forward to seeing you at REVIBE.`}catch(e){showMessage(e.message);if(/unavailable/i.test(e.message))try{await chooseTreatment(choice.treatment.id)}catch(_){} }finally{btn.disabled=false;btn.textContent='Confirm Booking'}}
+function startAgain(){choice={product:null,clinic:null,treatment:null,time:null};document.getElementById('customerName').value='';document.getElementById('customerPhone').value='';document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step1').classList.add('active');document.getElementById('step1Heading').style.display='';document.getElementById('panelBackBtn').style.display='none';boot()}
 boot();
 </script>
 </body>
