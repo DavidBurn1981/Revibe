@@ -572,7 +572,23 @@ body.loading .app{visibility:hidden}
 <section id='tanningproducts' class='page'><div class='top'><div><h1>Tanning/RLT Products</h1><div class='muted'>Configure PAYG, block minutes, RLT programmes and tangible products.</div></div><button class='primary' onclick='openTanningProduct()'>+ New Product</button></div><div class='card'><table class='table' id='tanningProductsTable'></table></div></section>
 <section id='renters' class='page'><div class='top'><h1>Clinicians</h1><button class='primary' onclick='addRenter()'>+ Add Clinician</button></div><div class='card'><table class='table' id='renterTable'></table></div></section>
 <section id='staffmembers' class='page'><div class='top'><div><h1>Staff Members</h1><div class='muted'>Manage Revibe staff details and holiday entitlement.</div></div><button class='primary' id='addStaffMemberBtn' onclick='openStaffMemberCreate()'>+ Add Staff Member</button></div><div class='card'><table class='table' id='staffMembersTable'></table></div></section>
-<section id='staffrota' class='page'><div class='top'><div><h1>Staff Rota</h1><div class='muted' id='staffRotaWeekLabel'></div></div><div class='actions'><select id='staffRotaRange' onchange='changeStaffRotaRange()'><option value='7'>Week</option><option value='14'>Fortnight</option></select><button id='staffRotaPrev'>←</button><button id='staffRotaToday'>Today</button><button id='staffRotaNext'>→</button><button class='primary' onclick='openStaffShiftCreate()'>+ Create New Shift</button></div></div><div id='staffRotaCalendar' class='staffRotaMatrixWrap'></div><div id='staffRotaSummary' class='card staffWeekSummary'></div></section>
+<section id='staffrota' class='page'>
+  <div id='staffRotaListView'>
+    <div class='top'>
+      <div><h1>Staff Rota</h1><div class='muted'>Select a week to view or manage its rota.</div></div>
+      <button class='primary' onclick='addStaffRota()'>+ Create New Rota</button>
+    </div>
+    <div class='card'><table class='table' id='staffRotaListTable'></table></div>
+  </div>
+  <div id='staffRotaDetailView' style='display:none'>
+    <div class='top'>
+      <div><button onclick='backToStaffRotaList()'>← All Rotas</button><h1 style='margin-top:12px'>Staff Rota</h1><div class='muted' id='staffRotaWeekLabel'></div></div>
+      <div class='actions'><select id='staffRotaRange' onchange='changeStaffRotaRange()'><option value='7'>Week</option><option value='14'>Fortnight</option></select><button class='primary' onclick='openStaffShiftCreate()'>+ Create New Shift</button></div>
+    </div>
+    <div id='staffRotaCalendar' class='staffRotaMatrixWrap'></div>
+    <div id='staffRotaSummary' class='card staffWeekSummary'></div>
+  </div>
+</section>
 
 <section id='holidayrequests' class='page'>
   <div class='top'>
@@ -1166,6 +1182,22 @@ body.loading .app{visibility:hidden}
     <div style='display:flex;justify-content:space-between;margin-top:18px'>
       <button id='deleteBpActionBtn' onclick='deleteBusinessPlannerAction()'>Delete Action</button>
       <div><button onclick='closeBusinessPlannerAction()'>Cancel</button> <button class='primary' onclick='saveBusinessPlannerAction()'>Save</button></div>
+    </div>
+  </div>
+</div>
+
+<div class='modal' id='staffRotaCreateModal'>
+  <div class='modalbox' style='max-width:420px'>
+    <div class='top'>
+      <div><h1>Create New Rota</h1><div class='muted'>Choose any date in the week — we'll use the Monday.</div></div>
+      <button onclick='closeStaffRotaCreate()'>✕</button>
+    </div>
+    <label>Week Containing</label>
+    <input id='staffRotaCreateDate' type='date'>
+    <div id='staffRotaCreateError' class='loginError' style='margin-top:12px'></div>
+    <div style='text-align:right;margin-top:18px'>
+      <button onclick='closeStaffRotaCreate()'>Cancel</button>
+      <button class='primary' id='staffRotaCreateSaveBtn' onclick='saveNewStaffRota()'>Create Rota</button>
     </div>
   </div>
 </div>
