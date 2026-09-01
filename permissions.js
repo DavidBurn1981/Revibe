@@ -53,14 +53,15 @@ async function loadRolePermissions(){
     key:x.permission_key,
     view:!!x.can_view,
     edit:!!x.can_edit,
-    approve:!!x.can_approve
+    approve:!!x.can_approve,
+    delete:!!x.can_delete
   }));
 }
 function hasRolePermission(key,action='view'){
   if(currentProfile?.role==='admin')return true;
   let p=revibeRolePermissions.find(x=>x.role===currentProfile?.role&&x.key===key);
   if(!p)return false;
-  return action==='edit'?p.edit:action==='approve'?p.approve:p.view;
+  return action==='edit'?p.edit:action==='approve'?p.approve:action==='delete'?p.delete:p.view;
 }
 function requireRolePermission(key,action='edit',message){
   if(hasRolePermission(key,action))return true;
@@ -183,7 +184,8 @@ function openRolePermissionDetail(role){
     workingRolePermissions[area.key]={
       view:role==='admin'?true:!!saved?.view,
       edit:role==='admin'?true:!!saved?.edit,
-      approve:role==='admin'?true:!!saved?.approve
+      approve:role==='admin'?true:!!saved?.approve,
+      delete:role==='admin'?true:!!saved?.delete
     };
   });
 
@@ -216,17 +218,17 @@ function closeRolePermissionDetail(){
 function renderPermissionsMatrix(){
   let t=document.getElementById('permissionsMatrixTable');if(!t)return;
 
-  let html=`<tr><th>Area / Function</th><th>View</th><th>Create / Edit</th><th>Approve</th></tr>`,
+  let html=`<tr><th>Area / Function</th><th>View</th><th>Create / Edit</th><th>Approve</th><th>Delete</th></tr>`,
       currentGroup=null,
       locked=editingPermissionRole==='admin';
 
   REVIBE_PERMISSION_AREAS.forEach(area=>{
     if(area.group!==currentGroup){
       currentGroup=area.group;
-      html+=`<tr class='permissionGroupRow'><td colspan='4'>${area.group}</td></tr>`;
+      html+=`<tr class='permissionGroupRow'><td colspan='5'>${area.group}</td></tr>`;
     }
 
-    let p=workingRolePermissions[area.key]||{view:false,edit:false,approve:false};
+    let p=workingRolePermissions[area.key]||{view:false,edit:false,approve:false,delete:false};
 
     html+=`<tr class='${locked?'permissionDisabled':''}'>
       <td>
@@ -239,23 +241,25 @@ function renderPermissionsMatrix(){
         ?`<input class='permissionCheck' type='checkbox' ${p.approve?'checked':''} ${locked?'disabled':''} onchange="changeWorkingPermission('${area.key}','approve',this.checked)">`
         :'—'
       }</td>
+      <td><input class='permissionCheck' type='checkbox' ${p.delete?'checked':''} ${locked?'disabled':''} onchange="changeWorkingPermission('${area.key}','delete',this.checked)"></td>
     </tr>`;
   });
 
   t.innerHTML=html;
 }
 function changeWorkingPermission(key,action,value){
-  let p=workingRolePermissions[key]||(workingRolePermissions[key]={view:false,edit:false,approve:false});
+  let p=workingRolePermissions[key]||(workingRolePermissions[key]={view:false,edit:false,approve:false,delete:false});
 
   p[action]=value;
 
-  // Edit/Approve implies View.
-  if((action==='edit'||action==='approve')&&value)p.view=true;
+  // Edit/Approve/Delete imply View.
+  if((action==='edit'||action==='approve'||action==='delete')&&value)p.view=true;
 
-  // Removing View removes Edit + Approve.
+  // Removing View removes Edit + Approve + Delete.
   if(action==='view'&&!value){
     p.edit=false;
     p.approve=false;
+    p.delete=false;
   }
 
   renderPermissionsMatrix();
@@ -268,14 +272,15 @@ async function saveRolePermissions(){
 
   try{
     for(let area of REVIBE_PERMISSION_AREAS){
-      let p=workingRolePermissions[area.key]||{view:false,edit:false,approve:false};
+      let p=workingRolePermissions[area.key]||{view:false,edit:false,approve:false,delete:false};
 
       let {error}=await sb.rpc('revibe_save_role_permission',{
         p_role:editingPermissionRole,
         p_permission_key:area.key,
         p_can_view:!!p.view,
         p_can_edit:!!p.edit,
-        p_can_approve:!!p.approve
+        p_can_approve:!!p.approve,
+        p_can_delete:!!p.delete
       });
 
       if(error)throw error;
@@ -314,7 +319,8 @@ function applyCopiedPermissions(){
     workingRolePermissions[area.key]={
       view:source==='admin'?true:!!saved?.view,
       edit:source==='admin'?true:!!saved?.edit,
-      approve:source==='admin'?true:!!saved?.approve
+      approve:source==='admin'?true:!!saved?.approve,
+      delete:source==='admin'?true:!!saved?.delete
     };
   });
 
