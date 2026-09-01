@@ -150,20 +150,29 @@ function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.r
 function dateRangeKeys(start,end){let keys=[],d=new Date(start);d.setHours(12,0,0,0);let e=new Date(end);e.setHours(12,0,0,0);while(d<=e){keys.push(localDateKey(d));d.setDate(d.getDate()+1)}return keys}
 function summaryMetricsHtml(a,kpi,label){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div><div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>${label||'KPI'}</div><div class='value'>${kpi.toFixed(1)}</div></div></div>`}
 function periodOpenHours(keys){let today=localDateKey();return keys.reduce((sum,k)=>sum+(k===today?getElapsedOpeningHours(new Date()):hoursDuration(effectiveHoursForDate(k))),0)}
-function renderPeriodPerformance(mode){
-  let now=new Date(),start,end,title;
+let currentPeriodMode=null,currentPeriodRefDate=null;
+function renderPeriodPerformance(mode,refDate){
+  let now=new Date(),ref=refDate?new Date(refDate):new Date(now),start,end,title,isCurrent;
+  currentPeriodMode=mode;currentPeriodRefDate=ref;
 
   if(mode==='week'){
-    let day=(now.getDay()+6)%7;
-    start=new Date(now);
-    start.setDate(now.getDate()-day);
-    end=new Date(now);
-    title='This Week In Detail';
+    let refDay=(ref.getDay()+6)%7;
+    start=new Date(ref);start.setDate(ref.getDate()-refDay);
+    let weekEnd=new Date(start);weekEnd.setDate(start.getDate()+6);
+    let todayDay=(now.getDay()+6)%7,thisWeekStart=new Date(now);thisWeekStart.setDate(now.getDate()-todayDay);
+    isCurrent=start.toDateString()===thisWeekStart.toDateString();
+    end=isCurrent?new Date(now):weekEnd;
+    title='Week Detailed View';
   }else{
-    start=new Date(now.getFullYear(),now.getMonth(),1);
-    end=new Date(now);
-    title='This Month In Detail';
+    start=new Date(ref.getFullYear(),ref.getMonth(),1);
+    let monthEnd=new Date(ref.getFullYear(),ref.getMonth()+1,0);
+    isCurrent=ref.getFullYear()===now.getFullYear()&&ref.getMonth()===now.getMonth();
+    end=isCurrent?new Date(now):monthEnd;
+    title='Month Detail View';
   }
+
+  let nav=document.getElementById('perfPeriodNav');
+  if(nav){nav.style.display='flex';let nextBtn=document.getElementById('perfPeriodNext');if(nextBtn)nextBtn.disabled=isCurrent;let curBtn=document.getElementById('perfPeriodCurrent');if(curBtn)curBtn.style.display=isCurrent?'none':'inline-block'}
 
   let keys=dateRangeKeys(start,end),
       rows=(data.bedSessions||[]).filter(x=>keys.includes(x.date)),
@@ -200,13 +209,30 @@ function renderPeriodPerformance(mode){
     </table></div>`;
 }
 function drawBarChart(canvas,labels,values,valueSuffix=''){let ctx=canvas.getContext('2d'),ratio=window.devicePixelRatio||1,w=Math.max(canvas.parentElement.clientWidth,700),h=280;canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.scale(ratio,ratio);ctx.clearRect(0,0,w,h);let pad={l:48,r:18,t:22,b:52},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,max=Math.max(...values,1),step=cw/Math.max(labels.length,1),bar=Math.max(10,step*.62);ctx.font='11px Segoe UI';ctx.fillStyle='#9da3ad';ctx.strokeStyle='#30353d';ctx.lineWidth=1;for(let i=0;i<=4;i++){let y=pad.t+ch-(ch*i/4),v=Math.round(max*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(v,pad.l-38,y+4)}values.forEach((v,i)=>{let x=pad.l+i*step+(step-bar)/2,bh=max?ch*(v/max):0,y=pad.t+ch-bh;ctx.fillStyle='#ff2d78';ctx.fillRect(x,y,bar,bh);ctx.fillStyle='#f5f5f7';ctx.textAlign='center';ctx.fillText(`${Number(v).toFixed(valueSuffix?1:0)}${valueSuffix}`,x+bar/2,Math.max(12,y-6));ctx.save();ctx.translate(x+bar/2,pad.t+ch+15);ctx.rotate(-.55);ctx.fillStyle='#9da3ad';ctx.fillText(labels[i],0,0);ctx.restore()});ctx.textAlign='left'}
-function renderPerformanceCharts(){let sessions=data.bedSessions||[],today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1),keys=dateRangeKeys(first,today);let days=keys.map(k=>{let a=aggregateSessions(sessions.filter(x=>x.date===k));return {key:k,minutes:a.minutes,kpi:dayKpi(k,a.minutes)}});document.getElementById('perfTitle').textContent='Performance Charts';document.getElementById('perfSubtitle').textContent='Calendar month to date';document.getElementById('perfContent').innerHTML=`<div class='chartCard'><h3>Total Minutes by Day</h3><div class='chartWrap'><canvas id='minutesChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Minutes Per Bed Per Hour KPI by Day</h3><div class='chartWrap'><canvas id='kpiChart' class='chartCanvas'></canvas></div></div>`;let labels=days.map(d=>parseLocalDateKey(d.key).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));requestAnimationFrame(()=>{drawBarChart(document.getElementById('minutesChart'),labels,days.map(d=>d.minutes));drawBarChart(document.getElementById('kpiChart'),labels,days.map(d=>d.kpi),'')})}
+function renderPerformanceCharts(){let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';let sessions=data.bedSessions||[],today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1),keys=dateRangeKeys(first,today);let days=keys.map(k=>{let a=aggregateSessions(sessions.filter(x=>x.date===k));return {key:k,minutes:a.minutes,kpi:dayKpi(k,a.minutes)}});document.getElementById('perfTitle').textContent='Performance Charts';document.getElementById('perfSubtitle').textContent='Calendar month to date';document.getElementById('perfContent').innerHTML=`<div class='chartCard'><h3>Total Minutes by Day</h3><div class='chartWrap'><canvas id='minutesChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Minutes Per Bed Per Hour KPI by Day</h3><div class='chartWrap'><canvas id='kpiChart' class='chartCanvas'></canvas></div></div>`;let labels=days.map(d=>parseLocalDateKey(d.key).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));requestAnimationFrame(()=>{drawBarChart(document.getElementById('minutesChart'),labels,days.map(d=>d.minutes));drawBarChart(document.getElementById('kpiChart'),labels,days.map(d=>d.kpi),'')})}
 function openBonusPerformance(){
  let n=currentMonthIdentity(),s=getTargetStackFor(n.month,n.year);if(!s)return alert('No target stack exists for the current month.');
+ let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';
  let a=monthPerformanceActuals(n.month,n.year);document.getElementById('perfTitle').textContent='Bonus Performance';document.getElementById('perfSubtitle').textContent=`${MONTH_NAMES[n.month-1]} ${n.year} · Current actual ${a.kpi.toFixed(2)} mins / bed / hour`;
  document.getElementById('perfContent').innerHTML=[1,2,3].map(i=>{let t=s[`bonus${i}Kpi`],amt=s[`bonus${i}Amount`],pct=t?a.kpi/t*100:0;return `<div class='card'><h3>Bonus Level ${i} · £${amt.toFixed(2)}</h3><div style='font-size:28px;font-weight:900'>${pct.toFixed(0)}%</div><div>${a.kpi.toFixed(2)} actual vs ${t.toFixed(2)} target</div><div class='progressTrack'><div class='progressFill' style='width:${Math.min(100,pct)}%'></div></div></div>`}).join('');
  document.getElementById('performanceOverlay').classList.add('show');
 }
+function navigatePeriod(delta){
+  if(!currentPeriodMode)return;
+  let d=new Date(currentPeriodRefDate),now=new Date();
+  if(currentPeriodMode==='week'){
+    d.setDate(d.getDate()+delta*7);
+    let targetDay=(d.getDay()+6)%7,targetWeekStart=new Date(d);targetWeekStart.setDate(d.getDate()-targetDay);
+    let nowDay=(now.getDay()+6)%7,thisWeekStart=new Date(now);thisWeekStart.setDate(now.getDate()-nowDay);
+    if(targetWeekStart>thisWeekStart)return;
+  }else{
+    d.setMonth(d.getMonth()+delta);
+    let targetMonthStart=new Date(d.getFullYear(),d.getMonth(),1),thisMonthStart=new Date(now.getFullYear(),now.getMonth(),1);
+    if(targetMonthStart>thisMonthStart)return;
+  }
+  renderPeriodPerformance(currentPeriodMode,d);
+}
+function resetPeriodToCurrent(){if(currentPeriodMode)renderPeriodPerformance(currentPeriodMode,new Date())}
 function openPerformance(mode){document.getElementById('performanceOverlay').classList.add('show');if(mode==='charts')renderPerformanceCharts();else renderPeriodPerformance(mode)}
 function closePerformance(){document.getElementById('performanceOverlay').classList.remove('show')}
 function bedSessionHistoryRows(){
