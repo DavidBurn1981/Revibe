@@ -80,7 +80,7 @@ async function loadLiveData(){
     id:x.id,staffId:x.staff_member_id,startDate:x.start_date,endDate:x.end_date,daysTotal:+x.days_total||0,status:x.status,
     approvedById:x.approved_by_staff_member_id,approvedDate:x.approved_date
   }));
-  data.dailyTakings=dailyTakings.data.map(x=>({id:x.id,date:x.takings_date,cash:+x.cash_taken||0,treatmentsCard:+x.treatments_card_taken||0,bedCard:+x.bed_card_taken||0}));
+  data.dailyTakings=dailyTakings.data.map(x=>({id:x.id,date:x.takings_date,cash:+x.cash_taken||0,treatmentsCard:+x.treatments_card_taken||0,bedCard:+x.bed_card_taken||0,fridgeReading:x.fridge_reading===null||x.fridge_reading===undefined?'':+x.fridge_reading}));
   data.orders=orders.data.map(x=>({id:x.id,description:x.description,date:x.order_date,supplier:x.supplier||'',amount:+x.amount||0,card:x.card_used,staffId:x.ordered_by_staff_member_id}));
   data.financeOutgoings=financeOutgoings.data.map(x=>({id:x.id,month:+x.finance_month,year:+x.finance_year,wages:x.wages==null?null:+x.wages,rent:+x.rent,bedHire:+x.bed_hire,insurance:+x.insurance}));
   data.customers=customers.data.map(x=>({id:x.id,accountNumber:x.account_number,firstName:x.first_name,lastName:x.last_name,name:`${x.first_name} ${x.last_name}`,dob:x.date_of_birth,phone:x.phone_number||'',address:x.address||'',uv:x.intends_uv_or_injectables,idChecked:x.id_checked,idCheckedDate:x.id_checked_date,minutesLeft:+x.minutes_left||0,active:x.active}));
