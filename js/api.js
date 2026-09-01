@@ -24,7 +24,7 @@ async function loadAllBedSessions(){
   return {data:allRows,error:null};
 }
 async function loadLiveData(){
-  let [products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist]=await Promise.all([
+  let [products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions]=await Promise.all([
     sb.from('products').select('*').order('name'),
     sb.from('treatments').select('*').order('name'),
     sb.from('treatment_groupings').select('*').order('display_order'),
@@ -47,12 +47,14 @@ async function loadLiveData(){
     sb.from('tanning_rlt_products').select('*').order('title'),
     sb.from('customer_transactions').select('*').order('created_at'),
     sb.from('opening_hours').select('*').order('day_of_week'),
-    sb.from('opening_hours_history').select('*').order('effective_from')
+    sb.from('opening_hours_history').select('*').order('effective_from'),
+    sb.from('business_planner_actions').select('*').order('action_date')
   ]);
-  let err=[products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist].find(x=>x.error)?.error;
+  let err=[products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions].find(x=>x.error)?.error;
   if(err)throw err;
   data.products=products.data.map(x=>({id:x.id,name:x.name,active:x.active}));
   data.treatmentGroupings=treatmentGroupings.data.map(x=>({id:x.id,productId:x.product_id,name:x.name,displayOrder:+x.display_order||0}));
+  data.businessPlannerActions=businessPlannerActions.data.map(x=>({id:x.id,date:x.action_date,description:x.description,ownerStaffId:x.owner_staff_id}));
   data.treatments=treatments.data.map(x=>({id:x.id,productId:x.product_id,product:data.products.find(p=>p.id===x.product_id)?.name||'',name:x.name,duration:x.duration_minutes,buffer:x.buffer_minutes,price:+x.price,active:x.active,groupingId:x.grouping_id}));
   data.renters=renters.data.map(x=>{
     let links=renterProducts.data.filter(y=>y.renter_id===x.id),

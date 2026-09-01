@@ -15,6 +15,7 @@ const REVIBE_PERMISSION_AREAS=[
   {group:'Admin',key:'users',label:'Users',approve:false},
   {group:'Admin',key:'roles_permissions',label:'Roles & Permissions',approve:false},
   {group:'Admin',key:'finance',label:'Finance',approve:false},
+  {group:'Admin',key:'business_planner',label:'Social Media Planning',approve:false},
 ];
 const REVIBE_PAGE_PERMISSION_MAP={
   bedtracker:'daily_session_tracker',
@@ -41,6 +42,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   rolespermissions:'roles_permissions',
   finance:'finance',
   orders:'finance',
+  businessplanner:'business_planner',
 };
 async function loadRolePermissions(){
   let {data,error}=await sb.from('role_permissions').select('*');
@@ -82,6 +84,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openStaffShiftCreate:['staff_rota','edit'], saveStaffShift:['staff_rota','edit'],
   openHolidayRequestCreate:['holiday_requests','edit'], saveHolidayRequest:['holiday_requests','edit'], deleteHolidayRequest:['holiday_requests','edit'], approveHolidayRequest:['holiday_requests','approve'],
   openOrderCreate:['finance','edit'], openOrderEdit:['finance','edit'], saveOrder:['finance','edit'], deleteOrder:['finance','edit'], saveFinanceOutgoings:['finance','edit'],
+  addBusinessPlannerAction:['business_planner','edit'], openBusinessPlannerActionEdit:['business_planner','edit'], saveBusinessPlannerAction:['business_planner','edit'], deleteBusinessPlannerAction:['business_planner','delete'],
   saveMonthEndReviews:['performance_reporting','edit']
 };
 function applyPermissionBasedActions(){
@@ -124,7 +127,7 @@ function applyPermissionBasedNavigation(){
   // Hide empty section headings automatically.
   document.querySelectorAll('#nav .navtitle').forEach(title=>{
     if(title.id==='adminNavTitle'){
-      let visible=[...document.querySelectorAll('#usersNavButton,#rolesPermissionsNavButton')]
+      let visible=[...document.querySelectorAll('#usersNavButton,#rolesPermissionsNavButton,#financeNavButton,#businessPlannerNavButton')]
         .some(x=>x.style.display!=='none');
       title.style.display=visible?'block':'none';
       return;

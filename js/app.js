@@ -84,6 +84,9 @@ function renderPageForNavigation(pageId){
     case 'orders':
       renderOrders();
       break;
+    case 'businessplanner':
+      renderBusinessPlanner();
+      break;
   }
 }
 function goToPage(pageId){
@@ -130,6 +133,7 @@ function renderAll(){
   renderOpeningHours();
   renderMonthlyTargets();
   renderPerformanceReporting();
+  renderBusinessPlanner();
   applyPermissionBasedActions();
 
   setTimeout(()=>{
