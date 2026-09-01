@@ -15,6 +15,11 @@ body{margin:0;background:var(--bg);color:var(--text);font:15px Montserrat,Arial,
 h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{color:var(--muted);margin:0 auto 34px;line-height:1.6;max-width:650px;font-weight:500}
 .section{display:none}.section.active{display:block}.sectionTitle{font-size:22px;font-weight:900;letter-spacing:-.025em;margin:0 0 12px}.sectionSub{color:var(--muted);margin:0 auto 22px;line-height:1.55;font-weight:500}
 .sessionContactNote{color:var(--muted);font-size:12.5px;line-height:1.55;font-weight:500;margin:-14px 0 20px}
+.clinicianIntro{color:#d5d7dc;font-size:13px;line-height:1.6;font-weight:500;text-align:left;margin:-6px 0 12px}
+.clinicianSocialRow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 14px}
+.clinicianSocialLabel{font-size:12px;color:var(--muted);font-weight:600;margin-right:2px}
+.clinicianSocialBadge{display:inline-flex;align-items:center;justify-content:center;height:26px;padding:0 11px;border-radius:13px;border:1px solid var(--line);color:var(--text);text-decoration:none;font-size:11px;font-weight:800;letter-spacing:.02em;transition:border-color .15s,color .15s}
+.clinicianSocialBadge:hover{border-color:var(--cyan);color:var(--cyan)}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:6px 0 0}.tiles+.tiles,.sessionGroupHeading+.tiles{margin-top:16px}.sessionGroupHeading{font-size:16px;font-weight:800;letter-spacing:-.01em;margin:22px 0 12px;text-align:left}.tile{width:100%;text-align:center;background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);color:#fff;border-radius:16px;padding:22px 16px;cursor:pointer;min-height:112px;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:transform .15s,border-color .15s,filter .15s;font-family:inherit}.tile:hover,.tile:focus{border-color:#fff;outline:none;transform:translateY(-3px);filter:brightness(1.04)}.tile h3{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:0 0 8px}.tile .small{color:rgba(255,255,255,.88);font-size:12px;line-height:1.5;font-weight:500}.productTile.pink,.themePink{background:var(--pink);border-color:var(--pink)}.productTile.cyan,.themeCyan{background:var(--cyan);border-color:var(--cyan);color:#061316}.productTile.cyan .small,.themeCyan .small{color:rgba(6,19,22,.76)}.themeCyan .price,.themeCyan h3{color:#061316}.themeCyan .price del{color:rgba(6,19,22,.55)}
 .themeViolet{background:var(--violet);border-color:var(--violet)}
 .themeRed{background:var(--red);border-color:var(--red)}
@@ -114,6 +119,7 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
         <button class="back" onclick="goStep(2)">← Back</button>
         <div class="sectionTitle">What Would You Like?</div>
         <div class="sectionSub" id="sessionSub"></div>
+        <div id="clinicianAboutBlock"></div>
         <div class="sessionContactNote" id="sessionContactNote"></div>
         <div id="sessionTiles"></div>
       </section>
@@ -166,7 +172,19 @@ function themeClass(){return productTheme(choice.product)==='cyan'?'themeCyan':'
 function shortDate(iso){let d=new Date(iso+'T12:00:00');return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')}
 function renderProducts(){let rows=model.products||[];document.getElementById('productTiles').innerHTML=rows.length?rows.map(p=>{let dates=(model.clinics||[]).filter(c=>String(c.product_id)===String(p.id)).map(c=>shortDate(c.date));let datesBlock=dates.length?`<div class="small tileDates"><span class="tileDatesLabel">Clinic Dates</span><span class="tileDatesValue">${esc(dates.slice(0,3).join(', ')+(dates.length>3?` +${dates.length-3} more`:''))}</span></div>`:'';return `<button class="tile productTile ${productTheme(p)}" onclick="chooseProduct('${p.id}')"><h3>${esc(p.name)}</h3>${datesBlock}<div class="small tileCta">Click for Availability</div></button>`}).join(''):'<div class="empty">There are no treatments available to book online at the moment.</div>'}
 function chooseProduct(id){choice={product:model.products.find(x=>String(x.id)===String(id)),clinic:null,treatment:null,time:null};if(!choice.product)return;let clinics=(model.clinics||[]).filter(c=>String(c.product_id)===String(id));document.getElementById('clinicSub').textContent=choice.product.name;document.getElementById('clinicTiles').innerHTML=clinics.length?clinics.map(c=>`<button class="tile ${themeClass()}" onclick="chooseClinic('${c.id}')"><h3>${niceDate(c.date)}</h3><div class="small">${esc(c.start)}–${esc(c.end)}</div>${c.renter_name?`<div class="small">Provided by ${esc(c.renter_name)}</div>`:''}${+c.discount_percent>0?`<div class="discount">${+c.discount_percent}% off treatments this clinic</div>`:''}</button>`).join(''):'<div class="empty">There are no clinic days with appointment availability for this treatment at the moment.</div>';goStep(2)}
-function chooseClinic(id){choice.clinic=model.clinics.find(x=>String(x.id)===String(id));choice.treatment=null;choice.time=null;if(!choice.clinic)return;let rows=(model.treatments||[]).filter(t=>String(t.product_id)===String(choice.product.id));document.getElementById('sessionSub').textContent=`${choice.product.name} · ${niceDate(choice.clinic.date)}`;document.getElementById('sessionContactNote').textContent=choice.clinic.renter_phone?`Not sure what it is you want? Please contact the clinician for this Clinic Day to discuss, on ${choice.clinic.renter_phone}.`:'';
+function chooseClinic(id){choice.clinic=model.clinics.find(x=>String(x.id)===String(id));choice.treatment=null;choice.time=null;if(!choice.clinic)return;let rows=(model.treatments||[]).filter(t=>String(t.product_id)===String(choice.product.id));document.getElementById('sessionSub').textContent=`${choice.product.name} · ${niceDate(choice.clinic.date)}`;
+  let safeUrl=u=>u&&/^https?:\/\//i.test(u)?u:null;
+  let aboutHtml='';
+  if(choice.clinic.renter_intro)aboutHtml+=`<p class="clinicianIntro">${esc(choice.clinic.renter_intro)}</p>`;
+  let socials=[
+    safeUrl(choice.clinic.renter_instagram)?{label:'IG',url:choice.clinic.renter_instagram}:null,
+    safeUrl(choice.clinic.renter_facebook)?{label:'FB',url:choice.clinic.renter_facebook}:null,
+    safeUrl(choice.clinic.renter_tiktok)?{label:'TikTok',url:choice.clinic.renter_tiktok}:null,
+    safeUrl(choice.clinic.renter_website)?{label:'Web',url:choice.clinic.renter_website}:null,
+  ].filter(Boolean);
+  if(socials.length)aboutHtml+=`<div class="clinicianSocialRow"><span class="clinicianSocialLabel">Follow ${esc(choice.clinic.renter_name||'this clinician')}:</span>${socials.map(s=>`<a class="clinicianSocialBadge" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`).join('')}</div>`;
+  document.getElementById('clinicianAboutBlock').innerHTML=aboutHtml;
+  document.getElementById('sessionContactNote').textContent=choice.clinic.renter_phone?`Not sure what it is you want? Please contact the clinician for this Clinic Day to discuss, on ${choice.clinic.renter_phone}.`:'';
   let tileHtml=t=>{let d=+choice.clinic.discount_percent||0,p=+t.price||0,pay=p*(1-d/100);return `<button class="tile ${themeClass()}" onclick="chooseTreatment('${t.id}')"><h3>${esc(t.name)}</h3><div class="small">${t.duration} minutes${+t.buffer>0?` · ${t.buffer} min booking buffer`:''}</div><div class="price">${d>0?`<del>${money(p)}</del> ${money(pay)}`:money(p)}</div></button>`};
   let ungrouped=rows.filter(t=>!t.grouping_name),grouped={};
   rows.filter(t=>t.grouping_name).forEach(t=>{if(!grouped[t.grouping_name])grouped[t.grouping_name]={order:t.grouping_order??0,items:[]};grouped[t.grouping_name].items.push(t)});

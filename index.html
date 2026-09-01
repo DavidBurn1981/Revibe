@@ -1123,6 +1123,9 @@ body.loading .app{visibility:hidden}
     <div class='card' style='margin-top:18px'>
       <h3 style='margin-top:0'>Clinician Portfolio Links</h3>
       <div class='muted' style='margin-bottom:10px'>Optional — shown to customers on the booking page when they select this clinician's Treatment Type.</div>
+      <label>Intro Paragraph</label>
+      <textarea id='renterCreateIntro' maxlength='280' rows='3' placeholder="A short, tweet-sized intro — e.g. 'Leigh has 8 years' experience in advanced aesthetics, specialising in anti-wrinkle and dermal filler treatments.'" oninput="document.getElementById('renterIntroCount').textContent=this.value.length+' / 280'" style='width:100%;background:#111318;border:1px solid #363b44;color:white;padding:9px;border-radius:6px;font-family:inherit'></textarea>
+      <div class='muted' id='renterIntroCount' style='margin:4px 0 14px;text-align:right;font-size:11px'>0 / 280</div>
       <div class='formgrid' style='grid-template-columns:1fr 1fr'>
         <div><label>Instagram URL</label><input id='renterCreateInstagram' type='url' placeholder='https://instagram.com/...'></div>
         <div><label>Facebook URL</label><input id='renterCreateFacebook' type='url' placeholder='https://facebook.com/...'></div>
