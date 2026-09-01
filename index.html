@@ -1120,6 +1120,16 @@ body.loading .app{visibility:hidden}
       <div><label>Phone</label><input id='renterCreatePhone' type='tel' placeholder='Optional'></div>
       <div><label>Email</label><input id='renterCreateEmail' type='email' placeholder='Optional'></div>
     </div>
+    <div class='card' style='margin-top:18px'>
+      <h3 style='margin-top:0'>Clinician Portfolio Links</h3>
+      <div class='muted' style='margin-bottom:10px'>Optional — shown to customers on the booking page when they select this clinician's Treatment Type.</div>
+      <div class='formgrid' style='grid-template-columns:1fr 1fr'>
+        <div><label>Instagram URL</label><input id='renterCreateInstagram' type='url' placeholder='https://instagram.com/...'></div>
+        <div><label>Facebook URL</label><input id='renterCreateFacebook' type='url' placeholder='https://facebook.com/...'></div>
+        <div><label>TikTok URL</label><input id='renterCreateTiktok' type='url' placeholder='https://tiktok.com/@...'></div>
+        <div><label>Website URL</label><input id='renterCreateWebsite' type='url' placeholder='https://...'></div>
+      </div>
+    </div>
     <div id='renterCreateError' class='loginError' style='margin-top:12px'></div>
     <div style='display:flex;justify-content:space-between;margin-top:18px'><button id='deleteRenterBtn' onclick='deleteRenter()'>Delete Clinician</button><div><button onclick='closeRenterCreate()'>Cancel</button> <button class='primary' id='renterCreateSaveBtn' onclick='saveNewRenter()'>Create Clinician</button></div></div>
   </div>
