@@ -33,7 +33,7 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 .timeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.timeBtn{background:#20242b;border:1px solid #3a404a;color:#fff;border-radius:9px;padding:14px 6px;font-size:14px;font-weight:850;cursor:pointer}.timeBtn:hover,.timeBtn:focus{border-color:var(--pink);outline:none}
 .summary{background:#20242b;border:1px solid var(--line);border-radius:11px;padding:16px;margin:0 0 16px;line-height:1.7;text-align:left}.summary b{color:#fff}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;color:#d5d7dc;font-size:12px;margin-bottom:6px;text-align:left}input{width:100%;background:#111318;border:1px solid #363b44;color:#fff;padding:12px;border-radius:7px;font-size:16px;text-align:left}.primary,.back{border:1px solid var(--line);border-radius:8px;padding:13px 16px;color:#fff;cursor:pointer;font-weight:850}.primary{background:var(--pink);border-color:var(--pink)}.primary:disabled{opacity:.5;cursor:not-allowed}.back{background:#252932;margin:0 0 16px;display:inline-block}.notice{padding:12px;border-radius:8px;margin:0 0 16px;display:none;text-align:left}.error{display:block;background:#321a20;border:1px solid #6d2d3d;color:#ffb8c8}.loading{display:block;background:#20242b;border:1px solid var(--line);color:#cbd0d7}.success{text-align:center;padding:10px 0}.successMark{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#173323;border:1px solid #285d3d;color:#81e9aa;font-size:28px;margin:0 auto 16px}.empty{background:#171a1f;border:1px solid var(--line);border-radius:10px;padding:16px;color:var(--muted);grid-column:1/-1;text-align:center}
 
-.pageWrap{display:grid;grid-template-columns:1.15fr 1fr;gap:52px;max-width:1180px;margin:0 auto;padding:36px 24px 74px;align-items:start;text-align:left}
+.pageWrap{display:grid;grid-template-columns:1fr 1.05fr;gap:52px;max-width:1180px;margin:0 auto;padding:36px 24px 74px;align-items:start;text-align:left}
 .leftCol{padding-top:6px}
 .brandLogo{display:block;width:min(300px,78vw);max-height:130px;object-fit:contain;margin:0 0 34px}
 
@@ -59,7 +59,7 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 .clinicianBtn span{display:block;background:#111;color:#fff;font-weight:800;font-size:14px;letter-spacing:.01em;padding:11px 24px;border-radius:5px}
 
 .bookingPanel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:32px 28px;position:sticky;top:24px}
-.bookingPanelTitleRow{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.bookingPanelTitleRow{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
 .bookingPanelTitleRow .bookingPanelTitle{margin-bottom:2px}
 .bookingPanelTitleRow .bookingPanelSub{margin-bottom:0}
 .bookingPanelTitle{font-size:25px;font-weight:900;letter-spacing:-.03em;margin:0 0 6px;color:#fff}
@@ -96,14 +96,14 @@ h1{font-size:31px;font-weight:900;letter-spacing:-.035em;margin:0 0 10px}.lead{c
 
   <div class="rightCol">
     <div class="bookingPanel">
-      <div class="bookingPanelTitleRow">
+      <div class="bookingPanelTitleRow" id="bookingPanelTitleRow" style="display:none">
         <button class="back" id="panelBackBtn" style="display:none" onclick="goBack()">← Back</button>
         <div>
           <div class="bookingPanelTitle">Book a Treatment</div>
           <p class="bookingPanelSub">More treatments coming very soon…</p>
         </div>
       </div>
-      <div class="sectionTitle" id="step1Heading">Select your Treatment Type</div>
+      <div class="sectionTitle" id="step1Heading">Select a Treatment Type to Book</div>
       <div id="message" class="notice"></div>
 
       <section id="step1" class="section active">
@@ -169,7 +169,7 @@ function niceDate(s){let d=new Date(s+'T12:00:00');return d.toLocaleDateString('
 function showMessage(text,type='error'){let e=document.getElementById('message');e.textContent=text;e.className='notice '+type;e.style.display='block'}
 function hideMessage(){document.getElementById('message').style.display='none'}
 async function api(action,payload={}){let r=await fetch(FUNCTION_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({action,...payload})});let j={};try{j=await r.json()}catch(_){}if(!r.ok||j.error)throw new Error(j.error||'Booking service is temporarily unavailable.');return j}
-function goStep(n){hideMessage();document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step'+n).classList.add('active');document.getElementById('step1Heading').style.display=n===1?'':'none';document.getElementById('panelBackBtn').style.display=n===1?'none':'inline-block'}
+function goStep(n){hideMessage();document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step'+n).classList.add('active');document.getElementById('step1Heading').style.display=n===1?'':'none';document.getElementById('panelBackBtn').style.display=n===1?'none':'inline-block';document.getElementById('bookingPanelTitleRow').style.display=n===1?'none':'flex'}
 function goBack(){for(let n=2;n<=5;n++){if(document.getElementById('step'+n).classList.contains('active')){goStep(n-1);return}}}
 async function boot(){showMessage('Loading available treatments…','loading');try{model=await api('bootstrap');hideMessage();renderProducts()}catch(e){showMessage(e.message)}}
 function productTheme(p){return String(p?.name||'').trim().toLowerCase()==='nails'?'cyan':'pink'}
@@ -206,7 +206,7 @@ function chooseClinic(id){choice.clinic=model.clinics.find(x=>String(x.id)===Str
 async function chooseTreatment(id){choice.treatment=model.treatments.find(x=>String(x.id)===String(id));choice.time=null;if(!choice.treatment)return;let t=choice.treatment;document.getElementById('timeSub').textContent=`${t.name} · ${t.duration} minute session. Only times with enough room for the full appointment are shown.`;document.getElementById('timeGrid').innerHTML='<div class="empty">Checking available times…</div>';goStep(4);try{let r=await api('slots',{clinic_day_id:choice.clinic.id,treatment_id:t.id});document.getElementById('timeGrid').innerHTML=r.times?.length?r.times.map(v=>`<button class="timeBtn" onclick="chooseTime('${v}')">${esc(v)}</button>`).join(''):'<div class="empty">Sorry, there are no appointment times left for this session on this clinic day.</div>'}catch(e){document.getElementById('timeGrid').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 function chooseTime(t){choice.time=t;let c=choice.clinic,s=choice.treatment,d=+c.discount_percent||0,p=+s.price||0,pay=p*(1-d/100);document.getElementById('bookingSummary').innerHTML=`<b>${esc(choice.product.name)} — ${esc(s.name)}</b><br>${niceDate(c.date)} at ${esc(t)}<br>${s.duration} minutes<br>${d>0?`${d}% clinic discount · <del>${money(p)}</del> <b>${money(pay)}</b>`:`<b>${money(p)}</b>`}`;goStep(5)}
 async function confirmBooking(){let name=document.getElementById('customerName').value.trim(),phone=document.getElementById('customerPhone').value.trim(),btn=document.getElementById('confirmBtn');if(!name)return showMessage('Please enter your name.');if(!phone)return showMessage('Please enter your mobile number.');hideMessage();btn.disabled=true;btn.textContent='Confirming…';try{let r=await api('book',{clinic_day_id:choice.clinic.id,treatment_id:choice.treatment.id,start_time:choice.time,customer_name:name,customer_phone:phone});document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('success').classList.add('active');document.getElementById('panelBackBtn').style.display='none';document.getElementById('successText').innerHTML=`${esc(r.treatment_name)}<br>${niceDate(r.booking_date)} at ${esc(r.start_time)}<br><br>We look forward to seeing you at REVIBE.`}catch(e){showMessage(e.message);if(/unavailable/i.test(e.message))try{await chooseTreatment(choice.treatment.id)}catch(_){} }finally{btn.disabled=false;btn.textContent='Confirm Booking'}}
-function startAgain(){choice={product:null,clinic:null,treatment:null,time:null};document.getElementById('customerName').value='';document.getElementById('customerPhone').value='';document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step1').classList.add('active');document.getElementById('step1Heading').style.display='';document.getElementById('panelBackBtn').style.display='none';boot()}
+function startAgain(){choice={product:null,clinic:null,treatment:null,time:null};document.getElementById('customerName').value='';document.getElementById('customerPhone').value='';document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('step1').classList.add('active');document.getElementById('step1Heading').style.display='';document.getElementById('panelBackBtn').style.display='none';document.getElementById('bookingPanelTitleRow').style.display='none';boot()}
 boot();
 </script>
 </body>
