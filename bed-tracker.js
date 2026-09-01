@@ -274,7 +274,7 @@ function renderDailySessionsPage(key){
     .filter(x=>x.date===key)
     .sort((a,b)=>String(b.time||'').localeCompare(String(a.time||'')));
 
-  let canDelete=hasRolePermission('daily_session_tracker','edit');
+  let canDelete=hasRolePermission('daily_session_tracker','delete');
   let totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
 
   let label=document.getElementById('dailySessionsDateLabel');
@@ -336,7 +336,7 @@ function renderBedSessionsModal(key){
   let rows=bedSessionHistoryRows()
     .filter(x=>x.date===key)
     .sort((a,b)=>String(b.time||'').localeCompare(String(a.time||'')));
-  let canDelete=hasRolePermission('daily_session_tracker','edit');
+  let canDelete=hasRolePermission('daily_session_tracker','delete');
   let totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
 
   document.getElementById('bedSessionsDateLabel').textContent=formatBedSessionsDate(key);
@@ -419,10 +419,23 @@ function showSessionLoggedConfirmation(date){
     btn.disabled=false;
   },2000);
 }
+function updateSessionLengthTotal(){
+  let cash=+document.getElementById('sessionCashMinutes').value||0,
+      card=+document.getElementById('sessionCardMinutes').value||0,
+      account=+document.getElementById('sessionAccountMinutes').value||0,
+      free=+document.getElementById('sessionFreeMinutes').value||0,
+      staff=+document.getElementById('sessionStaffMinutes').value||0;
+  document.getElementById('sessionLength').value=cash+card+account+free+staff;
+}
 function resetBedSessionForm(){
   let today=localDateKey();
   document.getElementById('sessionDate').value=today;
   document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(today);
+  document.getElementById('sessionCashMinutes').value='';
+  document.getElementById('sessionCardMinutes').value='';
+  document.getElementById('sessionAccountMinutes').value='';
+  document.getElementById('sessionFreeMinutes').value='';
+  document.getElementById('sessionStaffMinutes').value='';
   document.getElementById('sessionLength').value='';
   document.getElementById('sessionPayment').value='Account Minutes';
   document.getElementById('sessionSignup').checked=false;
@@ -433,10 +446,17 @@ function resetBedSessionForm(){
   pendingPaygSplit=null;
 }
 async function recordBedSession(){
- let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),length=+document.getElementById('sessionLength').value,payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
- if(!Number.isInteger(length)||length<1)return alert('Please enter a valid Session Length.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
+ let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),
+     cashMin=+document.getElementById('sessionCashMinutes').value||0,
+     cardMin=+document.getElementById('sessionCardMinutes').value||0,
+     accountMin=+document.getElementById('sessionAccountMinutes').value||0,
+     freeMin=+document.getElementById('sessionFreeMinutes').value||0,
+     staffMin=+document.getElementById('sessionStaffMinutes').value||0,
+     length=cashMin+cardMin+accountMin+freeMin+staffMin,
+     payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
+ if(!Number.isInteger(length)||length<1)return alert('Please enter minutes for at least one payment type.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
  if(!c){
-   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:(payment==='Account Minutes'||payment==='Free'||payment==='Free Session')?0:length};
+   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,free_minutes:freeMin,staff_minutes:staffMin,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:cashMin+cardMin};
    let {error}=await sb.from('bed_sessions').insert(payload);
    if(error)return alert(error.message);
 
