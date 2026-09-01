@@ -1,4 +1,61 @@
 function renderStaffMembers(){let t=document.getElementById('staffMembersTable');if(!t)return;t.innerHTML='<tr><th>Name</th><th>Phone</th><th>Address</th><th>Date Joined</th><th>Holiday Entitlement</th><th>Holidays Remaining</th><th>Colour</th></tr>'+(data.staffMembers.length?data.staffMembers.map(s=>`<tr class='clinicRow' onclick="openStaffMemberEdit('${s.id}')"><td><b>${escapeHtml(s.name)}</b></td><td>${escapeHtml(s.phone||'')}</td><td>${escapeHtml(s.address||'')}</td><td>${s.dateOfJoining?formatSunbedDisplayDate(s.dateOfJoining):''}</td><td>${s.holidayEntitlement}</td><td>${s.holidaysRemaining}</td><td><span style='display:inline-block;width:28px;height:18px;border-radius:5px;background:${s.colour};border:1px solid #555'></span></td></tr>`).join(''):`<tr><td colspan='7' class='muted'>No staff members configured yet.</td></tr>`)}
+function renderStaffRotaList(){
+  let table=document.getElementById('staffRotaListTable');if(!table)return;
+  let rows=[...(data.staffRotas||[])].sort((a,b)=>b.weekStart.localeCompare(a.weekStart));
+  let canDelete=hasRolePermission('staff_rota','delete');
+  table.innerHTML=`<tr><th>Week</th><th>Shifts Scheduled</th>${canDelete?'<th></th>':''}</tr>`+
+    (rows.length?rows.map(r=>{
+      let start=parseLocalDateKey(r.weekStart),end=new Date(start);end.setDate(end.getDate()+6);
+      let label=`${nice(start)} – ${nice(end)}`;
+      let shiftCount=(data.staffShifts||[]).filter(s=>s.date>=r.weekStart&&s.date<=iso(end)).length;
+      return `<tr class='clinicRow' onclick="openStaffRota('${r.weekStart}')"><td><b>${label}</b></td><td>${shiftCount}</td>${canDelete?`<td onclick='event.stopPropagation()'><button onclick="deleteStaffRota('${r.id}','${escapeHtml(label)}')">Delete</button></td>`:''}</tr>`;
+    }).join(''):`<tr><td colspan='${canDelete?3:2}' class='muted'>No rotas have been created yet.</td></tr>`);
+}
+function openStaffRota(weekStartKey){
+  staffRotaWeekStart=parseLocalDateKey(weekStartKey);
+  document.getElementById('staffRotaListView').style.display='none';
+  document.getElementById('staffRotaDetailView').style.display='block';
+  renderStaffRota();
+}
+function backToStaffRotaList(){
+  document.getElementById('staffRotaDetailView').style.display='none';
+  document.getElementById('staffRotaListView').style.display='block';
+  renderStaffRotaList();
+}
+function addStaffRota(){
+  document.getElementById('staffRotaCreateDate').value=localDateKey();
+  document.getElementById('staffRotaCreateError').style.display='none';
+  document.getElementById('staffRotaCreateModal').classList.add('show');
+}
+function closeStaffRotaCreate(){document.getElementById('staffRotaCreateModal').classList.remove('show')}
+async function saveNewStaffRota(){
+  let dateVal=document.getElementById('staffRotaCreateDate').value,err=document.getElementById('staffRotaCreateError'),btn=document.getElementById('staffRotaCreateSaveBtn');
+  err.style.display='none';
+  if(!dateVal){err.textContent='Please choose a date.';err.style.display='block';return}
+  let weekStartDate=startMonday(parseLocalDateKey(dateVal)),weekKey=iso(weekStartDate);
+  if((data.staffRotas||[]).some(r=>r.weekStart===weekKey)){
+    err.textContent='A rota already exists for this week.';err.style.display='block';return;
+  }
+  btn.disabled=true;btn.textContent='Creating...';
+  try{
+    let {error}=await sb.from('staff_rotas').insert({week_start_date:weekKey});
+    if(error){
+      if(error.code==='23505'){err.textContent='A rota already exists for this week.';err.style.display='block';return}
+      throw error;
+    }
+    closeStaffRotaCreate();
+    await loadLiveData();
+    openStaffRota(weekKey);
+  }catch(e){err.textContent=e.message||'Could not create this Rota.';err.style.display='block'}
+  finally{btn.disabled=false;btn.textContent='Create Rota';}
+}
+async function deleteStaffRota(id,label){
+  if(!confirm(`Delete the rota for ${label}? This will also delete all shifts scheduled in that week.`))return;
+  let {error}=await sb.rpc('delete_staff_rota',{p_rota_id:id});
+  if(error)return alert(error.message);
+  await loadLiveData();
+  renderStaffRotaList();
+}
 let staffRotaDays=7;function changeStaffRotaRange(){staffRotaDays=+document.getElementById('staffRotaRange').value||7;renderStaffRota()}
 function renderStaffRota(){
   let wrap=document.getElementById('staffRotaCalendar');if(!wrap)return;
