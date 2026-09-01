@@ -16,6 +16,7 @@ const REVIBE_PERMISSION_AREAS=[
   {group:'Admin',key:'roles_permissions',label:'Roles & Permissions',approve:false},
   {group:'Admin',key:'finance',label:'Finance',approve:false},
   {group:'Admin',key:'business_planner',label:'Social Media Planning',approve:false},
+  {group:'Apartments',key:'apartment_cleans',label:'Apartment Cleans',approve:false},
 ];
 const REVIBE_PAGE_PERMISSION_MAP={
   bedtracker:'daily_session_tracker',
@@ -43,6 +44,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   finance:'finance',
   orders:'finance',
   businessplanner:'business_planner',
+  apartmentcleans:'apartment_cleans',
 };
 async function loadRolePermissions(){
   let {data,error}=await sb.from('role_permissions').select('*');
@@ -87,6 +89,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openHolidayRequestCreate:['holiday_requests','edit'], saveHolidayRequest:['holiday_requests','edit'], deleteHolidayRequest:['holiday_requests','edit'], approveHolidayRequest:['holiday_requests','approve'],
   openOrderCreate:['finance','edit'], openOrderEdit:['finance','edit'], saveOrder:['finance','edit'], deleteOrder:['finance','edit'], saveFinanceOutgoings:['finance','edit'],
   addBusinessPlannerAction:['business_planner','edit'], openBusinessPlannerActionEdit:['business_planner','edit'], saveBusinessPlannerAction:['business_planner','edit'], deleteBusinessPlannerAction:['business_planner','delete'],
+  addCleaningTask:['apartment_cleans','edit'], saveNewCleaningTask:['apartment_cleans','edit'], deleteCleaningTask:['apartment_cleans','delete'], toggleCleaningTaskComplete:['apartment_cleans','view'],
   saveMonthEndReviews:['performance_reporting','edit']
 };
 function applyPermissionBasedActions(){
@@ -157,7 +160,7 @@ function applyPermissionBasedNavigation(){
 function renderRolePermissionTiles(){
   let host=document.getElementById('rolePermissionTiles');if(!host)return;
 
-  let roles=['admin','shop_manager','staff','renter','customer'];
+  let roles=['admin','shop_manager','staff','renter','customer','cleaner'];
 
   host.innerHTML=roles.map(role=>{
     let label=REVIBE_ROLE_LABELS[role]||role,
@@ -300,7 +303,7 @@ async function saveRolePermissions(){
 function openCopyPermissions(){
   if(!editingPermissionRole||editingPermissionRole==='admin')return;
 
-  let roles=['admin','shop_manager','staff','renter','customer']
+  let roles=['admin','shop_manager','staff','renter','customer','cleaner']
     .filter(r=>r!==editingPermissionRole);
 
   document.getElementById('copyPermissionsSource').innerHTML=
@@ -333,12 +336,14 @@ const REVIBE_ROLE_LABELS={
   shop_manager:'Shop Manager',
   staff:'Staff',
   renter:'Clinician',
-  customer:'Customer'
+  customer:'Customer',
+  cleaner:'Cleaner'
 };
 const REVIBE_ROLE_DESCRIPTIONS={
   admin:'Full system owner. User/security administration plus all operational areas.',
   shop_manager:'Operational management role. Access is controlled from Admin → Roles & Permissions.',
   staff:'Internal shop user. Access is controlled from Admin → Roles & Permissions.',
   renter:'Clinician login. Access is controlled from Admin → Roles & Permissions; record-level clinic restrictions still apply.',
-  customer:'Customer portal login. Access is controlled from Admin → Roles & Permissions.'
+  customer:'Customer portal login. Access is controlled from Admin → Roles & Permissions.',
+  cleaner:'Apartment Cleans login only. Can view the cleaning calendar and mark tasks Complete; cannot create, edit or delete tasks.'
 };
