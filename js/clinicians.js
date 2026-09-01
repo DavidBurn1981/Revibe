@@ -11,6 +11,7 @@ function addRenter(){
   document.getElementById('renterModalTitle').textContent='Add Clinician';
   document.getElementById('renterModalSubtitle').textContent='Create a treatment-room clinician and link their Treatment Types.';
   document.getElementById('renterCreateName').value='';document.getElementById('renterCreatePhone').value='';document.getElementById('renterCreateEmail').value='';
+  document.getElementById('renterCreateInstagram').value='';document.getElementById('renterCreateFacebook').value='';document.getElementById('renterCreateTiktok').value='';document.getElementById('renterCreateWebsite').value='';
   populateRenterProductSelect([]);
   document.getElementById('renterCreateSaveBtn').textContent='Create Clinician';
   document.getElementById('renterCreateError').style.display='none';
@@ -22,6 +23,7 @@ function openRenterEdit(id){
   document.getElementById('renterModalTitle').textContent='Edit Clinician';
   document.getElementById('renterModalSubtitle').textContent='Update clinician details and Treatment Types.';
   document.getElementById('renterCreateName').value=r.name||'';document.getElementById('renterCreatePhone').value=r.phone||'';document.getElementById('renterCreateEmail').value=r.email||'';
+  document.getElementById('renterCreateInstagram').value=r.instagramUrl||'';document.getElementById('renterCreateFacebook').value=r.facebookUrl||'';document.getElementById('renterCreateTiktok').value=r.tiktokUrl||'';document.getElementById('renterCreateWebsite').value=r.websiteUrl||'';
   populateRenterProductSelect(r.productIds||[]);
   document.getElementById('renterCreateSaveBtn').textContent='Save Changes';
   document.getElementById('renterCreateError').style.display='none';
@@ -33,6 +35,8 @@ function closeRenterCreate(){document.getElementById('renterCreateModal').classL
 async function saveNewRenter(){
   let name=document.getElementById('renterCreateName').value.trim(),phone=document.getElementById('renterCreatePhone').value.trim(),
       email=document.getElementById('renterCreateEmail').value.trim(),productIds=selectedRenterProductIds(),
+      instagram=document.getElementById('renterCreateInstagram').value.trim(),facebook=document.getElementById('renterCreateFacebook').value.trim(),
+      tiktok=document.getElementById('renterCreateTiktok').value.trim(),website=document.getElementById('renterCreateWebsite').value.trim(),
       err=document.getElementById('renterCreateError'),btn=document.getElementById('renterCreateSaveBtn'),id=editingRenterId;
   err.style.display='none';
   if(!name)return showRenterCreateError('Please enter a clinician name.');
@@ -40,10 +44,11 @@ async function saveNewRenter(){
   btn.disabled=true;btn.textContent=id?'Saving...':'Creating...';
   try{
     let renterId=id;
+    let links={instagram_url:instagram||null,facebook_url:facebook||null,tiktok_url:tiktok||null,website_url:website||null};
     if(id){
-      let {error}=await sb.from('renters').update({name,phone:phone||null,email:email||null}).eq('id',id);if(error)throw error;
+      let {error}=await sb.from('renters').update({name,phone:phone||null,email:email||null,...links}).eq('id',id);if(error)throw error;
     }else{
-      let {data:row,error}=await sb.from('renters').insert({name,phone:phone||null,email:email||null,active:true}).select().single();if(error)throw error;
+      let {data:row,error}=await sb.from('renters').insert({name,phone:phone||null,email:email||null,active:true,...links}).select().single();if(error)throw error;
       renterId=row.id;
     }
     await saveClinicianTreatmentAssignments(renterId,productIds);

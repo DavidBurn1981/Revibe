@@ -64,7 +64,7 @@ async function loadLiveData(){
         productNames=productIds.map(id=>data.products.find(p=>p.id===id)?.name).filter(Boolean),
         firstId=productIds[0]||null,
         firstName=productNames[0]||'';
-    return {id:x.id,name:x.name,phone:x.phone,email:x.email,active:x.active,productIds,productNames,productId:firstId,product:firstName};
+    return {id:x.id,name:x.name,phone:x.phone,email:x.email,active:x.active,productIds,productNames,productId:firstId,product:firstName,instagramUrl:x.instagram_url,facebookUrl:x.facebook_url,tiktokUrl:x.tiktok_url,websiteUrl:x.website_url};
   });
   data.clinicDays=clinics.data.map(x=>({id:x.id,date:x.clinic_date,renterId:x.renter_id,productId:x.product_id,product:data.products.find(p=>p.id===x.product_id)?.name||'',start:(x.start_time||'').slice(0,5),end:(x.end_time||'').slice(0,5),discountPercent:+x.provided_discount_percent||0,rentalCharge:+x.rental_charge||0}));
   data.appointments=bookings.data.map(x=>({id:x.id,clinicDayId:x.clinic_day_id,durationMinutes:+x.duration_minutes||0,date:x.booking_date,time:(x.start_time||'').slice(0,5),treatmentId:x.treatment_id,customerName:x.customer_name,customerPhone:x.customer_phone,price:+x.price,clinicDiscountPercent:+x.clinic_discount_percent,amountPayable:+x.amount_payable,notes:x.notes,status:x.status}));
