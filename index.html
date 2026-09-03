@@ -504,7 +504,7 @@ body.loading .app{visibility:hidden}
 <div id='userBar' class='userBar' style='display:none'></div>
 <button id='mobileMenuButton' class='mobileMenuButton' type='button' aria-label='Open menu' onclick='toggleMobileNav()'>☰</button>
 <div id='mobileNavBackdrop' class='mobileNavBackdrop' onclick='closeMobileNav()'></div>
-<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='mybookings'>My Bookings</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button></nav></aside><main class='main'>
+<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='mybookings'>My Bookings</button><button data-page='mytreatmenttype'>My Treatment Type</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
@@ -563,6 +563,18 @@ body.loading .app{visibility:hidden}
     <select id='myBookingsClinicianSelect' onchange='renderMyBookings()'></select>
   </div>
   <div class='card'><table class='table' id='myBookingsTable'></table></div>
+</section>
+<section id='mytreatmenttype' class='page'>
+  <div class='top'>
+    <div><h1 id='myTreatmentTypeTitle'>My Treatment Type</h1><div class='muted' id='myTreatmentTypeSub'></div></div>
+    <button class='primary' id='myAddSessionTypeBtn' onclick="addTreatmentToCurrentProduct()">+ Add Session Type</button>
+  </div>
+  <div class='card' style='margin-bottom:16px'>
+    <div class='top' style='margin-bottom:8px'><h2 style='margin:0'>Grouping Titles</h2><button onclick="addTreatmentGrouping()">+ Add Grouping</button></div>
+    <div class='muted' style='margin-bottom:10px'>Session Types are grouped under these titles on the booking page.</div>
+    <div id='myGroupingList'></div>
+  </div>
+  <div class='card'><table class='table' id='myTreatmentTable'></table></div>
 </section>
 
 <section id='treatmentsettings' class='page'>
@@ -1460,6 +1472,7 @@ body.loading .app{visibility:hidden}
 <script src='js/business-planner.js'></script>
 <script src='js/apartments.js'></script>
 <script src='js/my-bookings.js'></script>
+<script src='js/my-treatment-type.js'></script>
 <script src='js/api.js'></script>
 <script src='js/main.js'></script>
 
