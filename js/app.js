@@ -37,6 +37,9 @@ function renderPageForNavigation(pageId){
     case 'mybookings':
       renderMyBookings();
       break;
+    case 'mytreatmenttype':
+      renderMyTreatmentType();
+      break;
     case 'products':
       renderProducts();
       renderProductDetail();
@@ -143,6 +146,7 @@ function renderAll(){
   renderBusinessPlanner();
   renderApartmentCleans();
   renderMyBookings();
+  renderMyTreatmentType();
   applyPermissionBasedActions();
 
   setTimeout(()=>{

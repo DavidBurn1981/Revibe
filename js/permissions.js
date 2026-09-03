@@ -36,6 +36,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   customers:'treatment_booking_settings',
   renters:'treatment_booking_settings',
   mybookings:'my_bookings',
+  mytreatmenttype:'my_treatment_type',
 
   staffmembers:'staff_members',
   staffrota:'staff_rota',
@@ -81,8 +82,8 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openBooking:['treatment_room_diary','edit'], saveBooking:['treatment_room_diary','edit'],
   addClinic:['clinic_days','edit'], saveNewClinicDay:['clinic_days','edit'], saveClinicDayEdits:['clinic_days','edit'], deleteClinicDay:['clinic_days','delete'], copyClinicDay:['clinic_days','edit'],
   addProduct:['treatment_booking_settings','edit'], saveNewProduct:['treatment_booking_settings','edit'], deleteCurrentProduct:['treatment_booking_settings','delete'], editCurrentProduct:['treatment_booking_settings','edit'],
-  addTreatmentToCurrentProduct:['treatment_booking_settings','edit'], openTreatmentEdit:['treatment_booking_settings','edit'], saveNewTreatment:['treatment_booking_settings','edit'], deleteTreatment:['treatment_booking_settings','delete'],
-  addTreatmentGrouping:['treatment_booking_settings','edit'], openTreatmentGroupingEdit:['treatment_booking_settings','edit'], saveTreatmentGrouping:['treatment_booking_settings','edit'], deleteTreatmentGrouping:['treatment_booking_settings','delete'],
+  deleteTreatment:['treatment_booking_settings','delete'],
+  deleteTreatmentGrouping:['treatment_booking_settings','delete'],
   addRenter:['treatment_booking_settings','edit'], openRenterEdit:['treatment_booking_settings','edit'], saveNewRenter:['treatment_booking_settings','edit'], deleteRenter:['treatment_booking_settings','delete'],
   openCustomerCreate:['treatment_booking_settings','edit'], saveCustomer:['treatment_booking_settings','edit'], deleteCustomer:['treatment_booking_settings','delete'], completeBlockPurchase:['treatment_booking_settings','edit'],
   openStaffMemberCreate:['staff_members','edit'], openStaffMemberEdit:['staff_members','edit'], saveStaffMember:['staff_members','edit'], deleteStaffMember:['staff_members','delete'],

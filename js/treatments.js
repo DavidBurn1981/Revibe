@@ -1,12 +1,23 @@
 function renderProducts(){if(!data.products){let names=[...new Set(data.treatments.map(t=>t.product))];data.products=names.map((name,i)=>({id:i+1,name,active:true}))}let tiles=document.getElementById('productTiles');if(!tiles)return;tiles.innerHTML=data.products.map(p=>{let count=data.treatments.filter(t=>t.product===p.name).length;return `<div class='producttile' onclick="openProduct(\'${p.id}\')"><h3>${escapeHtml(p.name)}</h3><div class='count'>${count} Session Type${count===1?'':'s'} configured</div><div class='openhint'>Open →</div></div>`}).join('')+`<div class='producttile new' onclick='addProduct()'><div><strong>+</strong>Create new Treatment Type</div></div>`}
 function renderProductDetail(){if(!currentProduct)return;let p=data.products.find(x=>x.id===currentProduct);if(!p)return;document.getElementById('productTitle').textContent=p.name;let rows=data.treatments.filter(x=>x.product===p.name);document.getElementById('productSub').textContent=`${rows.length} session type${rows.length===1?'':'s'} configured`;let groupName=id=>data.treatmentGroupings.find(g=>g.id===id)?.name||'—';document.getElementById('productTreatmentTable').innerHTML='<tr><th>Session Type</th><th>Grouping</th><th>Duration</th><th>Buffer</th><th>Price</th><th>Status</th></tr>'+rows.map(x=>`<tr class='clinicRow' onclick="openTreatmentEdit('${x.id}')"><td><b>${escapeHtml(x.name)}</b></td><td>${escapeHtml(groupName(x.groupingId))}</td><td>${x.duration} min</td><td>${x.buffer} min</td><td>£${(+x.price||0).toFixed(2)}</td><td><span class=pill>${x.active===false?'Inactive':'Active'}</span></td></tr>`).join('');renderTreatmentGroupings()}
-function renderTreatmentGroupings(){
-  let list=document.getElementById('treatmentGroupingList');if(!list||!currentProduct)return;
+function canManageProductAsRenter(productId){
+  if(hasRolePermission('treatment_booking_settings','edit'))return true;
+  if(currentProfile?.role!=='renter')return false;
+  let renter=data.renters.find(r=>r.id===currentProfile.renter_id);
+  return !!renter && (renter.productIds||[]).includes(productId);
+}
+function refreshTreatmentTypeView(productId){
+  if(currentProfile?.role==='renter'){renderMyTreatmentType();}
+  else if(productId)openProduct(productId);
+}
+function renderTreatmentGroupings(targetId='treatmentGroupingList'){
+  let list=document.getElementById(targetId);if(!list||!currentProduct)return;
   let rows=(data.treatmentGroupings||[]).filter(g=>g.productId===currentProduct).sort((a,b)=>a.displayOrder-b.displayOrder);
   list.innerHTML=rows.length?rows.map(g=>`<div class='groupingChip' onclick="openTreatmentGroupingEdit('${g.id}')">${escapeHtml(g.name)}</div>`).join(''):`<div class='muted'>No Grouping Titles yet — add one before creating a Session Type.</div>`;
 }
 let editingGroupingId=null;
 function addTreatmentGrouping(){
+  if(!canManageProductAsRenter(currentProduct))return alert('You do not have permission to manage this Treatment Type.');
   editingGroupingId=null;
   document.getElementById('treatmentGroupingModalTitle').textContent='Add Grouping';
   document.getElementById('treatmentGroupingName').value='';
@@ -16,6 +27,7 @@ function addTreatmentGrouping(){
 }
 function openTreatmentGroupingEdit(id){
   let g=(data.treatmentGroupings||[]).find(x=>x.id===id);if(!g)return;
+  if(!canManageProductAsRenter(g.productId))return alert('You do not have permission to manage this Treatment Type.');
   editingGroupingId=id;
   document.getElementById('treatmentGroupingModalTitle').textContent='Edit Grouping';
   document.getElementById('treatmentGroupingName').value=g.name;
@@ -25,6 +37,7 @@ function openTreatmentGroupingEdit(id){
 }
 function closeTreatmentGrouping(){document.getElementById('treatmentGroupingModal').classList.remove('show');editingGroupingId=null}
 async function saveTreatmentGrouping(){
+  if(!canManageProductAsRenter(currentProduct))return alert('You do not have permission to manage this Treatment Type.');
   let name=document.getElementById('treatmentGroupingName').value.trim(),err=document.getElementById('treatmentGroupingError');
   err.style.display='none';
   if(!name){err.textContent='Please enter a Grouping Title.';err.style.display='block';return}
@@ -33,8 +46,9 @@ async function saveTreatmentGrouping(){
     if(editingGroupingId)({error}=await sb.from('treatment_groupings').update({name}).eq('id',editingGroupingId));
     else{let existing=(data.treatmentGroupings||[]).filter(g=>g.productId===currentProduct).length;({error}=await sb.from('treatment_groupings').insert({product_id:currentProduct,name,display_order:existing}))}
     if(error)throw error;
+    let pid=currentProduct;
     closeTreatmentGrouping();
-    await loadLiveData();renderAll();openProduct(currentProduct);
+    await loadLiveData();renderAll();refreshTreatmentTypeView(pid);
   }catch(e){err.textContent=e.message||'Could not save Grouping Title.';err.style.display='block'}
 }
 async function deleteTreatmentGrouping(){
@@ -107,6 +121,7 @@ async function saveNewProduct(){
   finally{btn.disabled=false;btn.textContent='Create Treatment Type';}
 }
 function addTreatmentToCurrentProduct(){
+  if(!canManageProductAsRenter(currentProduct))return alert('You do not have permission to manage this Treatment Type.');
   let p=data.products.find(x=>x.id===currentProduct);if(!p)return;
   let groupings=(data.treatmentGroupings||[]).filter(g=>g.productId===currentProduct).sort((a,b)=>a.displayOrder-b.displayOrder);
   if(!groupings.length)return alert('Add at least one Grouping Title for this Treatment Type before creating a Session Type.');
@@ -125,6 +140,7 @@ function addTreatmentToCurrentProduct(){
 function openTreatmentEdit(id){
   let t=data.treatments.find(x=>x.id===id);if(!t)return;
   let p=data.products.find(x=>x.id===t.productId)||data.products.find(x=>x.name===t.product);if(!p)return;
+  if(!canManageProductAsRenter(p.id))return alert('You do not have permission to manage this Treatment Type.');
   currentProduct=p.id;editingTreatmentId=t.id;
   let groupings=(data.treatmentGroupings||[]).filter(g=>g.productId===p.id).sort((a,b)=>a.displayOrder-b.displayOrder);
   document.getElementById('treatmentModalTitle').textContent='Edit Session Type';
@@ -142,6 +158,7 @@ function openTreatmentEdit(id){
 async function deleteTreatment(){if(!editingTreatmentId)return alert('Save the Session Type first.');if(!confirm('Delete this Session Type?'))return;let {error}=await sb.from('treatments').delete().eq('id',editingTreatmentId);if(error)return alert(error.message);document.getElementById('treatmentCreateModal').classList.remove('show');editingTreatmentId=null;await loadLiveData();renderAll();if(currentProduct)openProduct(currentProduct)}
 function closeTreatmentCreate(){document.getElementById('treatmentCreateModal').classList.remove('show');editingTreatmentId=null}
 async function saveNewTreatment(){
+  if(!canManageProductAsRenter(currentProduct))return alert('You do not have permission to manage this Treatment Type.');
   let p=data.products.find(x=>x.id===currentProduct),name=document.getElementById('treatmentCreateName').value.trim(),
       groupingId=document.getElementById('treatmentCreateGrouping').value,
       duration=+document.getElementById('treatmentCreateDuration').value,buffer=+document.getElementById('treatmentCreateBuffer').value,
@@ -160,7 +177,7 @@ async function saveNewTreatment(){
     else ({error}=await sb.from('treatments').insert({product_id:p.id,name,price,duration_minutes:duration,buffer_minutes:buffer,grouping_id:groupingId,active:true}));
     if(error)throw error;
     document.getElementById('treatmentCreateModal').classList.remove('show');editingTreatmentId=null;
-    await loadLiveData();renderAll();openProduct(p.id);
+    await loadLiveData();renderAll();refreshTreatmentTypeView(p.id);
   }catch(e){showTreatmentCreateError(e.message||'Could not save Session Type.')}
   finally{btn.disabled=false;btn.textContent='Create Session Type';}
 }
