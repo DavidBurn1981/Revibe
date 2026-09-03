@@ -34,6 +34,9 @@ function renderPageForNavigation(pageId){
     case 'clinic':
       renderClinicDays();
       break;
+    case 'mybookings':
+      renderMyBookings();
+      break;
     case 'products':
       renderProducts();
       renderProductDetail();
@@ -139,6 +142,7 @@ function renderAll(){
   renderPerformanceReporting();
   renderBusinessPlanner();
   renderApartmentCleans();
+  renderMyBookings();
   applyPermissionBasedActions();
 
   setTimeout(()=>{

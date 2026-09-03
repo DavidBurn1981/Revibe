@@ -504,7 +504,7 @@ body.loading .app{visibility:hidden}
 <div id='userBar' class='userBar' style='display:none'></div>
 <button id='mobileMenuButton' class='mobileMenuButton' type='button' aria-label='Open menu' onclick='toggleMobileNav()'>☰</button>
 <div id='mobileNavBackdrop' class='mobileNavBackdrop' onclick='closeMobileNav()'></div>
-<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button></nav></aside><main class='main'>
+<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='tanningproducts'>Tanning/RLT Products</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='mybookings'>My Bookings</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
@@ -554,6 +554,16 @@ body.loading .app{visibility:hidden}
 </section>
 <section id='diary' class='page'><div class='top'><div><h1>Treatment Room Diary</h1><div class='muted' id='weekLabel'></div></div><div class='actions'><select id='diaryRange' class='diaryRange' onchange='changeDiaryRange()'><option value='7' selected>Weekly</option><option value='14'>Next 2 Weeks</option><option value='30'>Next 30 Days</option></select><button id='prev'>←</button><button id='today'>Today</button><button id='next'>→</button><button class='primary' onclick='openBooking()'>+ New Booking</button></div></div><div id='calendar' class='grid'></div></section>
 <section id='clinic' class='page'><div class='top'><h1>Clinic Days</h1><button type='button' class='primary' onclick='addClinic()'>+ Add Clinic Day</button></div><div class='card'><table class='table' id='clinicTable'></table></div></section>
+<section id='mybookings' class='page'>
+  <div class='top'>
+    <div><h1>My Bookings</h1><div class='muted' id='myBookingsSub'></div></div>
+  </div>
+  <div id='myBookingsClinicianRow' style='margin-bottom:16px;max-width:320px'>
+    <label>Clinician</label>
+    <select id='myBookingsClinicianSelect' onchange='renderMyBookings()'></select>
+  </div>
+  <div class='card'><table class='table' id='myBookingsTable'></table></div>
+</section>
 
 <section id='treatmentsettings' class='page'>
   <div class='top'>
@@ -1253,6 +1263,23 @@ body.loading .app{visibility:hidden}
     </div>
   </div>
 </div>
+
+<div class='modal' id='bookingDetailModal'>
+  <div class='modalbox' style='max-width:520px'>
+    <div class='top'>
+      <div><h1>Booking Details</h1></div>
+      <button onclick='closeBookingDetail()'>✕</button>
+    </div>
+    <div id='bookingDetailInfo' class='summary' style='margin-bottom:16px'></div>
+    <label>Clinician Notes</label>
+    <textarea id='bookingClinicianNotes' rows='4' placeholder='Any notes about this customer or booking' style='width:100%;background:#111318;border:1px solid #363b44;color:white;padding:9px;border-radius:6px;font-family:inherit'></textarea>
+    <div id='bookingDetailError' class='loginError' style='margin-top:12px'></div>
+    <div style='display:flex;justify-content:space-between;margin-top:18px'>
+      <button id='deleteMyBookingBtn' onclick='deleteMyBooking()'>Delete Booking</button>
+      <div><button onclick='closeBookingDetail()'>Cancel</button> <button class='primary' onclick='saveClinicianNotes()'>Save Notes</button></div>
+    </div>
+  </div>
+</div>
 <div class='modal' id='clinicCreateModal'>
   <div class='modalbox' style='max-width:680px'>
     <div class='top'>
@@ -1432,6 +1459,7 @@ body.loading .app{visibility:hidden}
 <script src='js/clinicians.js'></script>
 <script src='js/business-planner.js'></script>
 <script src='js/apartments.js'></script>
+<script src='js/my-bookings.js'></script>
 <script src='js/api.js'></script>
 <script src='js/main.js'></script>
 

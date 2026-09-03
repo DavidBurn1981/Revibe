@@ -7,6 +7,7 @@ const REVIBE_PERMISSION_AREAS=[
   {group:'Treatment Bookings',key:'treatment_room_diary',label:'Treatment Room Diary',approve:false},
   {group:'Treatment Bookings',key:'clinic_days',label:'Clinic Days',approve:false},
   {group:'Treatment Bookings',key:'treatment_booking_settings',label:'Treatment Booking Settings',approve:false},
+  {group:'Treatment Bookings',key:'my_bookings',label:'My Bookings',approve:false},
 
   {group:'Staff',key:'staff_members',label:'Staff Members',approve:false},
   {group:'Staff',key:'staff_rota',label:'Staff Rota',approve:false},
@@ -34,6 +35,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   products:'treatment_booking_settings',
   customers:'treatment_booking_settings',
   renters:'treatment_booking_settings',
+  mybookings:'my_bookings',
 
   staffmembers:'staff_members',
   staffrota:'staff_rota',
@@ -90,6 +92,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openOrderCreate:['finance','edit'], openOrderEdit:['finance','edit'], saveOrder:['finance','edit'], deleteOrder:['finance','edit'], saveFinanceOutgoings:['finance','edit'],
   addBusinessPlannerAction:['business_planner','edit'], openBusinessPlannerActionEdit:['business_planner','edit'], saveBusinessPlannerAction:['business_planner','edit'], deleteBusinessPlannerAction:['business_planner','delete'],
   addCleaningTask:['apartment_cleans','edit'], saveNewCleaningTask:['apartment_cleans','edit'], deleteCleaningTask:['apartment_cleans','delete'], toggleCleaningTaskComplete:['apartment_cleans','view'],
+  saveClinicianNotes:['my_bookings','edit'], deleteMyBooking:['my_bookings','delete'],
   saveMonthEndReviews:['performance_reporting','edit']
 };
 function applyPermissionBasedActions(){
