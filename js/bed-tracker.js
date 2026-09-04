@@ -209,7 +209,7 @@ function renderPeriodPerformance(mode,refDate){
     </table></div>`;
 }
 function drawBarChart(canvas,labels,values,valueSuffix=''){let ctx=canvas.getContext('2d'),ratio=window.devicePixelRatio||1,w=Math.max(canvas.parentElement.clientWidth,700),h=280;canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.scale(ratio,ratio);ctx.clearRect(0,0,w,h);let pad={l:48,r:18,t:22,b:52},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,max=Math.max(...values,1),step=cw/Math.max(labels.length,1),bar=Math.max(10,step*.62);ctx.font='11px Segoe UI';ctx.fillStyle='#9da3ad';ctx.strokeStyle='#30353d';ctx.lineWidth=1;for(let i=0;i<=4;i++){let y=pad.t+ch-(ch*i/4),v=Math.round(max*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(v,pad.l-38,y+4)}values.forEach((v,i)=>{let x=pad.l+i*step+(step-bar)/2,bh=max?ch*(v/max):0,y=pad.t+ch-bh;ctx.fillStyle='#ff2d78';ctx.fillRect(x,y,bar,bh);ctx.fillStyle='#f5f5f7';ctx.textAlign='center';ctx.fillText(`${Number(v).toFixed(valueSuffix?1:0)}${valueSuffix}`,x+bar/2,Math.max(12,y-6));ctx.save();ctx.translate(x+bar/2,pad.t+ch+15);ctx.rotate(-.55);ctx.fillStyle='#9da3ad';ctx.fillText(labels[i],0,0);ctx.restore()});ctx.textAlign='left'}
-function renderPerformanceCharts(){let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';let sessions=data.bedSessions||[],today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1),keys=dateRangeKeys(first,today);let days=keys.map(k=>{let a=aggregateSessions(sessions.filter(x=>x.date===k));return {key:k,minutes:a.minutes,kpi:dayKpi(k,a.minutes)}});document.getElementById('perfTitle').textContent='Performance Charts';document.getElementById('perfSubtitle').textContent='Calendar month to date';document.getElementById('perfContent').innerHTML=`<div class='chartCard'><h3>Total Minutes by Day</h3><div class='chartWrap'><canvas id='minutesChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Minutes Per Bed Per Hour KPI by Day</h3><div class='chartWrap'><canvas id='kpiChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Sessions Logged by Time of Day</h3><div class='muted' style='margin-bottom:10px'>Shows how many sessions started in each hour, so you can spot busy and quiet times of day. Defaults to 28 Aug onward — earlier data was entered in bulk rather than logged as sessions happened, so it doesn't reflect real intraday timing.</div><div class='hourChartRange'><label>From <input type='date' id='hourChartFrom' onchange='renderHourOfDayChart()'></label><label>To <input type='date' id='hourChartTo' onchange='renderHourOfDayChart()'></label></div><div class='chartWrap'><canvas id='hourChart' class='chartCanvas'></canvas></div></div>`;let labels=days.map(d=>parseLocalDateKey(d.key).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));document.getElementById('hourChartFrom').value='2026-08-28';document.getElementById('hourChartTo').value=localDateKey();requestAnimationFrame(()=>{drawBarChart(document.getElementById('minutesChart'),labels,days.map(d=>d.minutes));drawBarChart(document.getElementById('kpiChart'),labels,days.map(d=>d.kpi),'');renderHourOfDayChart()})}
+function renderPerformanceCharts(){let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';let sessions=data.bedSessions||[],today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1),keys=dateRangeKeys(first,today);let days=keys.map(k=>{let a=aggregateSessions(sessions.filter(x=>x.date===k));return {key:k,minutes:a.minutes,kpi:dayKpi(k,a.minutes)}});document.getElementById('perfTitle').textContent='Performance Charts';document.getElementById('perfSubtitle').textContent='Calendar month to date';document.getElementById('perfContent').innerHTML=`<div class='chartCard'><h3>Total Minutes by Day</h3><div class='chartWrap'><canvas id='minutesChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Minutes Per Bed Per Hour KPI by Day</h3><div class='chartWrap'><canvas id='kpiChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Sessions Logged by Time of Day</h3><div class='muted' style='margin-bottom:10px'>Shows how many sessions started in each hour, so you can spot busy and quiet times of day. Defaults to the last 8 weeks, never earlier than 29 Aug — data before that was entered in bulk rather than logged as sessions happened, so it doesn't reflect real intraday timing.</div><div class='hourChartRange'><label>From <input type='date' id='hourChartFrom' onchange='renderHourOfDayChart()'></label><label>To <input type='date' id='hourChartTo' onchange='renderHourOfDayChart()'></label></div><div class='chartWrap'><canvas id='hourChart' class='chartCanvas'></canvas></div></div>`;let labels=days.map(d=>parseLocalDateKey(d.key).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));let hourFloor=new Date(2026,7,29),eightWeeksAgo=new Date(today);eightWeeksAgo.setDate(eightWeeksAgo.getDate()-56);let hourDefaultFrom=eightWeeksAgo>hourFloor?eightWeeksAgo:hourFloor;document.getElementById('hourChartFrom').value=iso(hourDefaultFrom);document.getElementById('hourChartTo').value=localDateKey();requestAnimationFrame(()=>{drawBarChart(document.getElementById('minutesChart'),labels,days.map(d=>d.minutes));drawBarChart(document.getElementById('kpiChart'),labels,days.map(d=>d.kpi),'');renderHourOfDayChart()})}
 function renderHourOfDayChart(){
   let canvas=document.getElementById('hourChart');if(!canvas)return;
   let from=document.getElementById('hourChartFrom').value,to=document.getElementById('hourChartTo').value;
@@ -257,7 +257,12 @@ function bedSessionHistoryRows(){
     payment:x.payment||'',
     type:normalizeSessionType(x),
     newSignup:(x.newSignup==='Yes'||x.newSignup===true)?'Yes':'No',
-    block:(x.purchasedBlockBooking==='Yes'||x.purchasedBlockBooking===true)?'Yes':'No'
+    block:(x.purchasedBlockBooking==='Yes'||x.purchasedBlockBooking===true)?'Yes':'No',
+    cashMinutes:+x.cashMinutes||0,
+    cardMinutes:+x.cardMinutes||0,
+    accountMinutes:+x.accountMinutes||0,
+    freeMinutes:+x.freeMinutes||0,
+    staffMinutes:+x.staffMinutes||0
   }));
 }
 function bedSessionHistoryKpi(dateKey){
@@ -330,14 +335,19 @@ function renderDailySessionsPage(key){
 
   let head=document.getElementById('dailySessionsHead');
   if(head)head.innerHTML=
-    `<tr><th>Time</th><th>Session Length</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
+    `<tr><th>Time</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
 
-  let cols=canDelete?7:6;
+  let cols=canDelete?12:11;
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
     ? rows.map(x=>`<tr>
         <td>${escapeHtml(x.time||'')}</td>
         <td>${escapeHtml(x.length)} min</td>
+        <td>${x.cashMinutes} min</td>
+        <td>${x.cardMinutes} min</td>
+        <td>${x.accountMinutes} min</td>
+        <td>${x.freeMinutes} min</td>
+        <td>${x.staffMinutes} min</td>
         <td>${escapeHtml(x.payment||'')}</td>
         <td>${escapeHtml(x.type||'')}</td>
         <td>${escapeHtml(x.newSignup||'')}</td>
@@ -348,7 +358,7 @@ function renderDailySessionsPage(key){
 
   let foot=document.getElementById('dailySessionsTotals');
   if(foot)foot.innerHTML=rows.length
-    ? `<tr><td style='text-align:right'>Total</td><td>${totalMinutes} min</td><td colspan='${canDelete?5:4}'></td></tr>`
+    ? `<tr><td style='text-align:right'>Total</td><td>${totalMinutes} min</td><td colspan='${canDelete?10:9}'></td></tr>`
     : '';
 }
 async function deleteDailySession(id){
