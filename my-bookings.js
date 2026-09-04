@@ -30,7 +30,7 @@ function renderMyBookings(){
 
   document.getElementById('myBookingsSub').textContent=`${bookings.length} booking${bookings.length===1?'':'s'}`;
 
-  document.getElementById('myBookingsTable').innerHTML='<tr><th>Date</th><th>Time</th><th>Session Type</th><th>Price Payable</th><th>Name</th><th>Phone Number</th><th>Booked On</th></tr>'+
+  document.getElementById('myBookingsTable').innerHTML='<tr><th>Date</th><th>Time</th><th>Session Type</th><th>Length</th><th>Price Payable</th><th>Name</th><th>Phone Number</th><th>Booked On</th></tr>'+
     (bookings.length?bookings.map(b=>{
       let treatment=data.treatments.find(t=>t.id===b.treatmentId);
       let dateLabel=parseLocalDateKey(b.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
@@ -39,12 +39,13 @@ function renderMyBookings(){
         <td><b>${dateLabel}</b></td>
         <td>${escapeHtml(b.time)}</td>
         <td>${escapeHtml(treatment?.name||'—')}</td>
+        <td>${+b.durationMinutes||0} min</td>
         <td>£${(+b.amountPayable||0).toFixed(2)}</td>
         <td>${escapeHtml(b.customerName||'')}</td>
         <td>${escapeHtml(b.customerPhone||'')}</td>
         <td>${escapeHtml(bookedOn)}</td>
       </tr>`;
-    }).join(''):`<tr><td colspan='7' class='muted'>No bookings found for this clinician.</td></tr>`);
+    }).join(''):`<tr><td colspan='8' class='muted'>No bookings found for this clinician.</td></tr>`);
 }
 
 function openBookingDetail(id){
