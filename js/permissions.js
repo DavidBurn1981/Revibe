@@ -93,7 +93,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openOrderCreate:['finance','edit'], openOrderEdit:['finance','edit'], saveOrder:['finance','edit'], deleteOrder:['finance','edit'], saveFinanceOutgoings:['finance','edit'],
   addBusinessPlannerAction:['business_planner','edit'], openBusinessPlannerActionEdit:['business_planner','edit'], saveBusinessPlannerAction:['business_planner','edit'], deleteBusinessPlannerAction:['business_planner','delete'],
   addCleaningTask:['apartment_cleans','edit'], saveNewCleaningTask:['apartment_cleans','edit'], deleteCleaningTask:['apartment_cleans','delete'], toggleCleaningTaskComplete:['apartment_cleans','view'],
-  saveClinicianNotes:['my_bookings','edit'], deleteMyBooking:['my_bookings','delete'],
+  saveClinicianNotes:['my_bookings','edit'], deleteMyBooking:['my_bookings','delete'], createBookingFromMyBookings:['my_bookings','edit'], openBookingForClinician:['my_bookings','edit'],
   saveMonthEndReviews:['performance_reporting','edit']
 };
 function applyPermissionBasedActions(){
