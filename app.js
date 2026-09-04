@@ -17,6 +17,7 @@ function resetPageScroll(){window.scrollTo({top:0,left:0,behavior:'instant'});do
 function renderPageForNavigation(pageId){
   switch(pageId){
     case 'performancereporting':
+      renderBedTracker();
       renderPerformanceReporting();
       break;
     case 'monthlytargets':
