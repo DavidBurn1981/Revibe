@@ -497,6 +497,9 @@ function showSessionLoggedConfirmation(date){
     btn.disabled=false;
   },2000);
 }
+function openBlockMinutesPurchase(){alert('Block Minutes purchase flow is not yet configured.')}
+function openTangiblesPurchase(){alert('Tangibles purchase flow is not yet configured.')}
+function openTreatmentsPurchase(){alert('Treatments purchase flow is not yet configured.')}
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
       card=+document.getElementById('sessionCardMinutes').value||0,
