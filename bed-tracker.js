@@ -1,4 +1,5 @@
 function exclusiveSessionType(which){let r=document.getElementById('sessionRlt'),h=document.getElementById('sessionHybrid');if(which==='rlt'&&r.checked)h.checked=false;if(which==='hybrid'&&h.checked)r.checked=false}
+function editExclusiveSessionType(which){let r=document.getElementById('editSessionRlt'),h=document.getElementById('editSessionHybrid');if(which==='rlt'&&r.checked)h.checked=false;if(which==='hybrid'&&h.checked)r.checked=false}
 function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
 function isPerformanceSession(x){let p=String(x?.payment||'').trim().toLowerCase();return p!=='free session'&&p!=='free'}
 function performanceSessions(rows){return (rows||[]).filter(isPerformanceSession)}
@@ -354,7 +355,7 @@ function renderDailySessionsPage(key){
   let cols=canDelete?11:10;
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
-    ? rows.map(x=>`<tr>
+    ? rows.map(x=>`<tr class='clinicRow' onclick="openDailySessionEdit('${escapeHtml(x.id)}')">
         <td>${escapeHtml(x.time||'')}</td>
         <td>${escapeHtml(x.length)} min</td>
         <td>${x.cashMinutes} min</td>
@@ -365,7 +366,7 @@ function renderDailySessionsPage(key){
         <td>${escapeHtml(x.type||'')}</td>
         <td>${escapeHtml(x.newSignup||'')}</td>
         <td>${escapeHtml(x.block||'')}</td>
-        ${canDelete?`<td class='dailySessionsDeleteCol'><button type='button' class='dailySessionsDelete' onclick="deleteDailySession('${escapeHtml(x.id)}')">Delete</button></td>`:''}
+        ${canDelete?`<td class='dailySessionsDeleteCol' onclick='event.stopPropagation()'><button type='button' class='dailySessionsDelete' onclick="deleteDailySession('${escapeHtml(x.id)}')">Delete</button></td>`:''}
       </tr>`).join('')
     : `<tr><td colspan='${cols}' class='muted' style='text-align:center;padding:28px'>No sessions recorded for this date.</td></tr>`;
 
@@ -462,6 +463,7 @@ function printBedSessions(){
   setTimeout(()=>document.body.classList.remove('bedSessionsPrinting'),300);
 }
 function toggleBlockBookingQuestion(){let signup=document.getElementById('sessionSignup').checked,row=document.getElementById('blockBookingRow'),block=document.getElementById('sessionBlockBooking');row.style.display=signup?'flex':'none';if(!signup)block.checked=false}
+function toggleEditBlockBookingQuestion(){let signup=document.getElementById('editSessionSignup').checked,row=document.getElementById('editBlockBookingRow'),block=document.getElementById('editSessionBlockBooking');row.style.display=signup?'flex':'none';if(!signup)block.checked=false}
 function closeSessionLoggedConfirmation(){
   let modal=document.getElementById('sessionLoggedModal');if(modal)modal.classList.remove('show');
   let success=document.getElementById('sessionSuccess');if(success)success.classList.remove('show');
@@ -503,6 +505,82 @@ function updateSessionLengthTotal(){
       staff=+document.getElementById('sessionStaffMinutes').value||0;
   document.getElementById('sessionLength').value=cash+card+account+free+staff;
   document.getElementById('staffMemberNameRow').style.display=staff>0?'block':'none';
+}
+function updateEditSessionLengthTotal(){
+  let cash=+document.getElementById('editSessionCashMinutes').value||0,
+      card=+document.getElementById('editSessionCardMinutes').value||0,
+      account=+document.getElementById('editSessionAccountMinutes').value||0,
+      free=+document.getElementById('editSessionFreeMinutes').value||0,
+      staff=+document.getElementById('editSessionStaffMinutes').value||0;
+  document.getElementById('editSessionLength').value=cash+card+account+free+staff;
+  document.getElementById('editStaffMemberNameRow').style.display=staff>0?'block':'none';
+}
+let editingDailySessionId=null;
+function openDailySessionEdit(id){
+  let x=(data.bedSessions||[]).find(s=>String(s.id)===String(id));if(!x)return;
+  editingDailySessionId=id;
+  document.getElementById('editSessionDate').value=x.date;
+  document.getElementById('editSessionDateDisplay').value=formatSunbedDisplayDate(x.date);
+  document.getElementById('editSessionCashMinutes').value=x.cashMinutes||0;
+  document.getElementById('editSessionCardMinutes').value=x.cardMinutes||0;
+  document.getElementById('editSessionAccountMinutes').value=x.accountMinutes||0;
+  document.getElementById('editSessionFreeMinutes').value=x.freeMinutes||0;
+  document.getElementById('editSessionStaffMinutes').value=x.staffMinutes||0;
+  document.getElementById('editSessionStaffMemberName').value=x.staffMemberName||'';
+  updateEditSessionLengthTotal();
+  let newSignup=x.newSignup===true||x.newSignup==='Yes';
+  document.getElementById('editSessionSignup').checked=newSignup;
+  document.getElementById('editBlockBookingRow').style.display=newSignup?'flex':'none';
+  document.getElementById('editSessionBlockBooking').checked=x.purchasedBlockBooking===true||x.purchasedBlockBooking==='Yes';
+  let type=normalizeSessionType(x);
+  document.getElementById('editSessionRlt').checked=type==='Red Light Therapy';
+  document.getElementById('editSessionHybrid').checked=type==='Hybrid';
+  document.getElementById('editSessionError').style.display='none';
+  document.getElementById('editSessionModal').classList.add('show');
+}
+function closeDailySessionEdit(){document.getElementById('editSessionModal').classList.remove('show');editingDailySessionId=null}
+async function saveDailySessionEdit(){
+  if(!editingDailySessionId)return;
+  let date=document.getElementById('editSessionDate').value,
+      cashMin=+document.getElementById('editSessionCashMinutes').value||0,
+      cardMin=+document.getElementById('editSessionCardMinutes').value||0,
+      accountMin=+document.getElementById('editSessionAccountMinutes').value||0,
+      freeMin=+document.getElementById('editSessionFreeMinutes').value||0,
+      staffMin=+document.getElementById('editSessionStaffMinutes').value||0,
+      staffMemberName=document.getElementById('editSessionStaffMemberName').value.trim(),
+      length=cashMin+cardMin+accountMin+freeMin+staffMin,
+      newSignup=document.getElementById('editSessionSignup').checked,
+      purchasedBlock=document.getElementById('editSessionBlockBooking').checked,
+      rlt=document.getElementById('editSessionRlt').checked,
+      hybrid=document.getElementById('editSessionHybrid').checked,
+      err=document.getElementById('editSessionError');
+  err.style.display='none';
+  if(!Number.isInteger(length)||length<1){err.textContent='Please enter minutes for at least one payment type.';err.style.display='block';return}
+  if(!rlt&&!hybrid){err.textContent='Please select Red Light Therapy or Hybrid.';err.style.display='block';return}
+  if(staffMin>0&&!staffMemberName){err.textContent='Please enter the Staff Member Name.';err.style.display='block';return}
+  try{
+    let {error}=await sb.from('bed_sessions').update({
+      session_date:date,session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,
+      free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,
+      new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',
+      payg_minutes:cashMin+cardMin
+    }).eq('id',editingDailySessionId);
+    if(error)throw error;
+    let key=document.getElementById('dailySessionsDatePicker')?.value||date;
+    closeDailySessionEdit();
+    await loadLiveData();renderAll();renderDailySessionsPage(key);
+  }catch(e){err.textContent=e.message||'Could not save changes.';err.style.display='block'}
+}
+async function deleteDailySessionFromEdit(){
+  if(!editingDailySessionId)return;
+  let row=(data.bedSessions||[]).find(x=>String(x.id)===String(editingDailySessionId));
+  if(!row)return alert('The session could not be found.');
+  if(!confirm(`Delete the ${row.length}-minute session logged at ${row.time||'this time'} on ${formatBedSessionsDate(row.date)}?\n\nThis cannot be undone.`))return;
+  let result=await deleteBedSessionFromHistory(editingDailySessionId);
+  if(!result?.ok)return alert('Could not delete the session: '+(result?.error||'Unknown error.'));
+  let key=document.getElementById('dailySessionsDatePicker')?.value||row.date||localDateKey();
+  closeDailySessionEdit();
+  renderDailySessionsPage(key);
 }
 function resetBedSessionForm(){
   let today=localDateKey();
