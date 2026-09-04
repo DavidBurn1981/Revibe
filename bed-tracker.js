@@ -322,6 +322,13 @@ function renderDailySessionsPage(key){
 
   let canDelete=hasRolePermission('daily_session_tracker','delete');
   let totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
+  let totalCash=rows.reduce((sum,x)=>sum+(+x.cashMinutes||0),0);
+  let totalCard=rows.reduce((sum,x)=>sum+(+x.cardMinutes||0),0);
+  let totalAccount=rows.reduce((sum,x)=>sum+(+x.accountMinutes||0),0);
+  let totalFree=rows.reduce((sum,x)=>sum+(+x.freeMinutes||0),0);
+  let totalStaff=rows.reduce((sum,x)=>sum+(+x.staffMinutes||0),0);
+  let totalSignUps=rows.filter(x=>x.newSignup==='Yes').length;
+  let totalBlockBookings=rows.filter(x=>x.block==='Yes').length;
 
   let label=document.getElementById('dailySessionsDateLabel');
   if(label)label.textContent=formatBedSessionsDate(key);
@@ -335,9 +342,9 @@ function renderDailySessionsPage(key){
 
   let head=document.getElementById('dailySessionsHead');
   if(head)head.innerHTML=
-    `<tr><th>Time</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Payment Type</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
+    `<tr><th>Time</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
 
-  let cols=canDelete?12:11;
+  let cols=canDelete?11:10;
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
     ? rows.map(x=>`<tr>
@@ -348,7 +355,6 @@ function renderDailySessionsPage(key){
         <td>${x.accountMinutes} min</td>
         <td>${x.freeMinutes} min</td>
         <td>${x.staffMinutes} min</td>
-        <td>${escapeHtml(x.payment||'')}</td>
         <td>${escapeHtml(x.type||'')}</td>
         <td>${escapeHtml(x.newSignup||'')}</td>
         <td>${escapeHtml(x.block||'')}</td>
@@ -358,7 +364,19 @@ function renderDailySessionsPage(key){
 
   let foot=document.getElementById('dailySessionsTotals');
   if(foot)foot.innerHTML=rows.length
-    ? `<tr><td style='text-align:right'>Total</td><td>${totalMinutes} min</td><td colspan='${canDelete?10:9}'></td></tr>`
+    ? `<tr>
+        <td style='text-align:right'>Total</td>
+        <td>${totalMinutes} min</td>
+        <td>${totalCash} min</td>
+        <td>${totalCard} min</td>
+        <td>${totalAccount} min</td>
+        <td>${totalFree} min</td>
+        <td>${totalStaff} min</td>
+        <td></td>
+        <td>${totalSignUps}</td>
+        <td>${totalBlockBookings}</td>
+        ${canDelete?'<td></td>':''}
+      </tr>`
     : '';
 }
 async function deleteDailySession(id){
