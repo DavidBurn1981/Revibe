@@ -200,6 +200,7 @@ function openUniversalDatePicker(target){
   }else if(target==='order'){
     key=document.getElementById('orderDate').value;subtitle='Order Date';
   }else if(target==='session'){key=document.getElementById('sessionDate').value||localDateKey();subtitle='Session Date';
+  }else if(target==='editSession'){key=document.getElementById('editSessionDate').value||localDateKey();subtitle='Session Date';
   }else if(target==='takings'){key=document.getElementById('dailyTakingsDate').value||localDateKey();subtitle='Takings Date';
   }else{
     return;
@@ -227,6 +228,7 @@ function selectUniversalDate(key){
     document.getElementById('clinicCopyDateDisplay').value=formatSunbedDisplayDate(key);
   }else if(universalDatePickerTarget==='order'){document.getElementById('orderDate').value=key;document.getElementById('orderDateDisplay').value=formatSunbedDisplayDate(key);
   }else if(universalDatePickerTarget==='session'){document.getElementById('sessionDate').value=key;document.getElementById('sessionDateDisplay').value=formatSunbedDisplayDate(key);
+  }else if(universalDatePickerTarget==='editSession'){document.getElementById('editSessionDate').value=key;document.getElementById('editSessionDateDisplay').value=formatSunbedDisplayDate(key);
   }else if(universalDatePickerTarget==='takings'){setDailyTakingsDate(key);
   }
   closeUniversalDatePicker();
