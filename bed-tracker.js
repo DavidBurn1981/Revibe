@@ -105,11 +105,13 @@ function renderBedTracker(){
   el.textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
   let total=rows.reduce((a,b)=>a+(+b.length||0),0),
+      paidTotal=rows.reduce((a,b)=>a+(+b.cashMinutes||0)+(+b.cardMinutes||0)+(+b.accountMinutes||0),0),
       signups=rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,
       rlt=rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+(+b.length||0),0),
       hybrid=rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+(+b.length||0),0),
       elapsed=getElapsedOpeningHours(now),
-      kpi=elapsed>0?total/BED_COUNT/elapsed:0;
+      kpi=elapsed>0?total/BED_COUNT/elapsed:0,
+      paidKpi=elapsed>0?paidTotal/BED_COUNT/elapsed:0;
 
   document.getElementById('metricSessions').textContent=rows.length;
   document.getElementById('metricMinutes').textContent=total;
@@ -117,6 +119,10 @@ function renderBedTracker(){
   document.getElementById('metricRltMinutes').textContent=rlt;
   document.getElementById('metricHybridMinutes').textContent=hybrid;
   document.getElementById('metricKpi').textContent=kpi.toFixed(1);
+  document.getElementById('metricPaidKpi').textContent=paidKpi.toFixed(1);
+  document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
+    ?`${paidTotal} paid-for minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
+    :'Cash, Card and Account minutes only — Free and Staff minutes excluded.';
   let currentTarget=getCurrentMonthlyTarget(),kpiTile=document.getElementById('metricKpi')?.closest('.metric');
   document.getElementById('metricKpiTarget').textContent=currentTarget==null?'Target: not set':`Target: ${Number(currentTarget).toFixed(1)}`;
   if(kpiTile){
