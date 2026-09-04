@@ -55,6 +55,7 @@ function openBooking(date,time){
   document.getElementById('bookingModal').classList.add('show');
   document.getElementById('bookingWhen').textContent='Choose a Treatment Type to begin';
   resetTreatmentBookingSteps();
+  document.getElementById('bookingProductStep').style.display='block';
 
   let products=(data.products||[]).filter(p=>p.active!==false&&data.treatments.some(t=>t.product===p.name));
   document.getElementById('bookingProductChoices').innerHTML=products.map(p=>`<button class='choiceBtn' onclick="chooseBookingProduct(\'${p.id}\')"><b>${escapeHtml(p.name)}</b><span class='small'>${data.treatments.filter(t=>t.product===p.name).length} treatments</span></button>`).join('');
@@ -68,6 +69,33 @@ function openBooking(date,time){
   }
 }
 function closeBooking(){document.getElementById('bookingModal').classList.remove('show')}
+function openBookingForClinician(renterId){
+  let renter=data.renters.find(r=>r.id===renterId);if(!renter)return;
+  booking={date:null,treatment:null,product:null,clinicId:null,preferredTime:null};
+  document.getElementById('bookingModal').classList.add('show');
+  resetTreatmentBookingSteps();
+  document.getElementById('bookingProductStep').style.display='none';
+  document.getElementById('bookingWhen').textContent=`Choose a Clinic Day for ${renter.name}`;
+
+  let today=localDateKey();
+  let clinics=(data.clinicDays||[]).filter(c=>c.renterId===renterId&&c.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('bookingClinicStep').style.display='block';
+  document.getElementById('bookingTreatmentStep').style.display='none';
+  document.getElementById('bookingDetailsStep').style.display='none';
+  document.getElementById('saveTreatmentBookingBtn').disabled=true;
+
+  if(!clinics.length){
+    document.getElementById('bookingClinicChoices').innerHTML='';
+    let n=document.getElementById('bookingClinicNotice');n.style.display='block';n.textContent='There are no upcoming Clinic Days for this clinician.';
+    return;
+  }
+  document.getElementById('bookingClinicNotice').style.display='none';
+  document.getElementById('bookingClinicChoices').innerHTML=clinics.map(c=>{
+    let full=!clinicHasAnyCapacity(c);
+    let label=parseLocalDateKey(c.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    return `<button class='choiceBtn ${full?'full':''}' ${full?'disabled':''} onclick="chooseBookingClinic('${c.id}')"><b>${label}</b><span class='small'>${escapeHtml(c.product)} · ${c.start}–${c.end}${(+c.discountPercent||0)>0?` · ${+c.discountPercent}% DISCOUNT`:''}${full?' · FULL':''}</span></button>`;
+  }).join('');
+}
 function chooseBookingProduct(productId){
   let p=data.products.find(x=>x.id===productId);if(!p)return;
   booking.product=p.name;booking.date=null;booking.treatment=null;booking.clinicId=null;
@@ -96,7 +124,7 @@ function chooseBookingProduct(productId){
 function chooseBookingClinic(clinicId){
   let clinic=data.clinicDays.find(x=>x.id===clinicId);if(!clinic)return;
   if(!clinicHasAnyCapacity(clinic))return;
-  booking.clinicId=clinicId;booking.date=clinic.date;booking.treatment=null;
+  booking.clinicId=clinicId;booking.date=clinic.date;booking.treatment=null;booking.product=clinic.product;
   document.querySelectorAll('#bookingClinicChoices .choiceBtn').forEach(b=>b.classList.remove('active'));
   [...document.querySelectorAll('#bookingClinicChoices .choiceBtn')].filter(b=>!b.disabled).forEach(b=>{
     if(b.textContent.includes(parseLocalDateKey(clinic.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})))b.classList.add('active');

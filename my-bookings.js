@@ -1,9 +1,19 @@
 let editingMyBookingId=null;
 
+function createBookingFromMyBookings(){
+  let isRenter=currentProfile?.role==='renter';
+  let renterId=isRenter?currentProfile.renter_id:document.getElementById('myBookingsClinicianSelect').value;
+  if(!renterId)return alert('Please select a clinician first.');
+  openBookingForClinician(renterId);
+}
+
 function renderMyBookings(){
   let sel=document.getElementById('myBookingsClinicianSelect');if(!sel)return;
   let row=document.getElementById('myBookingsClinicianRow');
   let isRenter=currentProfile?.role==='renter';
+
+  let createBtn=document.getElementById('myBookingsCreateBtn');
+  if(createBtn)createBtn.style.display=hasRolePermission('my_bookings','edit')?'inline-block':'none';
 
   if(isRenter){
     row.style.display='none';
