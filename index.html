@@ -48,6 +48,12 @@
 .processPurchasesCheck{margin-top:10px;font-size:12px;font-weight:700}
 .processPurchasesCheck.ok{color:var(--green)}
 .processPurchasesCheck.bad{color:#ff7777}
+.amountBeingPaidRow{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.amountBeingPaidRow label{font-size:14px;font-weight:700;color:#d5d7dc}
+.amountBeingPaidRow span{font-size:20px;font-weight:900;color:var(--green)}
+.cpDetailPaidRow{display:flex;justify-content:space-between;margin-top:8px;font-size:13px}
+.cpDetailPaidRow span{color:var(--muted)}
+.cpDetailPaidRow b{color:#fff}
 .purchaseProductList{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto}
 .purchaseProductRow{display:flex;justify-content:space-between;align-items:center;background:#20242b;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
 .purchaseProductRow .title{font-weight:700}
@@ -956,7 +962,31 @@ body.loading .app{visibility:hidden}
       </div>
     </div>
     <div id='processPurchasesError' class='loginError' style='margin-top:12px'></div>
+    <div class='amountBeingPaidRow'><label>Amount Being Paid</label><span id='ppAmountBeingPaid'>£0.00</span></div>
     <button class='primary confirmPurchaseBtn' onclick='confirmPurchases()'>Confirm Purchases</button>
+  </div>
+</div>
+<div class='modal' id='customerPurchaseDetailModal'>
+  <div class='modalbox' style='max-width:760px'>
+    <div class='top'><div><h1>Customer Purchase</h1><div class='muted' id='cpDetailDate'></div></div><button onclick='closeCustomerPurchaseDetail()'>✕</button></div>
+    <div class='processPurchasesGrid'>
+      <div class='processPurchasesHalf'>
+        <h3>Revibe Glow Studio</h3>
+        <div id='cpDetailGlowStudioItems' class='purchaseItemList' style='margin-bottom:10px'></div>
+        <div class='processPurchasesDue'>Total<span id='cpDetailGlowStudioTotal'>£0.00</span></div>
+        <div class='cpDetailPaidRow'><span>Card Paid</span><b id='cpDetailGlowStudioCard'>£0.00</b></div>
+        <div class='cpDetailPaidRow'><span>Cash Paid</span><b id='cpDetailGlowStudioCash'>£0.00</b></div>
+      </div>
+      <div class='processPurchasesHalf'>
+        <h3>Revibe Treatments</h3>
+        <div id='cpDetailTreatmentsItems' class='purchaseItemList' style='margin-bottom:10px'></div>
+        <div class='processPurchasesDue'>Total<span id='cpDetailTreatmentsTotal'>£0.00</span></div>
+        <div class='cpDetailPaidRow'><span>Card Paid</span><b id='cpDetailTreatmentsCard'>£0.00</b></div>
+        <div class='cpDetailPaidRow'><span>Cash Paid</span><b id='cpDetailTreatmentsCash'>£0.00</b></div>
+      </div>
+    </div>
+    <div class='amountBeingPaidRow'><label>Grand Total</label><span id='cpDetailGrandTotal'>£0.00</span></div>
+    <button id='deleteCustomerPurchaseBtn' onclick='deleteCustomerPurchase()' style='width:100%;margin-top:12px'>Delete Purchase</button>
   </div>
 </div>
 <div id='performanceOverlay' class='perfOverlay'><div class='perfBox'><div class='perfHeader'><div><h2 id='perfTitle'>Performance</h2><div class='muted' id='perfSubtitle'></div></div><button onclick='closePerformance()'>✕ Close</button></div><div id='perfPeriodNav' class='perfPeriodNav' style='display:none'><button onclick='navigatePeriod(-1)'>← Previous</button><button id='perfPeriodCurrent' onclick='resetPeriodToCurrent()' style='display:none'>Back to Current</button><button id='perfPeriodNext' onclick='navigatePeriod(1)'>Next →</button></div><div id='perfContent'></div></div></div>

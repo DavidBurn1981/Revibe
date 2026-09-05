@@ -79,6 +79,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   recordBedSession:['daily_session_tracker','edit'],
   openBlockMinutesPurchase:['daily_session_tracker','edit'], openTangiblesPurchase:['daily_session_tracker','edit'], openRltProgrammePurchase:['daily_session_tracker','edit'], openPaygMinutesPurchase:['daily_session_tracker','edit'],
   addProductToPurchase:['daily_session_tracker','edit'], removePurchaseItem:['daily_session_tracker','edit'], openProcessPurchasesModal:['daily_session_tracker','edit'], confirmPurchases:['daily_session_tracker','edit'],
+  openCustomerPurchaseDetail:['customer_purchases','view'], deleteCustomerPurchase:['customer_purchases','delete'],
   openDailySessionEdit:['daily_session_tracker','edit'], saveDailySessionEdit:['daily_session_tracker','edit'],
   saveDailyTakings:['daily_session_tracker','edit'],
   openSunbedBooking:['sunbed_bookings','edit'], saveSunbedBooking:['sunbed_bookings','edit'], completeSunbedBooking:['sunbed_bookings','edit'],
