@@ -198,6 +198,7 @@ body.loading .app{visibility:hidden}
 #holidayDatePickerModal,#shiftCalendarPickerModal,#staffJoinCalendarPickerModal{z-index:100!important}
 
 .dailyTakingsPanel{background:rgba(207,118,35,.22)!important;border-color:rgba(232,145,61,.40)!important}
+.grandTotalPayableRow{margin-top:14px;font-size:14px;font-weight:700;color:#f5f5f7}
 .dailyTakingsTotal{margin-top:14px;padding:14px 16px;border-radius:9px;background:#20242b;border:1px solid #343a44}
 .dailyTakingsTotal .big{font-size:28px;font-weight:900;margin-top:4px}
 .revenueToDateStrip{margin-top:18px;background:rgba(33,178,169,.08);border:1px solid rgba(66,210,199,.18);border-radius:12px;padding:18px}
@@ -721,6 +722,7 @@ body.loading .app{visibility:hidden}
   <div class='dailyTakingsTotal'><div class='muted'>Total</div><div class='big' id='dailyTakingsTotal'>£0.00</div></div>
   <div id='dailyTakingsError' class='loginError' style='margin-top:12px'></div>
   <div style='margin-top:14px'><button class='primary' id='saveDailyTakingsBtn' onclick='saveDailyTakings()'>Save Daily Takings</button></div>
+  <div class='grandTotalPayableRow'>Grand Total Payable <span id='grandTotalPayable'>£0.00</span></div>
 </div>
 <div id='monthlyReviewsRecorder' class='card' style='display:none;max-width:720px;margin-top:16px'>
   <h2 style='margin:0 0 6px'>Monthly Reviews Recorder</h2>

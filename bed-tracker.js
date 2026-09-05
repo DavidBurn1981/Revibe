@@ -61,6 +61,10 @@ function takingsTotal(x){return x?(+x.cash||0)+(+x.treatmentsCard||0)+(+x.bedCar
 function updateDailyTakingsTotal(){
   let total=(+document.getElementById('dailyCashTaken').value||0)+(+document.getElementById('dailyTreatmentsCardTaken').value||0)+(+document.getElementById('dailyBedCardTaken').value||0);
   document.getElementById('dailyTakingsTotal').textContent=`£${total.toFixed(2)}`;
+  let key=document.getElementById('dailyTakingsDate').value||localDateKey();
+  let purchasesTotal=(data.customerPurchases||[]).filter(p=>p.date===key).reduce((s,p)=>s+p.grandTotal,0);
+  let grandTotalEl=document.getElementById('grandTotalPayable');
+  if(grandTotalEl)grandTotalEl.textContent=`£${(total+purchasesTotal).toFixed(2)}`;
 }
 function setDailyTakingsDate(key){document.getElementById('dailyTakingsDate').value=key;document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(key);renderDailyTakings()}
 function renderDailyTakings(){
