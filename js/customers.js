@@ -12,17 +12,45 @@ async function deleteCustomer(id){
  if(error){alert('This customer cannot be deleted because they have linked session or payment history. Remove test history first, or keep the customer for the audit trail.\n\n'+error.message);return}
  await loadLiveData();renderCustomers();
 }
-function openCustomerCreate(){editingCustomerId=null;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';['custFirst','custLast','custDob','custPhone','custAddress'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';document.getElementById('customerModal').classList.add('show')}
-function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);document.getElementById('customerModal').classList.add('show')}
+let selectedSkinType=null;
+function switchCustomerTab(tab){
+  document.querySelectorAll('.customerTabBtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.customerTabContent').forEach(c=>c.classList.toggle('active',c.dataset.tab===tab));
+}
+function selectSkinType(type){
+  selectedSkinType=type;
+  document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===type));
+}
+function getVerifiedBySelections(){
+  return [...document.querySelectorAll('.verifiedByCheck:checked')].map(el=>el.value);
+}
+function setVerifiedBySelections(list){
+  document.querySelectorAll('.verifiedByCheck').forEach(el=>el.checked=(list||[]).includes(el.value));
+}
+function handleDobOrIdCheckedChange(){
+  let idChecked=document.getElementById('custIdChecked').value==='true';
+  document.getElementById('verifiedByRow').style.display=idChecked?'block':'none';
+  if(idChecked){
+    if(!document.getElementById('custIdDate').value)document.getElementById('custIdDate').value=localDateKey();
+  }else{
+    document.getElementById('custIdDate').value='';
+  }
+  if(!editingCustomerId){
+    let dob=document.getElementById('custDob').value,age=ageFromDob(dob);
+    if(idChecked&&age!==null&&age>=18)document.getElementById('custUvAllowed').value='true';
+  }
+}
+function openCustomerCreate(){editingCustomerId=null;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function closeCustomerModal(){document.getElementById('customerModal').classList.remove('show')}
 async function saveCustomer(){
- let first=document.getElementById('custFirst').value.trim(),last=document.getElementById('custLast').value.trim(),dob=document.getElementById('custDob').value,phone=document.getElementById('custPhone').value.trim(),address=document.getElementById('custAddress').value.trim(),uv=document.getElementById('custUv').value==='true',idChecked=document.getElementById('custIdChecked').value==='true',age=ageFromDob(dob),err=document.getElementById('customerError');err.style.display='none';
+ let first=document.getElementById('custFirst').value.trim(),last=document.getElementById('custLast').value.trim(),dob=document.getElementById('custDob').value,phone=document.getElementById('custPhone').value.trim(),email=document.getElementById('custEmail').value.trim(),address=document.getElementById('custAddress').value.trim(),uv=document.getElementById('custUv').value==='true',idChecked=document.getElementById('custIdChecked').value==='true',idCheckedDate=document.getElementById('custIdDate').value||null,uvAllowed=document.getElementById('custUvAllowed').value==='true',verifiedBy=idChecked?getVerifiedBySelections():[],healthNotes=document.getElementById('custHealthNotes').value.trim(),age=ageFromDob(dob),err=document.getElementById('customerError');err.style.display='none';
  if(!first||!last||!dob){err.textContent='First name, last name and DOB are required.';err.style.display='block';return}
  if(age<18){alert('CUSTOMER IS BELOW 18 AND CAN NOT BE A CUSTOMER.');return}
  let duplicate=(data.customers||[]).find(c=>c.id!==editingCustomerId&&c.dob===dob&&c.firstName.trim().toLowerCase()===first.toLowerCase()&&c.lastName.trim().toLowerCase()===last.toLowerCase());
  if(duplicate){err.textContent=`A customer with the name ${first} ${last} and this date of birth already exists (${duplicate.accountNumber}).`;err.style.display='block';return}
  if(uv&&age<25&&!idChecked)alert('CHECK CUSTOMER ID');
- let payload={first_name:first,last_name:last,date_of_birth:dob,phone_number:phone||null,address:address||null,intends_uv_or_injectables:uv,id_checked:idChecked,updated_at:new Date().toISOString()},error,row;
+ let payload={first_name:first,last_name:last,date_of_birth:dob,phone_number:phone||null,email:email||null,address:address||null,intends_uv_or_injectables:uv,id_checked:idChecked,id_checked_date:idCheckedDate,uv_allowed:uvAllowed,verified_by:verifiedBy,skin_type:selectedSkinType,general_health_notes:healthNotes||null,updated_at:new Date().toISOString()},error,row;
  if(editingCustomerId)({data:row,error}=await sb.from('customers').update(payload).eq('id',editingCustomerId).select().single());else({data:row,error}=await sb.from('customers').insert(payload).select().single());
  if(error){
    err.textContent=error.code==='23505'
