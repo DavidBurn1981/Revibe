@@ -523,14 +523,38 @@ function removePurchaseItem(list,index){
   purchaseSelection[list].splice(index,1);
   renderPurchaseLists();
 }
+function hidePurchaseCustomerResultsDelayed(){
+  setTimeout(()=>{document.getElementById('purchaseCustomerResults').style.display='none'},150);
+}
+function searchPurchaseCustomer(){
+  let q=document.getElementById('purchaseCustomerSearch').value.trim().toLowerCase();
+  let results=document.getElementById('purchaseCustomerResults');
+  if(!q){results.style.display='none';results.innerHTML='';return}
+  let matches=(data.customers||[]).filter(c=>c.active!==false&&`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)).slice(0,8);
+  results.innerHTML=matches.length
+    ? matches.map(c=>`<div class='customerSearchResultRow' onclick="selectPurchaseCustomer('${c.id}')"><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b><div class='sub'>${escapeHtml(c.accountNumber)}</div></div>`).join('')
+    : `<div class='customerSearchResultRow muted'>No matching customers.</div>`;
+  results.style.display='block';
+}
+function selectPurchaseCustomer(id){
+  let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
+  document.getElementById('purchaseCustomerId').value=id;
+  document.getElementById('purchaseCustomerSearch').style.display='none';
+  document.getElementById('purchaseCustomerResults').style.display='none';
+  document.getElementById('purchaseCustomerResults').innerHTML='';
+  let selectedDiv=document.getElementById('purchaseCustomerSelected');
+  selectedDiv.innerHTML=`<span>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</span><button type='button' onclick='clearPurchaseCustomer()'>✕</button>`;
+  selectedDiv.style.display='flex';
+}
+function clearPurchaseCustomer(){
+  document.getElementById('purchaseCustomerId').value='';
+  document.getElementById('purchaseCustomerSearch').value='';
+  document.getElementById('purchaseCustomerSearch').style.display='block';
+  document.getElementById('purchaseCustomerSelected').style.display='none';
+}
 function renderPurchaseLists(){
   let treatmentsList=document.getElementById('purchaseListTreatments'),glowStudioList=document.getElementById('purchaseListGlowStudio');
   if(!treatmentsList||!glowStudioList)return;
-  let custSel=document.getElementById('purchaseCustomer');
-  if(custSel&&!custSel.dataset.populated){
-    custSel.innerHTML='<option value="">No customer selected</option>'+(data.customers||[]).filter(c=>c.active!==false).map(c=>`<option value='${c.id}'>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</option>`).join('');
-    custSel.dataset.populated='1';
-  }
   let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>£${item.price.toFixed(2)}</div><button type='button' class='purchaseItemRemove' onclick="removePurchaseItem('${list}',${index})">✕</button></div></div>`;
   treatmentsList.innerHTML=purchaseSelection.treatments.length
     ? purchaseSelection.treatments.map((item,i)=>renderRow(item,'treatments',i)).join('')
@@ -592,7 +616,7 @@ async function confirmPurchases(){
       glowStudioCash=+document.getElementById('ppGlowStudioCash').value||0,
       treatmentsCard=+document.getElementById('ppTreatmentsCard').value||0,
       treatmentsCash=+document.getElementById('ppTreatmentsCash').value||0,
-      customerId=document.getElementById('purchaseCustomer').value||null;
+      customerId=document.getElementById('purchaseCustomerId').value||null;
   let allItems=[...purchaseSelection.treatments,...purchaseSelection.glowStudio];
   let treatmentsTotal=purchaseSelection.treatments.reduce((s,i)=>s+i.price,0),
       glowStudioTotal=purchaseSelection.glowStudio.reduce((s,i)=>s+i.price,0),
@@ -611,7 +635,7 @@ async function confirmPurchases(){
     let {error:itemsError}=await sb.from('customer_purchase_items').insert(itemRows);
     if(itemsError)throw itemsError;
     purchaseSelection={treatments:[],glowStudio:[]};
-    document.getElementById('purchaseCustomer').value='';
+    clearPurchaseCustomer();
     closeProcessPurchasesModal();
     renderPurchaseLists();
     await loadLiveData();renderAll();
