@@ -536,7 +536,7 @@ function openPurchaseCategory(type){
 function closePurchaseProductModal(){document.getElementById('purchaseProductModal').classList.remove('show')}
 function addProductToPurchase(id){
   let p=(data.tanningProducts||[]).find(x=>x.id===id);if(!p)return;
-  let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card'};
+  let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0};
   if(entry.cardMachine==='Treatment Card')purchaseSelection.treatments.push(entry);
   else purchaseSelection.glowStudio.push(entry);
   renderPurchaseLists();
@@ -657,6 +657,16 @@ async function confirmPurchases(){
     }));
     let {error:itemsError}=await sb.from('customer_purchase_items').insert(itemRows);
     if(itemsError)throw itemsError;
+    if(customerId){
+      let blockMinuteItems=allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0);
+      for(let item of blockMinuteItems){
+        let {error:minutesError}=await sb.rpc('add_minutes_to_customer_account',{
+          p_customer:customerId,p_minutes:item.minutes,p_transaction_type:'Block Minutes Purchase',
+          p_title:item.title,p_notes:null,p_total_value:item.price
+        });
+        if(minutesError)throw minutesError;
+      }
+    }
     purchaseSelection={treatments:[],glowStudio:[]};
     clearPurchaseCustomer();
     closeProcessPurchasesModal();
