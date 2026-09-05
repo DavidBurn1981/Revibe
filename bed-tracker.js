@@ -497,9 +497,19 @@ function showSessionLoggedConfirmation(date){
     btn.disabled=false;
   },2000);
 }
-function openBlockMinutesPurchase(){alert('Block Minutes purchase flow is not yet configured.')}
-function openTangiblesPurchase(){alert('Tangibles purchase flow is not yet configured.')}
-function openTreatmentsPurchase(){alert('Treatments purchase flow is not yet configured.')}
+function openBlockMinutesPurchase(){openPurchaseCategory('Block Minutes')}
+function openTangiblesPurchase(){openPurchaseCategory('Tangible')}
+function openRltProgrammePurchase(){openPurchaseCategory('RLT Programme')}
+function openPaygMinutesPurchase(){openPurchaseCategory('PAYG Minutes')}
+function openPurchaseCategory(type){
+  let products=(data.tanningProducts||[]).filter(p=>p.type===type&&p.active!==false).sort((a,b)=>(a.minutes||0)-(b.minutes||0)||a.title.localeCompare(b.title));
+  document.getElementById('purchaseProductModalTitle').textContent=type;
+  document.getElementById('purchaseProductList').innerHTML=products.length
+    ? products.map(p=>`<div class='purchaseProductRow'><div><div class='title'>${escapeHtml(p.title)}</div>${p.minutes?`<div class='sub'>${p.minutes} minutes</div>`:''}</div><div class='price'>£${(+p.price||0).toFixed(2)}</div></div>`).join('')
+    : `<div class='muted' style='text-align:center;padding:20px'>No ${escapeHtml(type)} products are set up yet.</div>`;
+  document.getElementById('purchaseProductModal').classList.add('show');
+}
+function closePurchaseProductModal(){document.getElementById('purchaseProductModal').classList.remove('show')}
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
       card=+document.getElementById('sessionCardMinutes').value||0,
