@@ -270,7 +270,8 @@ function bedSessionHistoryRows(){
     accountMinutes:+x.accountMinutes||0,
     freeMinutes:+x.freeMinutes||0,
     staffMinutes:+x.staffMinutes||0,
-    staffMemberName:x.staffMemberName||''
+    staffMemberName:x.staffMemberName||'',
+    rerunMinutes:+x.rerunMinutes||0
   }));
 }
 function bedSessionHistoryKpi(dateKey){
@@ -335,6 +336,7 @@ function renderDailySessionsPage(key){
   let totalAccount=rows.reduce((sum,x)=>sum+(+x.accountMinutes||0),0);
   let totalFree=rows.reduce((sum,x)=>sum+(+x.freeMinutes||0),0);
   let totalStaff=rows.reduce((sum,x)=>sum+(+x.staffMinutes||0),0);
+  let totalRerun=rows.reduce((sum,x)=>sum+(+x.rerunMinutes||0),0);
   let totalSignUps=rows.filter(x=>x.newSignup==='Yes').length;
   let totalBlockBookings=rows.filter(x=>x.block==='Yes').length;
 
@@ -350,9 +352,9 @@ function renderDailySessionsPage(key){
 
   let head=document.getElementById('dailySessionsHead');
   if(head)head.innerHTML=
-    `<tr><th>Time</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
+    `<tr><th>Time</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
 
-  let cols=canDelete?11:10;
+  let cols=canDelete?12:11;
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
     ? rows.map(x=>`<tr class='clinicRow' onclick="openDailySessionEdit('${escapeHtml(x.id)}')">
@@ -363,6 +365,7 @@ function renderDailySessionsPage(key){
         <td>${x.accountMinutes} min</td>
         <td>${x.freeMinutes} min</td>
         <td>${x.staffMinutes} min</td>
+        <td>${x.rerunMinutes} min</td>
         <td>${escapeHtml(x.type||'')}</td>
         <td>${escapeHtml(x.newSignup||'')}</td>
         <td>${escapeHtml(x.block||'')}</td>
@@ -380,6 +383,7 @@ function renderDailySessionsPage(key){
         <td>${totalAccount} min</td>
         <td>${totalFree} min</td>
         <td>${totalStaff} min</td>
+        <td>${totalRerun} min</td>
         <td></td>
         <td>${totalSignUps}</td>
         <td>${totalBlockBookings}</td>
@@ -664,7 +668,10 @@ function selectSessionCustomer(id){
   let selectedDiv=document.getElementById('sessionCustomerSelected');
   selectedDiv.innerHTML=`<span>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</span><button type='button' onclick='clearSessionCustomer()'>✕</button>`;
   selectedDiv.style.display='flex';
-  document.getElementById('sessionCustomerBalance').textContent=`${c.minutesLeft} minutes left on account.`;
+  let uvAllowed=!!c.uvAllowed;
+  let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
+  let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
+  document.getElementById('sessionCustomerBalance').innerHTML=`${c.minutesLeft} minutes left on account. · Bed Use: ${escapeHtml(c.bedUse||'Hybrid')} · ${uvHtml}${warningHtml}`;
 }
 function clearSessionCustomer(){
   document.getElementById('sessionCustomerId').value='';
