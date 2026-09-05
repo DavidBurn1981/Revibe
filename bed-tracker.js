@@ -20,6 +20,7 @@ function editExclusiveSessionType(which){
   if(which==='hybrid'&&h.checked)r.checked=false;
 }
 function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
+function perfMinutes(x){return (+x.length||0)-(+x.rerunMinutes||0)}
 function isPerformanceSession(x){let p=String(x?.payment||'').trim().toLowerCase();return p!=='free session'&&p!=='free'}
 function performanceSessions(rows){return (rows||[]).filter(isPerformanceSession)}
 function isLastDayOfCurrentMonth(){
@@ -124,11 +125,11 @@ function renderBedTracker(){
   let now=new Date();
   el.textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-  let total=rows.reduce((a,b)=>a+(+b.length||0),0),
+  let total=rows.reduce((a,b)=>a+perfMinutes(b),0),
       paidTotal=rows.reduce((a,b)=>a+(+b.cashMinutes||0)+(+b.cardMinutes||0)+(+b.accountMinutes||0),0),
       signups=rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,
-      rlt=rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+(+b.length||0),0),
-      hybrid=rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+(+b.length||0),0),
+      rlt=rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),
+      hybrid=rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0),
       elapsed=getElapsedOpeningHours(now),
       kpi=elapsed>0?total/BED_COUNT/elapsed:0,
       paidKpi=elapsed>0?paidTotal/BED_COUNT/elapsed:0;
@@ -158,7 +159,7 @@ function renderBedTracker(){
   let monthStart=new Date(now.getFullYear(),now.getMonth(),1),
       monthKeys=dateRangeKeys(monthStart,now),
       monthRows=performanceSessions(data.bedSessions.filter(x=>monthKeys.includes(x.date))),
-      monthMinutes=monthRows.reduce((sum,x)=>sum+(+x.length||0),0),
+      monthMinutes=monthRows.reduce((sum,x)=>sum+perfMinutes(x),0),
       monthHours=periodOpenHours(monthKeys),
       monthKpi=monthHours>0?monthMinutes/BED_COUNT/monthHours:0;
 
@@ -172,7 +173,7 @@ renderDailyAverageComparison();
 }
 function parseLocalDateKey(key){let [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d)}
 function dayKpi(dateKey,totalMinutes){let today=localDateKey(),h=effectiveHoursForDate(dateKey);let hours=dateKey===today?getElapsedOpeningHours(new Date()):hoursDuration(h);return hours>0?totalMinutes/BED_COUNT/hours:0}
-function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.reduce((a,b)=>a+(+b.length||0),0);return {sessions:rows.length,minutes:total,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+(+b.length||0),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+(+b.length||0),0)}}
+function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.reduce((a,b)=>a+perfMinutes(b),0);return {sessions:rows.length,minutes:total,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0)}}
 function dateRangeKeys(start,end){let keys=[],d=new Date(start);d.setHours(12,0,0,0);let e=new Date(end);e.setHours(12,0,0,0);while(d<=e){keys.push(localDateKey(d));d.setDate(d.getDate()+1)}return keys}
 function summaryMetricsHtml(a,kpi,label){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div><div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>${label||'KPI'}</div><div class='value'>${kpi.toFixed(1)}</div></div></div>`}
 function periodOpenHours(keys){let today=localDateKey();return keys.reduce((sum,k)=>sum+(k===today?getElapsedOpeningHours(new Date()):hoursDuration(effectiveHoursForDate(k))),0)}
@@ -296,7 +297,7 @@ function bedSessionHistoryRows(){
 }
 function bedSessionHistoryKpi(dateKey){
   let rows=(data.bedSessions||[]).filter(x=>x.date===dateKey);
-  let performanceMinutes=performanceSessions(rows).reduce((sum,x)=>sum+(+x.length||0),0);
+  let performanceMinutes=performanceSessions(rows).reduce((sum,x)=>sum+perfMinutes(x),0);
   return dayKpi(dateKey,performanceMinutes);
 }
 function getBedSessionHistoryData(){

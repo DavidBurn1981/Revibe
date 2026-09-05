@@ -162,7 +162,7 @@ function monthPerformanceActuals(monthNumber,year){
 
   let keys=dateRangeKeys(status.monthStart,status.effectiveEnd),
       rows=performanceSessions((data.bedSessions||[]).filter(x=>keys.includes(x.date))),
-      minutes=rows.reduce((sum,x)=>sum+(+x.length||0),0),
+      minutes=rows.reduce((sum,x)=>sum+perfMinutes(x),0),
       signups=rows.filter(x=>x.newSignup===true||x.newSignup==='Yes').length,
       rltSessions=rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').length,
       hours=periodOpenHours(keys),
@@ -295,13 +295,13 @@ function renderPerformanceReporting(){
   </div></div>`;
 
   let monthSessionRows=performanceSessions(data.bedSessions.filter(x=>{let d=parseLocalDateKey(x.date);return d.getMonth()+1===now.month&&d.getFullYear()===now.year;}));
-  let monthTotalMinutes=monthSessionRows.reduce((s,x)=>s+(+x.length||0),0),
+  let monthTotalMinutes=monthSessionRows.reduce((s,x)=>s+perfMinutes(x),0),
       monthOpenHours=periodOpenHours(revenueKeys),
       monthKpiValue=monthOpenHours>0?monthTotalMinutes/BED_COUNT/monthOpenHours:0,
       paidMinutes=monthSessionRows.reduce((s,x)=>s+(+x.cashMinutes||0)+(+x.cardMinutes||0)+(+x.accountMinutes||0),0),
       paidKpiValue=monthOpenHours>0?paidMinutes/BED_COUNT/monthOpenHours:0;
   currentHtml+=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Session Insight</div><div class='revenueGrid'>
-    <div class='revenueMetric'><div class='label'>Average Session Length</div><div class='value'>${monthSessionRows.length?(monthSessionRows.reduce((s,x)=>s+x.length,0)/monthSessionRows.length).toFixed(1):'0.0'} min</div></div>
+    <div class='revenueMetric'><div class='label'>Average Session Length</div><div class='value'>${monthSessionRows.length?(monthSessionRows.reduce((s,x)=>s+perfMinutes(x),0)/monthSessionRows.length).toFixed(1):'0.0'} min</div></div>
     <div class='revenueMetric'><div class='label'>Total Minutes This Month</div><div class='value'>${monthTotalMinutes} min</div></div>
     <div class='revenueMetric'><div class='label'>Minutes Per Bed Per Hour</div><div class='value'>${monthKpiValue.toFixed(1)}</div></div>
     <div class='revenueMetric'><div class='label'>Total Paid-For Minutes</div><div class='value'>${paidMinutes} min</div></div>
