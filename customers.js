@@ -90,8 +90,6 @@ async function saveCustomer(){
  await loadLiveData();renderCustomers();openCustomer(row.id)
 }
 function renderCustomerPurchases(c){
- let products=(data.tanningProducts||[]).filter(p=>p.active&&p.type==='Block Minutes').sort((a,b)=>a.minutes-b.minutes);
- document.getElementById('blockPurchaseButtons').innerHTML=products.map(p=>`<button class='purchaseMinuteBtn' onclick="openBlockPurchase('${p.id}')">${p.minutes} Minutes<br><span class='muted'>£${p.price.toFixed(2)}</span></button>`).join('')||"<div class='muted'>No Block Minutes products configured.</div>";
  let tx=(data.customerTransactions||[]).filter(x=>x.customerId===c.id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
  document.getElementById('customerTransactionTable').innerHTML="<tr><th>Date</th><th>Type</th><th>Details</th><th>Value</th><th>Minutes</th><th>Balance</th></tr>"+(tx.length?tx.map(x=>`<tr><td>${new Date(x.createdAt).toLocaleString('en-GB')}</td><td>${x.type}</td><td>${escapeHtml(x.product||'')}${x.notes?` — ${escapeHtml(x.notes)}`:''}</td><td>£${x.value.toFixed(2)}</td><td>${x.minutes>0?'+':''}${x.minutes}</td><td>${x.balance}</td></tr>`).join(''):"<tr><td colspan='6' class='muted'>No transactions yet.</td></tr>")
  let sessions=(data.bedSessions||[]).filter(s=>s.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));
