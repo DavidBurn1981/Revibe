@@ -1,5 +1,24 @@
-function exclusiveSessionType(which){let r=document.getElementById('sessionRlt'),h=document.getElementById('sessionHybrid');if(which==='rlt'&&r.checked)h.checked=false;if(which==='hybrid'&&h.checked)r.checked=false}
-function editExclusiveSessionType(which){let r=document.getElementById('editSessionRlt'),h=document.getElementById('editSessionHybrid');if(which==='rlt'&&r.checked)h.checked=false;if(which==='hybrid'&&h.checked)r.checked=false}
+function exclusiveSessionType(which){
+  let r=document.getElementById('sessionRlt'),h=document.getElementById('sessionHybrid');
+  if(which==='rlt'&&r.checked){
+    h.checked=false;
+    alert('Ensure bed is set to RLT Only for Customer');
+  }
+  if(which==='hybrid'&&h.checked){
+    r.checked=false;
+    let customerId=document.getElementById('sessionCustomerId').value;
+    let c=customerId?data.customers.find(x=>x.id===customerId):null;
+    if(c&&!c.uvAllowed)alert('This Customer can not use UV. Please check their Customer record to see why.');
+  }
+}
+function editExclusiveSessionType(which){
+  let r=document.getElementById('editSessionRlt'),h=document.getElementById('editSessionHybrid');
+  if(which==='rlt'&&r.checked){
+    h.checked=false;
+    alert('Ensure bed is set to RLT Only for Customer');
+  }
+  if(which==='hybrid'&&h.checked)r.checked=false;
+}
 function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
 function isPerformanceSession(x){let p=String(x?.payment||'').trim().toLowerCase();return p!=='free session'&&p!=='free'}
 function performanceSessions(rows){return (rows||[]).filter(isPerformanceSession)}
@@ -851,7 +870,7 @@ async function recordBedSession(){
    }
    return
  }
- let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');let accountUsed=0,payg=0;if(payment==='Free'||payment==='Free Session'){accountUsed=0;payg=0}else if(payment==='Account Minutes'){if(length>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${length} minutes.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}accountUsed=length}else if(pendingPaygSplit){accountUsed=pendingPaygSplit.account;payg=pendingPaygSplit.payg}else payg=length;
+ let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');let accountUsed=0,payg=0;if(payment==='Free'||payment==='Free Session'){accountUsed=0;payg=0}else if(payment==='Account Minutes'){if(length>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${length} minutes.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}accountUsed=length}else if(pendingPaygSplit){accountUsed=pendingPaygSplit.account;payg=pendingPaygSplit.payg}else payg=length;
  let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg,p_session_date:date});
  if(error)return alert(error.message);
  pendingPaygSplit=null;
