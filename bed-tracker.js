@@ -515,18 +515,22 @@ function updateSessionLengthTotal(){
       card=+document.getElementById('sessionCardMinutes').value||0,
       account=+document.getElementById('sessionAccountMinutes').value||0,
       free=+document.getElementById('sessionFreeMinutes').value||0,
-      staff=+document.getElementById('sessionStaffMinutes').value||0;
-  document.getElementById('sessionLength').value=cash+card+account+free+staff;
+      staff=+document.getElementById('sessionStaffMinutes').value||0,
+      rerun=+document.getElementById('sessionRerunMinutes').value||0;
+  document.getElementById('sessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('staffMemberNameRow').style.display=staff>0?'block':'none';
+  document.getElementById('rerunReasonRow').style.display=rerun>0?'block':'none';
 }
 function updateEditSessionLengthTotal(){
   let cash=+document.getElementById('editSessionCashMinutes').value||0,
       card=+document.getElementById('editSessionCardMinutes').value||0,
       account=+document.getElementById('editSessionAccountMinutes').value||0,
       free=+document.getElementById('editSessionFreeMinutes').value||0,
-      staff=+document.getElementById('editSessionStaffMinutes').value||0;
-  document.getElementById('editSessionLength').value=cash+card+account+free+staff;
+      staff=+document.getElementById('editSessionStaffMinutes').value||0,
+      rerun=+document.getElementById('editSessionRerunMinutes').value||0;
+  document.getElementById('editSessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('editStaffMemberNameRow').style.display=staff>0?'block':'none';
+  document.getElementById('editRerunReasonRow').style.display=rerun>0?'block':'none';
 }
 let editingDailySessionId=null;
 function openDailySessionEdit(id){
@@ -540,6 +544,8 @@ function openDailySessionEdit(id){
   document.getElementById('editSessionFreeMinutes').value=x.freeMinutes||0;
   document.getElementById('editSessionStaffMinutes').value=x.staffMinutes||0;
   document.getElementById('editSessionStaffMemberName').value=x.staffMemberName||'';
+  document.getElementById('editSessionRerunMinutes').value=x.rerunMinutes||0;
+  document.getElementById('editSessionRerunReason').value=x.rerunReason||'';
   updateEditSessionLengthTotal();
   let newSignup=x.newSignup===true||x.newSignup==='Yes';
   document.getElementById('editSessionSignup').checked=newSignup;
@@ -561,7 +567,9 @@ async function saveDailySessionEdit(){
       freeMin=+document.getElementById('editSessionFreeMinutes').value||0,
       staffMin=+document.getElementById('editSessionStaffMinutes').value||0,
       staffMemberName=document.getElementById('editSessionStaffMemberName').value.trim(),
-      length=cashMin+cardMin+accountMin+freeMin+staffMin,
+      rerunMin=+document.getElementById('editSessionRerunMinutes').value||0,
+      rerunReason=document.getElementById('editSessionRerunReason').value,
+      length=cashMin+cardMin+accountMin+freeMin+staffMin+rerunMin,
       newSignup=document.getElementById('editSessionSignup').checked,
       purchasedBlock=document.getElementById('editSessionBlockBooking').checked,
       rlt=document.getElementById('editSessionRlt').checked,
@@ -571,10 +579,12 @@ async function saveDailySessionEdit(){
   if(!Number.isInteger(length)||length<1){err.textContent='Please enter minutes for at least one payment type.';err.style.display='block';return}
   if(!rlt&&!hybrid){err.textContent='Please select Red Light Therapy or Hybrid.';err.style.display='block';return}
   if(staffMin>0&&!staffMemberName){err.textContent='Please enter the Staff Member Name.';err.style.display='block';return}
+  if(rerunMin>0&&!rerunReason){err.textContent='Please select a Rerun Reason.';err.style.display='block';return}
   try{
     let {error}=await sb.from('bed_sessions').update({
       session_date:date,session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,
       free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,
+      rerun_minutes:rerunMin,rerun_reason:rerunMin>0?rerunReason:null,
       new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',
       payg_minutes:cashMin+cardMin
     }).eq('id',editingDailySessionId);
@@ -606,6 +616,9 @@ function resetBedSessionForm(){
   document.getElementById('sessionStaffMinutes').value='';
   document.getElementById('sessionStaffMemberName').value='';
   document.getElementById('staffMemberNameRow').style.display='none';
+  document.getElementById('sessionRerunMinutes').value='';
+  document.getElementById('sessionRerunReason').value='';
+  document.getElementById('rerunReasonRow').style.display='none';
   document.getElementById('sessionLength').value='';
   document.getElementById('sessionPayment').value='Account Minutes';
   document.getElementById('sessionSignup').checked=false;
@@ -623,12 +636,15 @@ async function recordBedSession(){
      freeMin=+document.getElementById('sessionFreeMinutes').value||0,
      staffMin=+document.getElementById('sessionStaffMinutes').value||0,
      staffMemberName=document.getElementById('sessionStaffMemberName').value.trim(),
-     length=cashMin+cardMin+accountMin+freeMin+staffMin,
+     rerunMin=+document.getElementById('sessionRerunMinutes').value||0,
+     rerunReason=document.getElementById('sessionRerunReason').value,
+     length=cashMin+cardMin+accountMin+freeMin+staffMin+rerunMin,
      payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
  if(!Number.isInteger(length)||length<1)return alert('Please enter minutes for at least one payment type.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
  if(staffMin>0&&!staffMemberName)return alert('Please enter the Staff Member Name.');
+ if(rerunMin>0&&!rerunReason)return alert('Please select a Rerun Reason.');
  if(!c){
-   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:cashMin+cardMin};
+   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,rerun_minutes:rerunMin,rerun_reason:rerunMin>0?rerunReason:null,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:cashMin+cardMin};
    let {error}=await sb.from('bed_sessions').insert(payload);
    if(error)return alert(error.message);
 
