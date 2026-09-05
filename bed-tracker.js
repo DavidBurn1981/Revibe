@@ -870,10 +870,10 @@ async function recordBedSession(){
    }
    return
  }
- let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');let accountUsed=0,payg=0;if(payment==='Free'||payment==='Free Session'){accountUsed=0;payg=0}else if(payment==='Account Minutes'){if(length>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${length} minutes.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}accountUsed=length}else if(pendingPaygSplit){accountUsed=pendingPaygSplit.account;payg=pendingPaygSplit.payg}else payg=length;
- let {data:bal,error}=await sb.rpc('record_customer_bed_session',{p_customer:customerId,p_length:length,p_payment:payment,p_signup:newSignup,p_block:purchasedBlock,p_session_type:rlt?'Red Light Therapy':'Hybrid',p_account_used:accountUsed,p_payg:payg,p_session_date:date});
+ let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');
+ if(accountMin>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}
+ let {data:bal,error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:customerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:newSignup,p_purchased_block_booking:purchasedBlock,p_session_type:sessionTypeValue});
  if(error)return alert(error.message);
- pendingPaygSplit=null;
 
  resetBedSessionForm();
  showSessionLoggedConfirmation(date);
@@ -882,7 +882,6 @@ async function recordBedSession(){
    await loadLiveData();
    renderBedTracker();
    renderCustomers();
-   sessionCustomerChanged();
    showSessionLoggedConfirmation(date);
  }catch(refreshError){
    console.error('Session saved but REVIBE refresh failed:',refreshError);
