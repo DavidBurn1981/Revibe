@@ -98,7 +98,7 @@ function renderPageForNavigation(pageId){
       renderApartmentCleans();
       break;
     case 'customerpurchases':
-      renderCustomerPurchases();
+      renderCustomerPurchasesReport();
       break;
   }
 }
@@ -152,7 +152,7 @@ function renderAll(){
   renderMyBookings();
   renderMyTreatmentType();
   renderPurchaseLists();
-  renderCustomerPurchases();
+  renderCustomerPurchasesReport();
   applyPermissionBasedActions();
 
   setTimeout(()=>{

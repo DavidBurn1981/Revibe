@@ -526,6 +526,11 @@ function removePurchaseItem(list,index){
 function renderPurchaseLists(){
   let treatmentsList=document.getElementById('purchaseListTreatments'),glowStudioList=document.getElementById('purchaseListGlowStudio');
   if(!treatmentsList||!glowStudioList)return;
+  let custSel=document.getElementById('purchaseCustomer');
+  if(custSel&&!custSel.dataset.populated){
+    custSel.innerHTML='<option value="">No customer selected</option>'+(data.customers||[]).filter(c=>c.active!==false).map(c=>`<option value='${c.id}'>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</option>`).join('');
+    custSel.dataset.populated='1';
+  }
   let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>£${item.price.toFixed(2)}</div><button type='button' class='purchaseItemRemove' onclick="removePurchaseItem('${list}',${index})">✕</button></div></div>`;
   treatmentsList.innerHTML=purchaseSelection.treatments.length
     ? purchaseSelection.treatments.map((item,i)=>renderRow(item,'treatments',i)).join('')
@@ -586,7 +591,8 @@ async function confirmPurchases(){
   let glowStudioCard=+document.getElementById('ppGlowStudioCard').value||0,
       glowStudioCash=+document.getElementById('ppGlowStudioCash').value||0,
       treatmentsCard=+document.getElementById('ppTreatmentsCard').value||0,
-      treatmentsCash=+document.getElementById('ppTreatmentsCash').value||0;
+      treatmentsCash=+document.getElementById('ppTreatmentsCash').value||0,
+      customerId=document.getElementById('purchaseCustomer').value||null;
   let allItems=[...purchaseSelection.treatments,...purchaseSelection.glowStudio];
   let treatmentsTotal=purchaseSelection.treatments.reduce((s,i)=>s+i.price,0),
       glowStudioTotal=purchaseSelection.glowStudio.reduce((s,i)=>s+i.price,0),
@@ -595,7 +601,7 @@ async function confirmPurchases(){
     let {data:purchase,error}=await sb.from('customer_purchases').insert({
       purchase_date:localDateKey(),treatments_total:treatmentsTotal,glow_studio_total:glowStudioTotal,grand_total:grandTotal,
       glow_studio_card_amount:glowStudioCard,glow_studio_cash_amount:glowStudioCash,
-      treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash
+      treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash,customer_id:customerId
     }).select().single();
     if(error)throw error;
     let itemRows=allItems.map(item=>({
@@ -605,6 +611,7 @@ async function confirmPurchases(){
     let {error:itemsError}=await sb.from('customer_purchase_items').insert(itemRows);
     if(itemsError)throw itemsError;
     purchaseSelection={treatments:[],glowStudio:[]};
+    document.getElementById('purchaseCustomer').value='';
     closeProcessPurchasesModal();
     renderPurchaseLists();
     await loadLiveData();renderAll();
