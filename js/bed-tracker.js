@@ -517,6 +517,7 @@ function addProductToPurchase(id){
   if(entry.cardMachine==='Treatment Card')purchaseSelection.treatments.push(entry);
   else purchaseSelection.glowStudio.push(entry);
   renderPurchaseLists();
+  closePurchaseProductModal();
 }
 function removePurchaseItem(list,index){
   purchaseSelection[list].splice(index,1);
@@ -551,6 +552,7 @@ function openProcessPurchasesModal(){
   document.getElementById('ppTreatmentsCash').value='';
   document.getElementById('ppGlowStudioCheck').textContent='';
   document.getElementById('ppTreatmentsCheck').textContent='';
+  document.getElementById('ppAmountBeingPaid').textContent='£0.00';
   document.getElementById('processPurchasesError').style.display='none';
   document.getElementById('processPurchasesModal').classList.add('show');
 }
@@ -562,13 +564,17 @@ function halfMatchesDue(cardId,cashId,dueEl){
   return card+cash===due;
 }
 function updateProcessPurchasesCheck(){
-  let glowOk=halfMatchesDue('ppGlowStudioCard','ppGlowStudioCash',document.getElementById('ppGlowStudioDue')),
-      treatOk=halfMatchesDue('ppTreatmentsCard','ppTreatmentsCash',document.getElementById('ppTreatmentsDue'));
+  let glowCard=+document.getElementById('ppGlowStudioCard').value||0,glowCash=+document.getElementById('ppGlowStudioCash').value||0,
+      treatCard=+document.getElementById('ppTreatmentsCard').value||0,treatCash=+document.getElementById('ppTreatmentsCash').value||0;
+  let glowDue=pence(document.getElementById('ppGlowStudioDue').textContent.replace('£','')),
+      treatDue=pence(document.getElementById('ppTreatmentsDue').textContent.replace('£',''));
+  let glowEntered=pence(glowCard)+pence(glowCash),treatEntered=pence(treatCard)+pence(treatCash);
   let glowCheck=document.getElementById('ppGlowStudioCheck'),treatCheck=document.getElementById('ppTreatmentsCheck');
-  glowCheck.textContent=glowOk?'✓ Matches amount due':'Card + Cash must equal the amount due';
-  glowCheck.className='processPurchasesCheck '+(glowOk?'ok':'bad');
-  treatCheck.textContent=treatOk?'✓ Matches amount due':'Card + Cash must equal the amount due';
-  treatCheck.className='processPurchasesCheck '+(treatOk?'ok':'bad');
+  glowCheck.className='processPurchasesCheck '+(glowEntered===glowDue?'ok':'bad');
+  glowCheck.textContent=glowEntered===glowDue?'✓ Matches amount due':`Card + Cash must equal the amount due — ${glowEntered<glowDue?`Another £${((glowDue-glowEntered)/100).toFixed(2)} needed`:`£${((glowEntered-glowDue)/100).toFixed(2)} too much`}`;
+  treatCheck.className='processPurchasesCheck '+(treatEntered===treatDue?'ok':'bad');
+  treatCheck.textContent=treatEntered===treatDue?'✓ Matches amount due':`Card + Cash must equal the amount due — ${treatEntered<treatDue?`Another £${((treatDue-treatEntered)/100).toFixed(2)} needed`:`£${((treatEntered-treatDue)/100).toFixed(2)} too much`}`;
+  document.getElementById('ppAmountBeingPaid').textContent=`£${((glowCard+glowCash+treatCard+treatCash)).toFixed(2)}`;
 }
 async function confirmPurchases(){
   let err=document.getElementById('processPurchasesError');err.style.display='none';

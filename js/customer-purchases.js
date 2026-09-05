@@ -30,6 +30,37 @@ function renderCustomerPurchases(){
       let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
       let itemSummary=items.map(i=>escapeHtml(i.title)).join(', ')||'—';
       let dateLabel=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-      return `<tr><td><b>${dateLabel}</b></td><td>${itemSummary}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
+      return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${dateLabel}</b></td><td>${itemSummary}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
     }).join(''):`<tr><td colspan='5' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this month.</td></tr>`);
+}
+
+let editingCustomerPurchaseId=null;
+function openCustomerPurchaseDetail(id){
+  let p=(data.customerPurchases||[]).find(x=>x.id===id);if(!p)return;
+  editingCustomerPurchaseId=id;
+  let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===id);
+  let glowItems=items.filter(i=>i.cardMachine==='Sunbed Card'),treatItems=items.filter(i=>i.cardMachine==='Treatment Card');
+  let renderItems=list=>list.length?list.map(i=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(i.title)}</div><div class='price'>£${i.price.toFixed(2)}</div></div>`).join(''):`<div class='purchaseListEmpty'>No items.</div>`;
+  document.getElementById('cpDetailDate').textContent=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('cpDetailGlowStudioItems').innerHTML=renderItems(glowItems);
+  document.getElementById('cpDetailTreatmentsItems').innerHTML=renderItems(treatItems);
+  document.getElementById('cpDetailGlowStudioTotal').textContent=`£${p.glowStudioTotal.toFixed(2)}`;
+  document.getElementById('cpDetailTreatmentsTotal').textContent=`£${p.treatmentsTotal.toFixed(2)}`;
+  document.getElementById('cpDetailGlowStudioCard').textContent=`£${p.glowStudioCardAmount.toFixed(2)}`;
+  document.getElementById('cpDetailGlowStudioCash').textContent=`£${p.glowStudioCashAmount.toFixed(2)}`;
+  document.getElementById('cpDetailTreatmentsCard').textContent=`£${p.treatmentsCardAmount.toFixed(2)}`;
+  document.getElementById('cpDetailTreatmentsCash').textContent=`£${p.treatmentsCashAmount.toFixed(2)}`;
+  document.getElementById('cpDetailGrandTotal').textContent=`£${p.grandTotal.toFixed(2)}`;
+  let canDelete=hasRolePermission('customer_purchases','delete');
+  document.getElementById('deleteCustomerPurchaseBtn').style.display=canDelete?'inline-block':'none';
+  document.getElementById('customerPurchaseDetailModal').classList.add('show');
+}
+function closeCustomerPurchaseDetail(){document.getElementById('customerPurchaseDetailModal').classList.remove('show');editingCustomerPurchaseId=null}
+async function deleteCustomerPurchase(){
+  if(!editingCustomerPurchaseId)return;
+  if(!confirm('Delete this Customer Purchase? This cannot be undone.'))return;
+  let {error}=await sb.from('customer_purchases').delete().eq('id',editingCustomerPurchaseId);
+  if(error)return alert(error.message);
+  closeCustomerPurchaseDetail();
+  await loadLiveData();renderCustomerPurchases();
 }
