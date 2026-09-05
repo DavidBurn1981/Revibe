@@ -17,6 +17,7 @@ const REVIBE_PERMISSION_AREAS=[
   {group:'Admin',key:'roles_permissions',label:'Roles & Permissions',approve:false},
   {group:'Admin',key:'finance',label:'Finance',approve:false},
   {group:'Admin',key:'business_planner',label:'Social Media Planning',approve:false},
+  {group:'Admin',key:'customer_purchases',label:'Customer Purchases',approve:false},
   {group:'Apartments',key:'apartment_cleans',label:'Apartment Cleans',approve:false},
 ];
 const REVIBE_PAGE_PERMISSION_MAP={
@@ -47,6 +48,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   finance:'finance',
   orders:'finance',
   businessplanner:'business_planner',
+  customerpurchases:'customer_purchases',
   apartmentcleans:'apartment_cleans',
 };
 async function loadRolePermissions(){
@@ -76,6 +78,7 @@ function requireRolePermission(key,action='edit',message){
 const REVIBE_ACTION_PERMISSION_RULES={
   recordBedSession:['daily_session_tracker','edit'],
   openBlockMinutesPurchase:['daily_session_tracker','edit'], openTangiblesPurchase:['daily_session_tracker','edit'], openRltProgrammePurchase:['daily_session_tracker','edit'], openPaygMinutesPurchase:['daily_session_tracker','edit'],
+  addProductToPurchase:['daily_session_tracker','edit'], removePurchaseItem:['daily_session_tracker','edit'], confirmPurchase:['daily_session_tracker','edit'],
   openDailySessionEdit:['daily_session_tracker','edit'], saveDailySessionEdit:['daily_session_tracker','edit'],
   saveDailyTakings:['daily_session_tracker','edit'],
   openSunbedBooking:['sunbed_bookings','edit'], saveSunbedBooking:['sunbed_bookings','edit'], completeSunbedBooking:['sunbed_bookings','edit'],
@@ -138,7 +141,7 @@ function applyPermissionBasedNavigation(){
   // Hide empty section headings automatically.
   document.querySelectorAll('#nav .navtitle').forEach(title=>{
     if(title.id==='adminNavTitle'){
-      let visible=[...document.querySelectorAll('#usersNavButton,#rolesPermissionsNavButton,#financeNavButton,#businessPlannerNavButton')]
+      let visible=[...document.querySelectorAll('#usersNavButton,#rolesPermissionsNavButton,#financeNavButton,#businessPlannerNavButton,#customerPurchasesNavButton')]
         .some(x=>x.style.display!=='none');
       title.style.display=visible?'block':'none';
       return;
