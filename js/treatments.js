@@ -64,16 +64,17 @@ async function deleteTreatmentGrouping(){
 function renderClinicDays(){
   let table=document.getElementById('clinicTable');if(!table)return;
   let rows=[...(data.clinicDays||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
-  table.innerHTML='<tr><th>Date</th><th>Treatment Type</th><th>Clinician</th><th>Hours</th><th>Booked Sessions</th><th>Booked Minutes</th><th>Provided Discount</th><th>Rental Charge</th></tr>'+
+  table.innerHTML='<tr><th>Date</th><th>Treatment Type</th><th>Clinician</th><th>Hours</th><th>Booked Sessions</th><th>Booked Minutes</th><th>Total Payable</th><th>Provided Discount</th><th>Rental Charge</th></tr>'+
     (rows.length?rows.map(x=>{
       let r=data.renters.find(z=>z.id===x.renterId),
           d=parseLocalDateKey(x.date),
           label=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}),
           booked=(data.appointments||[]).filter(a=>a.clinicDayId===x.id&&String(a.status||'').toLowerCase()!=='cancelled'),
           sessionCount=booked.length,
-          totalMinutes=booked.reduce((s,a)=>s+(+a.durationMinutes||0),0);
-      return `<tr class='clinicRow' onclick="openClinicEdit('${x.id}')"><td><b>${label}</b></td><td>${escapeHtml(x.product||'')}</td><td>${escapeHtml(r?.name||'')}</td><td>${escapeHtml(x.start||'')}–${escapeHtml(x.end||'')}</td><td>${sessionCount}</td><td>${totalMinutes} mins</td><td>${(+x.discountPercent||0)>0?`${+x.discountPercent}%`:'None'}</td><td>£${(+x.rentalCharge||0).toFixed(2)}</td></tr>`;
-    }).join(''):`<tr><td colspan='8' class='muted'>No Clinic Days have been created yet.</td></tr>`);
+          totalMinutes=booked.reduce((s,a)=>s+(+a.durationMinutes||0),0),
+          totalPayable=booked.reduce((s,a)=>s+(+a.amountPayable||0),0);
+      return `<tr class='clinicRow' onclick="openClinicEdit('${x.id}')"><td><b>${label}</b></td><td>${escapeHtml(x.product||'')}</td><td>${escapeHtml(r?.name||'')}</td><td>${escapeHtml(x.start||'')}–${escapeHtml(x.end||'')}</td><td>${sessionCount}</td><td>${totalMinutes} mins</td><td>£${totalPayable.toFixed(2)}</td><td>${(+x.discountPercent||0)>0?`${+x.discountPercent}%`:'None'}</td><td>£${(+x.rentalCharge||0).toFixed(2)}</td></tr>`;
+    }).join(''):`<tr><td colspan='9' class='muted'>No Clinic Days have been created yet.</td></tr>`);
 }
 function renderTables(){
   renderProducts();renderProductDetail();
