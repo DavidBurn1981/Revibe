@@ -718,6 +718,13 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerSelected').style.display='none';
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
 }
+function paygChargeMessage(minutes){
+  if(minutes<=0)return null;
+  let product=(data.tanningProducts||[]).find(p=>p.type==='PAYG Minutes'&&p.active!==false&&p.minutes===minutes);
+  return product
+    ? `Total charge for these Pay as you Go minutes is £${(+product.price||0).toFixed(2)}`
+    : `No PAYG price is configured for ${minutes} minutes — check Tanning/RLT Products.`;
+}
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
       card=+document.getElementById('sessionCardMinutes').value||0,
@@ -728,6 +735,9 @@ function updateSessionLengthTotal(){
   document.getElementById('sessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('staffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('rerunReasonRow').style.display=rerun>0?'block':'none';
+  let paygRow=document.getElementById('paygChargeRow'),paygMsg=paygChargeMessage(cash+card);
+  paygRow.style.display=paygMsg?'block':'none';
+  if(paygMsg)paygRow.textContent=paygMsg;
 }
 function updateEditSessionLengthTotal(){
   let cash=+document.getElementById('editSessionCashMinutes').value||0,
@@ -739,6 +749,9 @@ function updateEditSessionLengthTotal(){
   document.getElementById('editSessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('editStaffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('editRerunReasonRow').style.display=rerun>0?'block':'none';
+  let editPaygRow=document.getElementById('editPaygChargeRow'),editPaygMsg=paygChargeMessage(cash+card);
+  editPaygRow.style.display=editPaygMsg?'block':'none';
+  if(editPaygMsg)editPaygRow.textContent=editPaygMsg;
 }
 let editingDailySessionId=null;
 function openDailySessionEdit(id){
