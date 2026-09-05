@@ -97,6 +97,9 @@ function renderPageForNavigation(pageId){
     case 'apartmentcleans':
       renderApartmentCleans();
       break;
+    case 'customerpurchases':
+      renderCustomerPurchases();
+      break;
   }
 }
 function goToPage(pageId){
@@ -148,6 +151,8 @@ function renderAll(){
   renderApartmentCleans();
   renderMyBookings();
   renderMyTreatmentType();
+  renderPurchaseLists();
+  renderCustomerPurchases();
   applyPermissionBasedActions();
 
   setTimeout(()=>{
