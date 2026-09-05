@@ -642,6 +642,37 @@ async function confirmPurchases(){
     alert('Purchase confirmed.');
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}
 }
+function hideSessionCustomerResultsDelayed(){
+  setTimeout(()=>{document.getElementById('sessionCustomerResults').style.display='none'},150);
+}
+function searchSessionCustomer(){
+  let q=document.getElementById('sessionCustomerSearch').value.trim().toLowerCase();
+  let results=document.getElementById('sessionCustomerResults');
+  if(!q){results.style.display='none';results.innerHTML='';return}
+  let matches=(data.customers||[]).filter(c=>c.active!==false&&`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)).slice(0,8);
+  results.innerHTML=matches.length
+    ? matches.map(c=>`<div class='customerSearchResultRow' onclick="selectSessionCustomer('${c.id}')"><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b><div class='sub'>${escapeHtml(c.accountNumber)}</div></div>`).join('')
+    : `<div class='customerSearchResultRow muted'>No matching customers.</div>`;
+  results.style.display='block';
+}
+function selectSessionCustomer(id){
+  let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
+  document.getElementById('sessionCustomerId').value=id;
+  document.getElementById('sessionCustomerSearch').style.display='none';
+  document.getElementById('sessionCustomerResults').style.display='none';
+  document.getElementById('sessionCustomerResults').innerHTML='';
+  let selectedDiv=document.getElementById('sessionCustomerSelected');
+  selectedDiv.innerHTML=`<span>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</span><button type='button' onclick='clearSessionCustomer()'>✕</button>`;
+  selectedDiv.style.display='flex';
+  document.getElementById('sessionCustomerBalance').textContent=`${c.minutesLeft} minutes left on account.`;
+}
+function clearSessionCustomer(){
+  document.getElementById('sessionCustomerId').value='';
+  document.getElementById('sessionCustomerSearch').value='';
+  document.getElementById('sessionCustomerSearch').style.display='block';
+  document.getElementById('sessionCustomerSelected').style.display='none';
+  document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
+}
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
       card=+document.getElementById('sessionCardMinutes').value||0,
@@ -758,6 +789,7 @@ function resetBedSessionForm(){
   document.getElementById('blockBookingRow').style.display='none';
   document.getElementById('sessionRlt').checked=false;
   document.getElementById('sessionHybrid').checked=false;
+  clearSessionCustomer();
   pendingPaygSplit=null;
 }
 function findRecentDuplicateSession(date,cash,card,account,free,staff,rerun,sessionType,newSignup,purchasedBlock){
@@ -773,7 +805,7 @@ function findRecentDuplicateSession(date,cash,card,account,free,staff,rerun,sess
   );
 }
 async function recordBedSession(){
- let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),
+ let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomerId').value||null,c=data.customers.find(x=>x.id===customerId),
      cashMin=+document.getElementById('sessionCashMinutes').value||0,
      cardMin=+document.getElementById('sessionCardMinutes').value||0,
      accountMin=+document.getElementById('sessionAccountMinutes').value||0,
