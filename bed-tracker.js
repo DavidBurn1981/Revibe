@@ -290,7 +290,8 @@ function bedSessionHistoryRows(){
     freeMinutes:+x.freeMinutes||0,
     staffMinutes:+x.staffMinutes||0,
     staffMemberName:x.staffMemberName||'',
-    rerunMinutes:+x.rerunMinutes||0
+    rerunMinutes:+x.rerunMinutes||0,
+    customerId:x.customerId||null
   }));
 }
 function bedSessionHistoryKpi(dateKey){
@@ -371,13 +372,16 @@ function renderDailySessionsPage(key){
 
   let head=document.getElementById('dailySessionsHead');
   if(head)head.innerHTML=
-    `<tr><th>Time</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
+    `<tr><th>Time</th><th>Customer</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th class='totalMinsCol'>Total Mins</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
 
-  let cols=canDelete?12:11;
+  let cols=canDelete?14:13;
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
-    ? rows.map(x=>`<tr class='clinicRow' onclick="openDailySessionEdit('${escapeHtml(x.id)}')">
+    ? rows.map(x=>{
+        let customer=x.customerId?data.customers.find(c=>c.id===x.customerId):null;
+        return `<tr class='clinicRow' onclick="openDailySessionEdit('${escapeHtml(x.id)}')">
         <td>${escapeHtml(x.time||'')}</td>
+        <td>${customer?escapeHtml(customer.firstName+' '+customer.lastName):'—'}</td>
         <td>${escapeHtml(x.length)} min</td>
         <td>${x.cashMinutes} min</td>
         <td>${x.cardMinutes} min</td>
@@ -385,17 +389,20 @@ function renderDailySessionsPage(key){
         <td>${x.freeMinutes} min</td>
         <td>${x.staffMinutes} min</td>
         <td>${x.rerunMinutes} min</td>
+        <td class='totalMinsCol'>${x.length} min</td>
         <td>${escapeHtml(x.type||'')}</td>
         <td>${escapeHtml(x.newSignup||'')}</td>
         <td>${escapeHtml(x.block||'')}</td>
         ${canDelete?`<td class='dailySessionsDeleteCol' onclick='event.stopPropagation()'><button type='button' class='dailySessionsDelete' onclick="deleteDailySession('${escapeHtml(x.id)}')">Delete</button></td>`:''}
-      </tr>`).join('')
+      </tr>`;
+      }).join('')
     : `<tr><td colspan='${cols}' class='muted' style='text-align:center;padding:28px'>No sessions recorded for this date.</td></tr>`;
 
   let foot=document.getElementById('dailySessionsTotals');
   if(foot)foot.innerHTML=rows.length
     ? `<tr>
         <td style='text-align:right'>Total</td>
+        <td></td>
         <td>${totalMinutes} min</td>
         <td>${totalCash} min</td>
         <td>${totalCard} min</td>
@@ -403,6 +410,7 @@ function renderDailySessionsPage(key){
         <td>${totalFree} min</td>
         <td>${totalStaff} min</td>
         <td>${totalRerun} min</td>
+        <td class='totalMinsCol'>${totalMinutes} min</td>
         <td></td>
         <td>${totalSignUps}</td>
         <td>${totalBlockBookings}</td>
