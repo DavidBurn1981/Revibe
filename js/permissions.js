@@ -92,6 +92,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   deleteTreatmentGrouping:['treatment_booking_settings','delete'],
   addRenter:['treatment_booking_settings','edit'], openRenterEdit:['treatment_booking_settings','edit'], saveNewRenter:['treatment_booking_settings','edit'], deleteRenter:['treatment_booking_settings','delete'],
   openCustomerCreate:['treatment_booking_settings','edit'], saveCustomer:['treatment_booking_settings','edit'], deleteCustomer:['treatment_booking_settings','delete'], completeBlockPurchase:['treatment_booking_settings','edit'],
+  openAddMinutesModal:['treatment_booking_settings','edit'], confirmAddMinutesManually:['treatment_booking_settings','edit'],
   openStaffMemberCreate:['staff_members','edit'], openStaffMemberEdit:['staff_members','edit'], saveStaffMember:['staff_members','edit'], deleteStaffMember:['staff_members','delete'],
   openStaffShiftCreate:['staff_rota','edit'], saveStaffShift:['staff_rota','edit'],
   addStaffRota:['staff_rota','edit'], saveNewStaffRota:['staff_rota','edit'], deleteStaffRota:['staff_rota','delete'],

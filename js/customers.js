@@ -48,6 +48,30 @@ function handleDobOrIdCheckedChange(){
 function openCustomerCreate(){editingCustomerId=null;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custBedDemo').value='false';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function closeCustomerModal(){document.getElementById('customerModal').classList.remove('show')}
+function openAddMinutesModal(){
+  if(!editingCustomerId)return;
+  document.getElementById('addMinutesAmount').value='';
+  document.getElementById('addMinutesReason').value='';
+  document.getElementById('addMinutesError').style.display='none';
+  document.getElementById('addMinutesModal').classList.add('show');
+}
+async function confirmAddMinutesManually(){
+  let err=document.getElementById('addMinutesError');err.style.display='none';
+  let minutes=+document.getElementById('addMinutesAmount').value||0,
+      reason=document.getElementById('addMinutesReason').value.trim();
+  if(!minutes||minutes<1){err.textContent='Please enter a number of minutes to add.';err.style.display='block';return}
+  if(!reason){err.textContent='Please enter a reason for adding these minutes.';err.style.display='block';return}
+  try{
+    let {error}=await sb.rpc('add_minutes_to_customer_account',{
+      p_customer:editingCustomerId,p_minutes:minutes,p_transaction_type:'Manual Addition',
+      p_title:'Manual Addition',p_notes:reason,p_total_value:0
+    });
+    if(error)throw error;
+    document.getElementById('addMinutesModal').classList.remove('show');
+    await loadLiveData();
+    openCustomer(editingCustomerId);
+  }catch(e){err.textContent=e.message||'Could not add minutes.';err.style.display='block'}
+}
 async function saveCustomer(){
  let first=document.getElementById('custFirst').value.trim(),last=document.getElementById('custLast').value.trim(),dob=document.getElementById('custDob').value,phone=document.getElementById('custPhone').value.trim(),email=document.getElementById('custEmail').value.trim(),address=document.getElementById('custAddress').value.trim(),uv=document.getElementById('custUv').value==='true',idChecked=document.getElementById('custIdChecked').value==='true',idCheckedDate=document.getElementById('custIdDate').value||null,uvAllowed=document.getElementById('custUvAllowed').value==='true',waiverSigned=document.getElementById('custWaiverSigned').value==='true',bedUse=document.getElementById('custBedUse').value,bedDemo=document.getElementById('custBedDemo').value==='true',verifiedBy=idChecked?getVerifiedBySelections():[],healthNotes=document.getElementById('custHealthNotes').value.trim(),age=ageFromDob(dob),err=document.getElementById('customerError');err.style.display='none';
  if(!first||!last||!dob){err.textContent='First name, last name and DOB are required.';err.style.display='block';return}
@@ -69,7 +93,7 @@ function renderCustomerPurchases(c){
  let products=(data.tanningProducts||[]).filter(p=>p.active&&p.type==='Block Minutes').sort((a,b)=>a.minutes-b.minutes);
  document.getElementById('blockPurchaseButtons').innerHTML=products.map(p=>`<button class='purchaseMinuteBtn' onclick="openBlockPurchase('${p.id}')">${p.minutes} Minutes<br><span class='muted'>£${p.price.toFixed(2)}</span></button>`).join('')||"<div class='muted'>No Block Minutes products configured.</div>";
  let tx=(data.customerTransactions||[]).filter(x=>x.customerId===c.id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
- document.getElementById('customerTransactionTable').innerHTML="<tr><th>Date</th><th>Type</th><th>Details</th><th>Value</th><th>Minutes</th><th>Balance</th></tr>"+(tx.length?tx.map(x=>`<tr><td>${new Date(x.createdAt).toLocaleString('en-GB')}</td><td>${x.type}</td><td>${x.product||''}</td><td>£${x.value.toFixed(2)}</td><td>${x.minutes>0?'+':''}${x.minutes}</td><td>${x.balance}</td></tr>`).join(''):"<tr><td colspan='6' class='muted'>No transactions yet.</td></tr>")
+ document.getElementById('customerTransactionTable').innerHTML="<tr><th>Date</th><th>Type</th><th>Details</th><th>Value</th><th>Minutes</th><th>Balance</th></tr>"+(tx.length?tx.map(x=>`<tr><td>${new Date(x.createdAt).toLocaleString('en-GB')}</td><td>${x.type}</td><td>${escapeHtml(x.product||'')}${x.notes?` — ${escapeHtml(x.notes)}`:''}</td><td>£${x.value.toFixed(2)}</td><td>${x.minutes>0?'+':''}${x.minutes}</td><td>${x.balance}</td></tr>`).join(''):"<tr><td colspan='6' class='muted'>No transactions yet.</td></tr>")
  let sessions=(data.bedSessions||[]).filter(s=>s.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));
  document.getElementById('customerSessionHistoryTable').innerHTML="<tr><th>Date</th><th>Time</th><th>Length</th><th>Minutes From Account</th><th>Session Type</th></tr>"+(sessions.length?sessions.map(s=>{
    let dateLabel=parseLocalDateKey(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
