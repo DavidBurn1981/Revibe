@@ -727,6 +727,18 @@ function resetBedSessionForm(){
   document.getElementById('sessionHybrid').checked=false;
   pendingPaygSplit=null;
 }
+function findRecentDuplicateSession(date,cash,card,account,free,staff,rerun,sessionType,newSignup,purchasedBlock){
+  let cutoff=Date.now()-2*60*1000;
+  return (data.bedSessions||[]).find(x=>
+    x.date===date&&
+    (+x.cashMinutes||0)===cash&&(+x.cardMinutes||0)===card&&(+x.accountMinutes||0)===account&&
+    (+x.freeMinutes||0)===free&&(+x.staffMinutes||0)===staff&&(+x.rerunMinutes||0)===rerun&&
+    x.sessionType===sessionType&&
+    (x.newSignup===true||x.newSignup==='Yes')===newSignup&&
+    (x.purchasedBlockBooking===true||x.purchasedBlockBooking==='Yes')===purchasedBlock&&
+    x.createdAt&&new Date(x.createdAt).getTime()>=cutoff
+  );
+}
 async function recordBedSession(){
  let date=document.getElementById('sessionDate').value||localDateKey(),customerId=document.getElementById('sessionCustomer').value,c=data.customers.find(x=>x.id===customerId),
      cashMin=+document.getElementById('sessionCashMinutes').value||0,
@@ -742,6 +754,10 @@ async function recordBedSession(){
  if(!Number.isInteger(length)||length<1)return alert('Please enter minutes for at least one payment type.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
  if(staffMin>0&&!staffMemberName)return alert('Please enter the Staff Member Name.');
  if(rerunMin>0&&!rerunReason)return alert('Please select a Rerun Reason.');
+ let sessionTypeValue=rlt?'Red Light Therapy':'Hybrid';
+ if(findRecentDuplicateSession(date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,newSignup,purchasedBlock)){
+   if(!confirm('A Session with the exact same details has just been entered. If there was only one actual session, close this and do not record. If there were two actual sessions, please confirm to record this session.'))return;
+ }
  if(!c){
    let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,rerun_minutes:rerunMin,rerun_reason:rerunMin>0?rerunReason:null,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:cashMin+cardMin};
    let {error}=await sb.from('bed_sessions').insert(payload);

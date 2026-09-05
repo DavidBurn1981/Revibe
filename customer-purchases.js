@@ -25,13 +25,14 @@ function renderCustomerPurchases(){
   document.getElementById('customerPurchasesMonthGlowStudio').textContent=`£${monthGlowStudio.toFixed(2)}`;
   document.getElementById('customerPurchasesMonthGrandTotal').textContent=`£${monthGrand.toFixed(2)}`;
 
-  table.innerHTML='<tr><th>Date</th><th>Items</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
+  table.innerHTML='<tr><th>Date</th><th>Time</th><th>Items</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
     (rows.length?rows.map(p=>{
       let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
       let itemSummary=items.map(i=>escapeHtml(i.title)).join(', ')||'—';
       let dateLabel=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-      return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${dateLabel}</b></td><td>${itemSummary}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
-    }).join(''):`<tr><td colspan='5' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this month.</td></tr>`);
+      let timeLabel=p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
+      return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${dateLabel}</b></td><td>${timeLabel}</td><td>${itemSummary}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
+    }).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this month.</td></tr>`);
 }
 
 let editingCustomerPurchaseId=null;
@@ -41,7 +42,7 @@ function openCustomerPurchaseDetail(id){
   let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===id);
   let glowItems=items.filter(i=>i.cardMachine==='Sunbed Card'),treatItems=items.filter(i=>i.cardMachine==='Treatment Card');
   let renderItems=list=>list.length?list.map(i=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(i.title)}</div><div class='price'>£${i.price.toFixed(2)}</div></div>`).join(''):`<div class='purchaseListEmpty'>No items.</div>`;
-  document.getElementById('cpDetailDate').textContent=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('cpDetailDate').textContent=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+(p.createdAt?` at ${new Date(p.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`:'');
   document.getElementById('cpDetailGlowStudioItems').innerHTML=renderItems(glowItems);
   document.getElementById('cpDetailTreatmentsItems').innerHTML=renderItems(treatItems);
   document.getElementById('cpDetailGlowStudioTotal').textContent=`£${p.glowStudioTotal.toFixed(2)}`;
