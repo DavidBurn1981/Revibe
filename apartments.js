@@ -35,7 +35,7 @@ function renderApartmentCleans(){
     let key=iso(d);
     let tasks=(data.apartmentCleaningTasks||[]).filter(t=>t.date===key);
     if(i<7)weekTaskCount+=tasks.length;
-    html+=`<div class='bpDay${i===7?' weekBoundary':''}'><div class='bpDayHead'>${nice(d)}</div><div class='bpDayBody'>`;
+    html+=`<div class='bpDay${i===7?' weekBoundary':''}'><div class='bpDayHead${key===localDateKey()?' acToday':''}'>${nice(d)}</div><div class='bpDayBody'>`;
     html+=tasks.map(t=>{
       let apt=(data.apartments||[]).find(a=>a.id===t.apartmentId);
       let label=apt?apt.name:(t.apartment?`Apartment ${t.apartment}`:'');
@@ -82,7 +82,8 @@ function renderApartmentAirbnbCalendar(){
   let html=`<div class='acTimelineHeadLabel'></div>`;
   for(let i=0;i<14;i++){
     let d=new Date(airbnbWeekStart);d.setDate(d.getDate()+i);
-    html+=`<div class='acTimelineHeadCell${i===7?' weekBoundary':''}'>${nice(d)}</div>`;
+    let dKey=iso(d);
+    html+=`<div class='acTimelineHeadCell${i===7?' weekBoundary':''}${dKey===localDateKey()?' acToday':''}'>${nice(d)}</div>`;
   }
 
   for(let apt of apartments){
