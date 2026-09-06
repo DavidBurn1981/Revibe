@@ -63,7 +63,7 @@ async function confirmAddMinutesManually(){
   if(!reason){err.textContent='Please enter a reason for adding these minutes.';err.style.display='block';return}
   try{
     let {error}=await sb.rpc('add_minutes_to_customer_account',{
-      p_customer:editingCustomerId,p_minutes:minutes,p_transaction_type:'Manual Addition',
+      p_customer:editingCustomerId,p_minutes:minutes,p_transaction_type:'Adjustment',
       p_title:'Manual Addition',p_notes:reason,p_total_value:0
     });
     if(error)throw error;
