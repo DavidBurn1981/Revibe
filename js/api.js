@@ -60,7 +60,7 @@ async function loadLiveData(){
   data.treatmentGroupings=treatmentGroupings.data.map(x=>({id:x.id,productId:x.product_id,name:x.name,displayOrder:+x.display_order||0}));
   data.businessPlannerActions=businessPlannerActions.data.map(x=>({id:x.id,date:x.action_date,description:x.description,ownerStaffId:x.owner_staff_id}));
   data.staffRotas=staffRotas.data.map(x=>({id:x.id,weekStart:x.week_start_date}));
-  data.apartmentCleaningTasks=apartmentCleaningTasks.data.map(x=>({id:x.id,date:x.task_date,note:x.note,isComplete:!!x.is_complete}));
+  data.apartmentCleaningTasks=apartmentCleaningTasks.data.map(x=>({id:x.id,date:x.task_date,apartment:x.apartment||'',note:x.note,isComplete:!!x.is_complete}));
   data.customerPurchaseItems=customerPurchaseItems.data.map(x=>({id:x.id,purchaseId:x.purchase_id,tanningProductId:x.tanning_product_id,title:x.product_title,productType:x.product_type,cardMachine:x.card_machine,price:+x.price||0}));
   data.customerPurchases=customerPurchases.data.map(x=>({id:x.id,date:x.purchase_date,treatmentsTotal:+x.treatments_total||0,glowStudioTotal:+x.glow_studio_total||0,grandTotal:+x.grand_total||0,createdAt:x.created_at,glowStudioCardAmount:+x.glow_studio_card_amount||0,glowStudioCashAmount:+x.glow_studio_cash_amount||0,treatmentsCardAmount:+x.treatments_card_amount||0,treatmentsCashAmount:+x.treatments_cash_amount||0,customerId:x.customer_id||null}));
   data.treatments=treatments.data.map(x=>({id:x.id,productId:x.product_id,product:data.products.find(p=>p.id===x.product_id)?.name||'',name:x.name,duration:x.duration_minutes,buffer:x.buffer_minutes,price:+x.price,active:x.active,groupingId:x.grouping_id}));
