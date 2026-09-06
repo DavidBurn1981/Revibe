@@ -31,7 +31,7 @@ function renderApartmentCleans(){
     html+=tasks.map(t=>`<div class='bpAction ${t.isComplete?'cleaningTaskDone':''}' ${canEdit?`onclick="openCleaningTaskEdit('${t.id}')" style='cursor:pointer'`:`style='cursor:default'`}>
         <label class='cleaningTaskCheck' onclick='event.stopPropagation()'><input type='checkbox' ${t.isComplete?'checked':''} onchange="toggleCleaningTaskComplete('${t.id}',this.checked)"><span>Complete</span></label>
         ${t.apartment?`<div class='bpActionDesc'><b>Apartment ${escapeHtml(t.apartment)}</b></div>`:''}
-        <div class='bpActionDesc'>${escapeHtml(t.note)}</div>
+        ${t.note?`<div class='bpActionDesc'>${escapeHtml(t.note)}</div>`:''}
         ${canDelete?`<button class='cleaningTaskDeleteBtn' onclick="event.stopPropagation();deleteCleaningTask('${t.id}')">Delete</button>`:''}
       </div>`).join('');
     if(canEdit)html+=`<button class='bpAddBtn' onclick="addCleaningTask('${key}')">+ Create Cleaning Task</button>`;
@@ -70,11 +70,10 @@ async function saveNewCleaningTask(){
       err=document.getElementById('cleaningTaskError');
   err.style.display='none';
   if(!date){err.textContent='Please choose a date.';err.style.display='block';return}
-  if(!note){err.textContent='Please enter a note.';err.style.display='block';return}
   try{
     let error;
-    if(editingCleaningTaskId)({error}=await sb.from('apartment_cleaning_tasks').update({task_date:date,apartment,note}).eq('id',editingCleaningTaskId));
-    else({error}=await sb.from('apartment_cleaning_tasks').insert({task_date:date,apartment,note}));
+    if(editingCleaningTaskId)({error}=await sb.from('apartment_cleaning_tasks').update({task_date:date,apartment,note:note||null}).eq('id',editingCleaningTaskId));
+    else({error}=await sb.from('apartment_cleaning_tasks').insert({task_date:date,apartment,note:note||null}));
     if(error)throw error;
     closeCleaningTask();
     await loadLiveData();renderApartmentCleans();
