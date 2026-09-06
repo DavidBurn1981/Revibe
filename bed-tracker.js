@@ -670,7 +670,7 @@ async function confirmPurchases(){
       let blockMinuteItems=allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0);
       for(let item of blockMinuteItems){
         let {error:minutesError}=await sb.rpc('add_minutes_to_customer_account',{
-          p_customer:customerId,p_minutes:item.minutes,p_transaction_type:'Block Minutes Purchase',
+          p_customer:customerId,p_minutes:item.minutes,p_transaction_type:'Block Purchase',
           p_title:item.title,p_notes:null,p_total_value:item.price
         });
         if(minutesError)throw minutesError;
