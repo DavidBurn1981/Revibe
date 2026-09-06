@@ -1,4 +1,5 @@
 let cleaningWeekStart=startMonday(new Date());
+let airbnbWeekStart=startMonday(new Date());
 let editingCleaningTaskId=null;
 
 function navigateCleaningWeek(delta){
@@ -9,19 +10,63 @@ function resetCleaningWeekToCurrent(){
   cleaningWeekStart=startMonday(new Date());
   renderApartmentCleans();
 }
+function navigateAirbnbWeek(delta){
+  airbnbWeekStart.setDate(airbnbWeekStart.getDate()+delta*7);
+  renderApartmentAirbnbCalendar();
+}
+function resetAirbnbWeekToCurrent(){
+  airbnbWeekStart=startMonday(new Date());
+  renderApartmentAirbnbCalendar();
+}
 
+// --- Apartment Cleans: simple day-by-day list, unchanged from before the Airbnb integration ---
 function renderApartmentCleans(){
-  let wrap=document.getElementById('acTimeline');if(!wrap)return;
+  let wrap=document.getElementById('acGrid');if(!wrap)return;
   let end=new Date(cleaningWeekStart);end.setDate(end.getDate()+6);
   document.getElementById('acWeekLabel').textContent=`${nice(cleaningWeekStart)} – ${nice(end)}`;
 
   let canEdit=hasRolePermission('apartment_cleans','edit'),
       canDelete=hasRolePermission('apartment_cleans','delete');
   let addBtn=document.getElementById('acAddTaskBtn');if(addBtn)addBtn.style.display=canEdit?'inline-block':'none';
-  let syncBtn=document.getElementById('acSyncBtn');if(syncBtn)syncBtn.style.display=canEdit?'inline-block':'none';
+
+  let weekKeys=[];
+  let html='',weekTaskCount=0;
+  for(let i=0;i<7;i++){
+    let d=new Date(cleaningWeekStart);d.setDate(d.getDate()+i);
+    let key=iso(d);
+    weekKeys.push(key);
+    let tasks=(data.apartmentCleaningTasks||[]).filter(t=>t.date===key);
+    weekTaskCount+=tasks.length;
+    html+=`<div class='bpDay'><div class='bpDayHead'>${nice(d)}</div><div class='bpDayBody'>`;
+    html+=tasks.map(t=>{
+      let apt=(data.apartments||[]).find(a=>a.id===t.apartmentId);
+      let label=apt?apt.name:(t.apartment?`Apartment ${t.apartment}`:'');
+      return `<div class='bpAction ${t.isComplete?'cleaningTaskDone':''}' ${canEdit?`onclick="openCleaningTaskEdit('${t.id}')" style='cursor:pointer'`:`style='cursor:default'`}>
+        <label class='cleaningTaskCheck' onclick='event.stopPropagation()'><input type='checkbox' ${t.isComplete?'checked':''} onchange="toggleCleaningTaskComplete('${t.id}',this.checked)"><span>Complete</span></label>
+        ${label?`<div class='bpActionDesc'><b>${escapeHtml(label)}</b></div>`:''}
+        ${t.note?`<div class='bpActionDesc'>${escapeHtml(t.note)}</div>`:''}
+        ${canDelete?`<button class='cleaningTaskDeleteBtn' onclick="event.stopPropagation();deleteCleaningTask('${t.id}')">Delete</button>`:''}
+      </div>`;
+    }).join('');
+    if(canEdit)html+=`<button class='bpAddBtn' onclick="addCleaningTask('${key}')">+ Create Cleaning Task</button>`;
+    html+=`</div></div>`;
+  }
+  wrap.innerHTML=html;
+  let countEl=document.getElementById('acWeekCleanCount');if(countEl)countEl.textContent=weekTaskCount;
+}
+
+// --- Apartment Air BnB Calendar: one row per apartment, synced against real Airbnb bookings ---
+function renderApartmentAirbnbCalendar(){
+  let wrap=document.getElementById('acbTimeline');if(!wrap)return;
+  let end=new Date(airbnbWeekStart);end.setDate(end.getDate()+6);
+  document.getElementById('acbWeekLabel').textContent=`${nice(airbnbWeekStart)} – ${nice(end)}`;
+
+  let canEdit=hasRolePermission('apartment_cleans','edit');
+  let addBtn=document.getElementById('acbAddTaskBtn');if(addBtn)addBtn.style.display=canEdit?'inline-block':'none';
+  let syncBtn=document.getElementById('acbSyncBtn');if(syncBtn)syncBtn.style.display=canEdit?'inline-block':'none';
 
   let apartments=data.apartments||[];
-  let statusEl=document.getElementById('acSyncStatus');
+  let statusEl=document.getElementById('acbSyncStatus');
   if(statusEl){
     let withErrors=apartments.filter(a=>a.lastSyncError);
     let lastSync=apartments.map(a=>a.lastSyncedAt).filter(Boolean).sort().pop();
@@ -31,14 +76,14 @@ function renderApartmentCleans(){
   }
 
   let dayKeys=[];
-  for(let i=0;i<7;i++){let d=new Date(cleaningWeekStart);d.setDate(d.getDate()+i);dayKeys.push(iso(d));}
+  for(let i=0;i<7;i++){let d=new Date(airbnbWeekStart);d.setDate(d.getDate()+i);dayKeys.push(iso(d));}
 
   let weekTaskCount=(data.apartmentCleaningTasks||[]).filter(t=>dayKeys.includes(t.date)).length;
-  let countEl=document.getElementById('acWeekCleanCount');if(countEl)countEl.textContent=weekTaskCount;
+  let countEl=document.getElementById('acbWeekCleanCount');if(countEl)countEl.textContent=weekTaskCount;
 
   let html=`<div class='acTimelineHeadLabel'></div>`;
   for(let i=0;i<7;i++){
-    let d=new Date(cleaningWeekStart);d.setDate(d.getDate()+i);
+    let d=new Date(airbnbWeekStart);d.setDate(d.getDate()+i);
     html+=`<div class='acTimelineHeadCell'>${nice(d)}</div>`;
   }
 
@@ -61,6 +106,11 @@ function renderApartmentCleans(){
     }
   }
   wrap.innerHTML=html;
+}
+
+function refreshApartmentPages(){
+  renderApartmentCleans();
+  renderApartmentAirbnbCalendar();
 }
 
 function populateCleaningTaskApartmentSelect(){
@@ -113,16 +163,16 @@ async function saveNewCleaningTask(){
     else({error}=await sb.from('apartment_cleaning_tasks').insert(payload));
     if(error)throw error;
     closeCleaningTask();
-    await loadLiveData();renderApartmentCleans();
+    await loadLiveData();refreshApartmentPages();
   }catch(e){err.textContent=e.message||'Could not save this task.';err.style.display='block'}
 }
 async function syncAirbnbCalendars(){
-  let btn=document.getElementById('acSyncBtn'),statusEl=document.getElementById('acSyncStatus');
+  let btn=document.getElementById('acbSyncBtn'),statusEl=document.getElementById('acbSyncStatus');
   btn.disabled=true;btn.textContent='Syncing...';
   try{
     let {data:result,error}=await sb.functions.invoke('sync-airbnb-calendars');
     if(error)throw error;
-    await loadLiveData();renderApartmentCleans();
+    await loadLiveData();refreshApartmentPages();
     if(statusEl)statusEl.textContent='Airbnb calendars synced just now.';
   }catch(e){
     if(statusEl)statusEl.textContent=`Sync failed: ${e.message||'unknown error'}`;
@@ -134,7 +184,7 @@ async function deleteCleaningTask(id){
   if(!confirm('Delete this cleaning task?'))return;
   let {error}=await sb.from('apartment_cleaning_tasks').delete().eq('id',id);
   if(error)return alert(error.message);
-  await loadLiveData();renderApartmentCleans();
+  await loadLiveData();refreshApartmentPages();
 }
 async function toggleCleaningTaskComplete(id,checked){
   // Optimistic local update so the checkbox feels instant, corrected below if the save fails.
@@ -144,8 +194,8 @@ async function toggleCleaningTaskComplete(id,checked){
   let {error}=await sb.rpc('toggle_apartment_cleaning_task',{p_task_id:id,p_is_complete:checked});
   if(error){
     if(t)t.isComplete=previous;
-    renderApartmentCleans();
+    refreshApartmentPages();
     return alert(error.message);
   }
-  await loadLiveData();renderApartmentCleans();
+  await loadLiveData();refreshApartmentPages();
 }

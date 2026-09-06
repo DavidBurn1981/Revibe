@@ -97,6 +97,9 @@ function renderPageForNavigation(pageId){
     case 'apartmentcleans':
       renderApartmentCleans();
       break;
+    case 'apartmentairbnb':
+      renderApartmentAirbnbCalendar();
+      break;
     case 'customerpurchases':
       renderCustomerPurchasesReport();
       break;
@@ -149,6 +152,7 @@ function renderAll(){
   renderPerformanceReporting();
   renderBusinessPlanner();
   renderApartmentCleans();
+  renderApartmentAirbnbCalendar();
   renderMyBookings();
   renderMyTreatmentType();
   renderPurchaseLists();
