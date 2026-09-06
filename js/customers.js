@@ -73,21 +73,35 @@ async function confirmAddMinutesManually(){
     alert('Minutes added successfully.');
   }catch(e){err.textContent=e.message||'Could not add minutes.';err.style.display='block'}
 }
+let duplicateCustomerId=null;
+function showDuplicateCustomerModal(existingCustomer){
+  duplicateCustomerId=existingCustomer.id;
+  document.getElementById('duplicateCustomerMessage').textContent=`${existingCustomer.firstName} ${existingCustomer.lastName} (Account ${existingCustomer.accountNumber}) already has a record with this name and date of birth.`;
+  document.getElementById('duplicateCustomerModal').classList.add('show');
+}
+function viewDuplicateCustomer(){
+  let id=duplicateCustomerId;
+  document.getElementById('duplicateCustomerModal').classList.remove('show');
+  if(id)openCustomer(id);
+}
 async function saveCustomer(){
  let first=document.getElementById('custFirst').value.trim(),last=document.getElementById('custLast').value.trim(),dob=document.getElementById('custDob').value,phone=document.getElementById('custPhone').value.trim(),email=document.getElementById('custEmail').value.trim(),address=document.getElementById('custAddress').value.trim(),uv=document.getElementById('custUv').value==='true',idChecked=document.getElementById('custIdChecked').value==='true',idCheckedDate=document.getElementById('custIdDate').value||null,uvAllowed=document.getElementById('custUvAllowed').value==='true',waiverSigned=document.getElementById('custWaiverSigned').value==='true',bedUse=document.getElementById('custBedUse').value,bedDemo=document.getElementById('custBedDemo').value==='true',verifiedBy=idChecked?getVerifiedBySelections():[],healthNotes=document.getElementById('custHealthNotes').value.trim(),age=ageFromDob(dob),err=document.getElementById('customerError');err.style.display='none';
  if(!first||!last||!dob){err.textContent='First name, last name and DOB are required.';err.style.display='block';return}
  if(age<18){alert('CUSTOMER IS BELOW 18 AND CAN NOT BE A CUSTOMER.');return}
  let duplicate=(data.customers||[]).find(c=>c.id!==editingCustomerId&&c.dob===dob&&c.firstName.trim().toLowerCase()===first.toLowerCase()&&c.lastName.trim().toLowerCase()===last.toLowerCase());
- if(duplicate){err.textContent=`A customer with the name ${first} ${last} and this date of birth already exists (${duplicate.accountNumber}).`;err.style.display='block';return}
+ if(duplicate){showDuplicateCustomerModal(duplicate);return}
  if(uv&&age<25&&!idChecked)alert('CHECK CUSTOMER ID');
  let isNewCustomer=!editingCustomerId;
  let payload={first_name:first,last_name:last,date_of_birth:dob,phone_number:phone||null,email:email||null,address:address||null,intends_uv_or_injectables:uv,id_checked:idChecked,id_checked_date:idCheckedDate,uv_allowed:uvAllowed,waiver_signed_present:waiverSigned,bed_use:bedUse,bed_demo_provided:bedDemo,verified_by:verifiedBy,skin_type:selectedSkinType,general_health_notes:healthNotes||null,updated_at:new Date().toISOString()},error,row;
  if(editingCustomerId)({data:row,error}=await sb.from('customers').update(payload).eq('id',editingCustomerId).select().single());else({data:row,error}=await sb.from('customers').insert(payload).select().single());
  if(error){
-   err.textContent=error.code==='23505'
-     ?'A customer with this name and date of birth already exists.'
-     :error.message;
-   err.style.display='block';return
+   if(error.code==='23505'){
+     await loadLiveData();
+     let existing=(data.customers||[]).find(c=>c.id!==editingCustomerId&&c.dob===dob&&c.firstName.trim().toLowerCase()===first.toLowerCase()&&c.lastName.trim().toLowerCase()===last.toLowerCase());
+     if(existing){showDuplicateCustomerModal(existing);return}
+     err.textContent='A customer with this name and date of birth already exists.';err.style.display='block';return
+   }
+   err.textContent=error.message;err.style.display='block';return
  }
  await loadLiveData();renderCustomers();openCustomer(row.id)
  alert(isNewCustomer?'New Account successfully created.':'Customer details saved successfully.')
