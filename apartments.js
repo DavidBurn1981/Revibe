@@ -1,5 +1,5 @@
 let cleaningWeekStart=startMonday(new Date());
-let editingCleaningTaskDate=null;
+let editingCleaningTaskId=null;
 
 function navigateCleaningWeek(delta){
   cleaningWeekStart.setDate(cleaningWeekStart.getDate()+delta*7);
@@ -19,43 +19,66 @@ function renderApartmentCleans(){
       canDelete=hasRolePermission('apartment_cleans','delete');
   let addBtn=document.getElementById('acAddTaskBtn');if(addBtn)addBtn.style.display=canEdit?'inline-block':'none';
 
-  let html='';
+  let weekKeys=[];
+  let html='',weekTaskCount=0;
   for(let i=0;i<7;i++){
     let d=new Date(cleaningWeekStart);d.setDate(d.getDate()+i);
     let key=iso(d);
+    weekKeys.push(key);
     let tasks=(data.apartmentCleaningTasks||[]).filter(t=>t.date===key);
+    weekTaskCount+=tasks.length;
     html+=`<div class='bpDay'><div class='bpDayHead'>${nice(d)}</div><div class='bpDayBody'>`;
-    html+=tasks.map(t=>`<div class='bpAction ${t.isComplete?'cleaningTaskDone':''}'>
-        <label class='cleaningTaskCheck'><input type='checkbox' ${t.isComplete?'checked':''} onchange="toggleCleaningTaskComplete('${t.id}',this.checked)"><span>Complete</span></label>
+    html+=tasks.map(t=>`<div class='bpAction ${t.isComplete?'cleaningTaskDone':''}' ${canEdit?`onclick="openCleaningTaskEdit('${t.id}')" style='cursor:pointer'`:`style='cursor:default'`}>
+        <label class='cleaningTaskCheck' onclick='event.stopPropagation()'><input type='checkbox' ${t.isComplete?'checked':''} onchange="toggleCleaningTaskComplete('${t.id}',this.checked)"><span>Complete</span></label>
+        ${t.apartment?`<div class='bpActionDesc'><b>Apartment ${escapeHtml(t.apartment)}</b></div>`:''}
         <div class='bpActionDesc'>${escapeHtml(t.note)}</div>
-        ${canDelete?`<button class='cleaningTaskDeleteBtn' onclick="deleteCleaningTask('${t.id}')">Delete</button>`:''}
+        ${canDelete?`<button class='cleaningTaskDeleteBtn' onclick="event.stopPropagation();deleteCleaningTask('${t.id}')">Delete</button>`:''}
       </div>`).join('');
     if(canEdit)html+=`<button class='bpAddBtn' onclick="addCleaningTask('${key}')">+ Create Cleaning Task</button>`;
     html+=`</div></div>`;
   }
   wrap.innerHTML=html;
+  let countEl=document.getElementById('acWeekCleanCount');if(countEl)countEl.textContent=weekTaskCount;
 }
 
 function addCleaningTask(prefillDate){
+  editingCleaningTaskId=null;
+  document.getElementById('cleaningTaskModalTitle').textContent='Create Cleaning Task';
+  document.getElementById('cleaningTaskSaveBtn').textContent='Create Task';
   document.getElementById('cleaningTaskDate').value=prefillDate||localDateKey();
+  document.getElementById('cleaningTaskApartment').value='1';
   document.getElementById('cleaningTaskNote').value='';
+  document.getElementById('cleaningTaskError').style.display='none';
+  document.getElementById('cleaningTaskModal').classList.add('show');
+}
+function openCleaningTaskEdit(id){
+  let t=(data.apartmentCleaningTasks||[]).find(x=>x.id===id);if(!t)return;
+  editingCleaningTaskId=id;
+  document.getElementById('cleaningTaskModalTitle').textContent='Edit Cleaning Task';
+  document.getElementById('cleaningTaskSaveBtn').textContent='Save Changes';
+  document.getElementById('cleaningTaskDate').value=t.date;
+  document.getElementById('cleaningTaskApartment').value=t.apartment||'1';
+  document.getElementById('cleaningTaskNote').value=t.note||'';
   document.getElementById('cleaningTaskError').style.display='none';
   document.getElementById('cleaningTaskModal').classList.add('show');
 }
 function closeCleaningTask(){document.getElementById('cleaningTaskModal').classList.remove('show')}
 async function saveNewCleaningTask(){
   let date=document.getElementById('cleaningTaskDate').value,
+      apartment=document.getElementById('cleaningTaskApartment').value,
       note=document.getElementById('cleaningTaskNote').value.trim(),
       err=document.getElementById('cleaningTaskError');
   err.style.display='none';
   if(!date){err.textContent='Please choose a date.';err.style.display='block';return}
   if(!note){err.textContent='Please enter a note.';err.style.display='block';return}
   try{
-    let {error}=await sb.from('apartment_cleaning_tasks').insert({task_date:date,note});
+    let error;
+    if(editingCleaningTaskId)({error}=await sb.from('apartment_cleaning_tasks').update({task_date:date,apartment,note}).eq('id',editingCleaningTaskId));
+    else({error}=await sb.from('apartment_cleaning_tasks').insert({task_date:date,apartment,note}));
     if(error)throw error;
     closeCleaningTask();
     await loadLiveData();renderApartmentCleans();
-  }catch(e){err.textContent=e.message||'Could not create this task.';err.style.display='block'}
+  }catch(e){err.textContent=e.message||'Could not save this task.';err.style.display='block'}
 }
 async function deleteCleaningTask(id){
   if(!confirm('Delete this cleaning task?'))return;

@@ -907,6 +907,10 @@ body.loading .app{visibility:hidden}
 <section id='apartmentcleans' class='page'>
   <div class='top'>
     <div><h1>Apartment Cleans</h1><div class='muted' id='acWeekLabel'></div></div>
+    <div style='text-align:right'>
+      <div class='muted' style='font-size:12px'>Cleans This Week</div>
+      <div style='font-size:28px;font-weight:800' id='acWeekCleanCount'>0</div>
+    </div>
     <button class='primary' id='acAddTaskBtn' onclick="addCleaningTask()">+ Create Cleaning Task</button>
   </div>
   <div class='bpWeekNav'>
@@ -1495,17 +1499,19 @@ body.loading .app{visibility:hidden}
 <div class='modal' id='cleaningTaskModal'>
   <div class='modalbox' style='max-width:460px'>
     <div class='top'>
-      <div><h1>Create Cleaning Task</h1></div>
+      <div><h1 id='cleaningTaskModalTitle'>Create Cleaning Task</h1></div>
       <button onclick='closeCleaningTask()'>✕</button>
     </div>
     <label>Date</label>
     <input id='cleaningTaskDate' type='date'>
+    <label style='margin-top:12px'>Apartment</label>
+    <select id='cleaningTaskApartment'><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option><option value='5'>5</option></select>
     <label style='margin-top:12px'>Note</label>
     <textarea id='cleaningTaskNote' rows='4' placeholder='e.g. Deep clean bathroom, restock towels, check bins' style='width:100%;background:#111318;border:1px solid #363b44;color:white;padding:9px;border-radius:6px;font-family:inherit'></textarea>
     <div id='cleaningTaskError' class='loginError' style='margin-top:12px'></div>
     <div style='text-align:right;margin-top:18px'>
       <button onclick='closeCleaningTask()'>Cancel</button>
-      <button class='primary' onclick='saveNewCleaningTask()'>Create Task</button>
+      <button class='primary' id='cleaningTaskSaveBtn' onclick='saveNewCleaningTask()'>Create Task</button>
     </div>
   </div>
 </div>
