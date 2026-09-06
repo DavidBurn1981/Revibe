@@ -718,19 +718,19 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerSelected').style.display='none';
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
 }
-function paygChargeMessage(cashMin,cardMin){
+function paygChargeDetails(cashMin,cardMin){
   let totalMin=cashMin+cardMin;
   if(totalMin<=0)return null;
   let product=(data.tanningProducts||[]).find(p=>p.type==='PAYG Minutes'&&p.active!==false&&p.minutes===totalMin);
-  if(!product)return `No PAYG price is configured for ${totalMin} minutes — check Tanning/RLT Products.`;
+  if(!product)return {totalMessage:`No PAYG price is configured for ${totalMin} minutes — check Tanning/RLT Products.`,cashAmount:null,cardAmount:null};
   let totalPence=pence(product.price);
-  let lines=[`Total charge for these Pay as you Go minutes is £${(totalPence/100).toFixed(2)}`];
-  if(cashMin>0&&cardMin>0){
-    let cardPence=Math.round(totalPence*cardMin/totalMin);
-    let cashPence=totalPence-cardPence;
-    lines.push(`Card: £${(cardPence/100).toFixed(2)} · Cash: £${(cashPence/100).toFixed(2)}`);
-  }
-  return lines.join('<br>');
+  let cardPence=cardMin>0?Math.round(totalPence*cardMin/totalMin):0;
+  let cashPence=totalPence-cardPence;
+  return {
+    totalMessage:`Total charge for these Pay as you Go minutes is £${(totalPence/100).toFixed(2)}`,
+    cashAmount:cashMin>0?cashPence/100:null,
+    cardAmount:cardMin>0?cardPence/100:null
+  };
 }
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
@@ -742,9 +742,16 @@ function updateSessionLengthTotal(){
   document.getElementById('sessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('staffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('rerunReasonRow').style.display=rerun>0?'block':'none';
-  let paygRow=document.getElementById('paygChargeRow'),paygMsg=paygChargeMessage(cash,card);
-  paygRow.style.display=paygMsg?'block':'none';
-  if(paygMsg)paygRow.innerHTML=paygMsg;
+  let paygDetails=paygChargeDetails(cash,card);
+  let paygRow=document.getElementById('paygChargeRow');
+  paygRow.style.display=paygDetails?'block':'none';
+  if(paygDetails)paygRow.textContent=paygDetails.totalMessage;
+  let cashAmountEl=document.getElementById('sessionCashPaygAmount');
+  cashAmountEl.style.display=paygDetails&&paygDetails.cashAmount!==null?'block':'none';
+  if(paygDetails&&paygDetails.cashAmount!==null)cashAmountEl.textContent=`£${paygDetails.cashAmount.toFixed(2)}`;
+  let cardAmountEl=document.getElementById('sessionCardPaygAmount');
+  cardAmountEl.style.display=paygDetails&&paygDetails.cardAmount!==null?'block':'none';
+  if(paygDetails&&paygDetails.cardAmount!==null)cardAmountEl.textContent=`£${paygDetails.cardAmount.toFixed(2)}`;
 }
 function updateEditSessionLengthTotal(){
   let cash=+document.getElementById('editSessionCashMinutes').value||0,
@@ -756,9 +763,16 @@ function updateEditSessionLengthTotal(){
   document.getElementById('editSessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('editStaffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('editRerunReasonRow').style.display=rerun>0?'block':'none';
-  let editPaygRow=document.getElementById('editPaygChargeRow'),editPaygMsg=paygChargeMessage(cash,card);
-  editPaygRow.style.display=editPaygMsg?'block':'none';
-  if(editPaygMsg)editPaygRow.innerHTML=editPaygMsg;
+  let editPaygDetails=paygChargeDetails(cash,card);
+  let editPaygRow=document.getElementById('editPaygChargeRow');
+  editPaygRow.style.display=editPaygDetails?'block':'none';
+  if(editPaygDetails)editPaygRow.textContent=editPaygDetails.totalMessage;
+  let editCashAmountEl=document.getElementById('editSessionCashPaygAmount');
+  editCashAmountEl.style.display=editPaygDetails&&editPaygDetails.cashAmount!==null?'block':'none';
+  if(editPaygDetails&&editPaygDetails.cashAmount!==null)editCashAmountEl.textContent=`£${editPaygDetails.cashAmount.toFixed(2)}`;
+  let editCardAmountEl=document.getElementById('editSessionCardPaygAmount');
+  editCardAmountEl.style.display=editPaygDetails&&editPaygDetails.cardAmount!==null?'block':'none';
+  if(editPaygDetails&&editPaygDetails.cardAmount!==null)editCardAmountEl.textContent=`£${editPaygDetails.cardAmount.toFixed(2)}`;
 }
 let editingDailySessionId=null;
 function openDailySessionEdit(id){
