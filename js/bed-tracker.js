@@ -709,7 +709,7 @@ function selectSessionCustomer(id){
   let uvAllowed=!!c.uvAllowed;
   let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
   let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
-  document.getElementById('sessionCustomerBalance').innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>${uvHtml}</div>${warningHtml}`;
+  document.getElementById('sessionCustomerBalance').innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}`;
 }
 function clearSessionCustomer(){
   document.getElementById('sessionCustomerId').value='';
