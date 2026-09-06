@@ -718,12 +718,19 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerSelected').style.display='none';
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
 }
-function paygChargeMessage(minutes){
-  if(minutes<=0)return null;
-  let product=(data.tanningProducts||[]).find(p=>p.type==='PAYG Minutes'&&p.active!==false&&p.minutes===minutes);
-  return product
-    ? `Total charge for these Pay as you Go minutes is £${(+product.price||0).toFixed(2)}`
-    : `No PAYG price is configured for ${minutes} minutes — check Tanning/RLT Products.`;
+function paygChargeMessage(cashMin,cardMin){
+  let totalMin=cashMin+cardMin;
+  if(totalMin<=0)return null;
+  let product=(data.tanningProducts||[]).find(p=>p.type==='PAYG Minutes'&&p.active!==false&&p.minutes===totalMin);
+  if(!product)return `No PAYG price is configured for ${totalMin} minutes — check Tanning/RLT Products.`;
+  let totalPence=pence(product.price);
+  let lines=[`Total charge for these Pay as you Go minutes is £${(totalPence/100).toFixed(2)}`];
+  if(cashMin>0&&cardMin>0){
+    let cardPence=Math.round(totalPence*cardMin/totalMin);
+    let cashPence=totalPence-cardPence;
+    lines.push(`Card: £${(cardPence/100).toFixed(2)} · Cash: £${(cashPence/100).toFixed(2)}`);
+  }
+  return lines.join('<br>');
 }
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
@@ -735,9 +742,9 @@ function updateSessionLengthTotal(){
   document.getElementById('sessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('staffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('rerunReasonRow').style.display=rerun>0?'block':'none';
-  let paygRow=document.getElementById('paygChargeRow'),paygMsg=paygChargeMessage(cash+card);
+  let paygRow=document.getElementById('paygChargeRow'),paygMsg=paygChargeMessage(cash,card);
   paygRow.style.display=paygMsg?'block':'none';
-  if(paygMsg)paygRow.textContent=paygMsg;
+  if(paygMsg)paygRow.innerHTML=paygMsg;
 }
 function updateEditSessionLengthTotal(){
   let cash=+document.getElementById('editSessionCashMinutes').value||0,
@@ -749,9 +756,9 @@ function updateEditSessionLengthTotal(){
   document.getElementById('editSessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('editStaffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('editRerunReasonRow').style.display=rerun>0?'block':'none';
-  let editPaygRow=document.getElementById('editPaygChargeRow'),editPaygMsg=paygChargeMessage(cash+card);
+  let editPaygRow=document.getElementById('editPaygChargeRow'),editPaygMsg=paygChargeMessage(cash,card);
   editPaygRow.style.display=editPaygMsg?'block':'none';
-  if(editPaygMsg)editPaygRow.textContent=editPaygMsg;
+  if(editPaygMsg)editPaygRow.innerHTML=editPaygMsg;
 }
 let editingDailySessionId=null;
 function openDailySessionEdit(id){
