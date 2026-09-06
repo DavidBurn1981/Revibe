@@ -552,6 +552,20 @@ body.loading .app{visibility:hidden}
 .dottedDivider{border-top:1px dashed #4a505c;margin:18px 0}
 .paygChargeRow{margin-top:8px;color:#fff;font-weight:800;font-size:13px}
 .paygAmountLine{margin-top:6px;color:var(--green);font-weight:800;font-size:14px}
+.acTimeline{display:grid;grid-template-columns:110px repeat(7,1fr);gap:4px;margin-top:6px}
+.acTimelineHeadLabel{padding:8px 4px}
+.acTimelineHeadCell{padding:8px 4px;font-size:12px;font-weight:700;text-align:center;color:var(--muted)}
+.acApartmentLabel{padding:10px 8px;font-weight:800;display:flex;align-items:center;background:#20242b;border-radius:6px;font-size:14px}
+.acDayCell{min-height:56px;border-radius:6px;padding:5px;font-size:11px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:#1a1d23;border:1px solid #2a2f38;gap:2px}
+.acDayCell.acBooked{background:rgba(255,45,120,.12);border-color:rgba(255,45,120,.35)}
+.acDayCell.acCheckout{background:rgba(255,214,10,.2);border-color:var(--yellow);font-weight:800;color:#ffe98a}
+.acDayCell.acHasTask{box-shadow:inset 0 0 0 2px var(--green)}
+.acDayCell.acTaskDone{opacity:.55}
+.acTimelineLegend{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:4px;flex-wrap:wrap}
+.acLegendSwatch{display:inline-block;width:14px;height:14px;border-radius:4px;margin-left:14px;margin-right:2px;border:1px solid #2a2f38}
+.acLegendSwatch.acBooked{background:rgba(255,45,120,.12);border-color:rgba(255,45,120,.35)}
+.acLegendSwatch.acCheckout{background:rgba(255,214,10,.2);border-color:var(--yellow)}
+.acLegendSwatch.acHasTask{background:#1a1d23;box-shadow:inset 0 0 0 2px var(--green)}
 </style></head><body class='loading'>
 <div id='loginGate' class='loginGate'>
   <div class='loginCard'>
@@ -912,14 +926,23 @@ body.loading .app{visibility:hidden}
       <div class='muted' style='font-size:12px'>Cleans This Week</div>
       <div style='font-size:28px;font-weight:800' id='acWeekCleanCount'>0</div>
     </div>
-    <button class='primary' id='acAddTaskBtn' onclick="addCleaningTask()">+ Create Cleaning Task</button>
+    <div style='display:flex;gap:10px'>
+      <button id='acSyncBtn' onclick='syncAirbnbCalendars()'>Sync Airbnb Now</button>
+      <button class='primary' id='acAddTaskBtn' onclick="addCleaningTask()">+ Create Cleaning Task</button>
+    </div>
   </div>
   <div class='bpWeekNav'>
     <button onclick='navigateCleaningWeek(-1)'>← Previous Week</button>
     <button onclick='resetCleaningWeekToCurrent()'>This Week</button>
     <button onclick='navigateCleaningWeek(1)'>Next Week →</button>
   </div>
-  <div class='bpGrid' id='acGrid'></div>
+  <div class='muted' id='acSyncStatus' style='margin:10px 0'></div>
+  <div class='acTimelineLegend'>
+    <span class='acLegendSwatch acBooked'></span> Booked
+    <span class='acLegendSwatch acCheckout'></span> Checkout — needs cleaning
+    <span class='acLegendSwatch acHasTask'></span> Cleaning task logged
+  </div>
+  <div class='acTimeline' id='acTimeline'></div>
 </section>
 <section id='customerpurchases' class='page'>
   <div class='top'>
@@ -1506,7 +1529,7 @@ body.loading .app{visibility:hidden}
     <label>Date</label>
     <input id='cleaningTaskDate' type='date'>
     <label style='margin-top:12px'>Apartment</label>
-    <select id='cleaningTaskApartment'><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option><option value='5'>5</option></select>
+    <select id='cleaningTaskApartment'></select>
     <label style='margin-top:12px'>Note</label>
     <textarea id='cleaningTaskNote' rows='4' placeholder='e.g. Deep clean bathroom, restock towels, check bins' style='width:100%;background:#111318;border:1px solid #363b44;color:white;padding:9px;border-radius:6px;font-family:inherit'></textarea>
     <div id='cleaningTaskError' class='loginError' style='margin-top:12px'></div>
