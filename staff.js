@@ -107,6 +107,11 @@ function renderStaffRota(){
       layer.style.borderLeftColor=col;
       layer.style.background=hexToRgba(col,0.22);
       layer.innerHTML=`<b>${escapeHtml(staff?.name||'Staff Member')}</b>${s.start}–${s.end}<br>${Number(s.hours).toFixed(2)} hrs`;
+      if(hasRolePermission('staff_rota','edit')){
+        layer.style.cursor='pointer';
+        layer.title='Click to delete this shift';
+        layer.onclick=()=>deleteStaffShift(s.id);
+      }
       matrix.appendChild(layer);
     });
   });
@@ -215,4 +220,12 @@ async function saveStaffShift(){let staffId=document.getElementById('shiftStaff'
     return;
   }
   if(shiftHours(start,end)<=0){err.textContent='End time must be after start time.';err.style.display='block';return;}btn.disabled=true;btn.textContent='Creating...';try{let {error}=await sb.from('staff_shifts').insert({staff_member_id:staffId,shift_date:date,start_time:start,end_time:end});if(error)throw error;closeStaffShiftCreate();await loadLiveData();renderAll()}catch(e){err.textContent=e.message||'Could not create shift.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Create Shift'}}
+async function deleteStaffShift(id){
+  let s=(data.staffShifts||[]).find(x=>x.id===id);if(!s)return;
+  let staff=data.staffMembers.find(m=>m.id===s.staffId);
+  if(!confirm(`Delete ${staff?.name||'this'} shift on ${formatSunbedDisplayDate(s.date)} (${s.start}–${s.end})?`))return;
+  let {error}=await sb.from('staff_shifts').delete().eq('id',id);
+  if(error)return alert(error.message);
+  await loadLiveData();renderAll();
+}
 function ageFromDob(dob){if(!dob)return null;let d=parseLocalDateKey(dob),n=new Date(),a=n.getFullYear()-d.getFullYear(),m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a}

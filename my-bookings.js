@@ -36,7 +36,7 @@ function renderMyBookings(){
   let myClinicDayIds=new Set((data.clinicDays||[]).filter(c=>c.renterId===renterId).map(c=>c.id));
   let bookings=(data.appointments||[])
     .filter(b=>myClinicDayIds.has(b.clinicDayId)&&String(b.status||'').toLowerCase()!=='cancelled')
-    .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+    .sort((a,b)=>(parseLocalDateKey(b.date).getTime()+minutesFromTime(b.time)*60000)-(parseLocalDateKey(a.date).getTime()+minutesFromTime(a.time)*60000));
 
   document.getElementById('myBookingsSub').textContent=`${bookings.length} booking${bookings.length===1?'':'s'}`;
 
