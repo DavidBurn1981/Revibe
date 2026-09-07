@@ -710,6 +710,7 @@ function selectSessionCustomer(id){
   let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
   let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
   document.getElementById('sessionCustomerBalance').innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}`;
+  updateSessionLengthTotal();
 }
 function clearSessionCustomer(){
   document.getElementById('sessionCustomerId').value='';
@@ -717,6 +718,7 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerSearch').style.display='block';
   document.getElementById('sessionCustomerSelected').style.display='none';
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
+  updateSessionLengthTotal();
 }
 function paygChargeDetails(cashMin,cardMin){
   let totalMin=cashMin+cardMin;
@@ -752,6 +754,12 @@ function updateSessionLengthTotal(){
   let cardAmountEl=document.getElementById('sessionCardPaygAmount');
   cardAmountEl.style.display=paygDetails&&paygDetails.cardAmount!==null?'block':'none';
   if(paygDetails&&paygDetails.cardAmount!==null)cardAmountEl.textContent=`£${paygDetails.cardAmount.toFixed(2)}`;
+  let insufficientLine=document.getElementById('sessionAccountInsufficientLine'),
+      selectedCustomerId=document.getElementById('sessionCustomerId').value,
+      selectedCustomer=selectedCustomerId?data.customers.find(x=>x.id===selectedCustomerId):null;
+  let showInsufficient=selectedCustomer&&account>selectedCustomer.minutesLeft;
+  insufficientLine.style.display=showInsufficient?'block':'none';
+  if(showInsufficient)insufficientLine.textContent='Customer does not have enough mins on account, either purchase more or enter additional mins into Cash or Card pay as you go fields.';
 }
 function updateEditSessionLengthTotal(){
   let cash=+document.getElementById('editSessionCashMinutes').value||0,
