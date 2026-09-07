@@ -109,8 +109,8 @@ function renderStaffRota(){
       layer.innerHTML=`<b>${escapeHtml(staff?.name||'Staff Member')}</b>${s.start}–${s.end}<br>${Number(s.hours).toFixed(2)} hrs`;
       if(hasRolePermission('staff_rota','edit')){
         layer.style.cursor='pointer';
-        layer.title='Click to delete this shift';
-        layer.onclick=()=>deleteStaffShift(s.id);
+        layer.title='Click to edit or delete this shift';
+        layer.onclick=()=>openStaffShiftEdit(s.id);
       }
       matrix.appendChild(layer);
     });
@@ -203,10 +203,29 @@ function populateShiftTimes(){
   }
   start.innerHTML=opts.join('');end.innerHTML=opts.join('');
   start.value='08:45';end.value='20:15';
-}function openStaffShiftCreate(){if(!data.staffMembers.length)return alert('Create a Staff Member first.');document.getElementById('shiftStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');document.getElementById('shiftDate').value=localDateKey();document.getElementById('shiftDateDisplay').value=formatSunbedDisplayDate(localDateKey());populateShiftTimes();document.getElementById('shiftCreateError').style.display='none';updateShiftSummary();document.getElementById('staffShiftCreateModal').classList.add('show')}
+}let editingStaffShiftId=null;
+function openStaffShiftCreate(){if(!data.staffMembers.length)return alert('Create a Staff Member first.');editingStaffShiftId=null;document.getElementById('staffShiftModalTitle').textContent='Create New Shift';document.getElementById('staffShiftModalSub').textContent='Add a shift to the Staff Rota';document.getElementById('shiftCreateSaveBtn').textContent='Create Shift';document.getElementById('shiftDeleteBtn').style.display='none';document.getElementById('shiftStaff').innerHTML=data.staffMembers.map(s=>`<option value='${s.id}'>${escapeHtml(s.name)}</option>`).join('');document.getElementById('shiftDate').value=localDateKey();document.getElementById('shiftDateDisplay').value=formatSunbedDisplayDate(localDateKey());populateShiftTimes();document.getElementById('shiftCreateError').style.display='none';updateShiftSummary();document.getElementById('staffShiftCreateModal').classList.add('show')}
+function openStaffShiftEdit(id){
+  let s=(data.staffShifts||[]).find(x=>x.id===id);if(!s)return;
+  editingStaffShiftId=id;
+  document.getElementById('staffShiftModalTitle').textContent='Edit Shift';
+  document.getElementById('staffShiftModalSub').textContent='Update or remove this shift';
+  document.getElementById('shiftCreateSaveBtn').textContent='Save Changes';
+  document.getElementById('shiftDeleteBtn').style.display=hasRolePermission('staff_rota','delete')?'inline-block':'none';
+  document.getElementById('shiftStaff').innerHTML=data.staffMembers.map(m=>`<option value='${m.id}'>${escapeHtml(m.name)}</option>`).join('');
+  document.getElementById('shiftStaff').value=s.staffId;
+  document.getElementById('shiftDate').value=s.date;
+  document.getElementById('shiftDateDisplay').value=formatSunbedDisplayDate(s.date);
+  populateShiftTimes();
+  document.getElementById('shiftStart').value=s.start;
+  document.getElementById('shiftEnd').value=s.end;
+  document.getElementById('shiftCreateError').style.display='none';
+  updateShiftSummary();
+  document.getElementById('staffShiftCreateModal').classList.add('show');
+}
 function closeStaffShiftCreate(){document.getElementById('staffShiftCreateModal').classList.remove('show')}
 function shiftHours(start,end){let s=minutesFromTime(start),e=minutesFromTime(end);return e>s?(e-s)/60:0}
-function updateShiftSummary(){let staffId=document.getElementById('shiftStaff').value,date=document.getElementById('shiftDate').value,start=document.getElementById('shiftStart').value,end=document.getElementById('shiftEnd').value,hours=shiftHours(start,end);document.getElementById('shiftHoursPreview').textContent=`${hours.toFixed(2)} hours`;if(!date){document.getElementById('shiftWeekTotalPreview').textContent=`${hours.toFixed(2)} hours`;return;}let d=parseLocalDateKey(date),week=startMonday(d),weekEnd=new Date(week);weekEnd.setDate(weekEnd.getDate()+6);let keys=dateRangeKeys(week,weekEnd),existing=data.staffShifts.filter(s=>s.staffId===staffId&&keys.includes(s.date)).reduce((sum,s)=>sum+(+s.hours||0),0);document.getElementById('shiftWeekTotalPreview').textContent=`${(existing+hours).toFixed(2)} hours`;document.getElementById('shiftWeekRange').textContent=`${nice(week)} – ${nice(weekEnd)}`}
+function updateShiftSummary(){let staffId=document.getElementById('shiftStaff').value,date=document.getElementById('shiftDate').value,start=document.getElementById('shiftStart').value,end=document.getElementById('shiftEnd').value,hours=shiftHours(start,end);document.getElementById('shiftHoursPreview').textContent=`${hours.toFixed(2)} hours`;if(!date){document.getElementById('shiftWeekTotalPreview').textContent=`${hours.toFixed(2)} hours`;return;}let d=parseLocalDateKey(date),week=startMonday(d),weekEnd=new Date(week);weekEnd.setDate(weekEnd.getDate()+6);let keys=dateRangeKeys(week,weekEnd),existing=data.staffShifts.filter(s=>s.staffId===staffId&&keys.includes(s.date)&&s.id!==editingStaffShiftId).reduce((sum,s)=>sum+(+s.hours||0),0);document.getElementById('shiftWeekTotalPreview').textContent=`${(existing+hours).toFixed(2)} hours`;document.getElementById('shiftWeekRange').textContent=`${nice(week)} – ${nice(weekEnd)}`}
 function openShiftCalendarPicker(){let current=document.getElementById('shiftDate').value;shiftPickerMonth=current?parseLocalDateKey(current):new Date();renderShiftCalendarPicker();document.getElementById('shiftCalendarPickerModal').classList.add('show')}
 function closeShiftCalendarPicker(){document.getElementById('shiftCalendarPickerModal').classList.remove('show')}
 function changeShiftPickerMonth(delta){shiftPickerMonth=new Date(shiftPickerMonth.getFullYear(),shiftPickerMonth.getMonth()+delta,1);renderShiftCalendarPicker()}
@@ -219,13 +238,29 @@ async function saveStaffShift(){let staffId=document.getElementById('shiftStaff'
     alert(`${staff?.name||'This staff member'} is on approved holiday on ${formatSunbedDisplayDate(date)} and cannot be scheduled.`);
     return;
   }
-  if(shiftHours(start,end)<=0){err.textContent='End time must be after start time.';err.style.display='block';return;}btn.disabled=true;btn.textContent='Creating...';try{let {error}=await sb.from('staff_shifts').insert({staff_member_id:staffId,shift_date:date,start_time:start,end_time:end});if(error)throw error;closeStaffShiftCreate();await loadLiveData();renderAll()}catch(e){err.textContent=e.message||'Could not create shift.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Create Shift'}}
+  if(shiftHours(start,end)<=0){err.textContent='End time must be after start time.';err.style.display='block';return;}
+  let isEditing=!!editingStaffShiftId,originalLabel=isEditing?'Save Changes':'Create Shift';
+  btn.disabled=true;btn.textContent=isEditing?'Saving...':'Creating...';
+  try{
+    let error;
+    if(isEditing)({error}=await sb.from('staff_shifts').update({staff_member_id:staffId,shift_date:date,start_time:start,end_time:end}).eq('id',editingStaffShiftId));
+    else({error}=await sb.from('staff_shifts').insert({staff_member_id:staffId,shift_date:date,start_time:start,end_time:end}));
+    if(error)throw error;
+    closeStaffShiftCreate();await loadLiveData();renderAll()
+  }catch(e){err.textContent=e.message||'Could not save shift.';err.style.display='block'}finally{btn.disabled=false;btn.textContent=originalLabel}
+}
+async function deleteStaffShiftFromModal(){
+  if(!editingStaffShiftId)return;
+  let ok=await deleteStaffShift(editingStaffShiftId,true);
+  if(ok)closeStaffShiftCreate();
+}
 async function deleteStaffShift(id){
-  let s=(data.staffShifts||[]).find(x=>x.id===id);if(!s)return;
+  let s=(data.staffShifts||[]).find(x=>x.id===id);if(!s)return false;
   let staff=data.staffMembers.find(m=>m.id===s.staffId);
-  if(!confirm(`Delete ${staff?.name||'this'} shift on ${formatSunbedDisplayDate(s.date)} (${s.start}–${s.end})?`))return;
+  if(!confirm(`Delete ${staff?.name||'this'} shift on ${formatSunbedDisplayDate(s.date)} (${s.start}–${s.end})?`))return false;
   let {error}=await sb.from('staff_shifts').delete().eq('id',id);
-  if(error)return alert(error.message);
+  if(error){alert(error.message);return false;}
   await loadLiveData();renderAll();
+  return true;
 }
 function ageFromDob(dob){if(!dob)return null;let d=parseLocalDateKey(dob),n=new Date(),a=n.getFullYear()-d.getFullYear(),m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a}
