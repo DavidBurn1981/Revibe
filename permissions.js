@@ -94,7 +94,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openCustomerCreate:['treatment_booking_settings','edit'], saveCustomer:['treatment_booking_settings','edit'], deleteCustomer:['treatment_booking_settings','delete'], completeBlockPurchase:['treatment_booking_settings','edit'],
   openAddMinutesModal:['treatment_booking_settings','edit'], confirmAddMinutesManually:['treatment_booking_settings','edit'],
   openStaffMemberCreate:['staff_members','edit'], openStaffMemberEdit:['staff_members','edit'], saveStaffMember:['staff_members','edit'], deleteStaffMember:['staff_members','delete'],
-  openStaffShiftCreate:['staff_rota','edit'], saveStaffShift:['staff_rota','edit'], deleteStaffShift:['staff_rota','edit'],
+  openStaffShiftCreate:['staff_rota','edit'], saveStaffShift:['staff_rota','edit'], deleteStaffShift:['staff_rota','edit'], openStaffShiftEdit:['staff_rota','edit'], deleteStaffShiftFromModal:['staff_rota','delete'],
   addStaffRota:['staff_rota','edit'], saveNewStaffRota:['staff_rota','edit'], deleteStaffRota:['staff_rota','delete'],
   openHolidayRequestCreate:['holiday_requests','edit'], saveHolidayRequest:['holiday_requests','edit'], deleteHolidayRequest:['holiday_requests','edit'], approveHolidayRequest:['holiday_requests','approve'],
   openOrderCreate:['finance','edit'], openOrderEdit:['finance','edit'], saveOrder:['finance','edit'], deleteOrder:['finance','edit'], saveFinanceOutgoings:['finance','edit'],
