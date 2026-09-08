@@ -6,8 +6,15 @@ let wizBoughtBlockMinutes=false;
 let wizCurrentPurchaseCategory=null;
 let wizSessionBackTarget='purchaseAsk';
 
-const WIZ_STEP_PHASE={personal:0,id:0,skin:0,purchaseAsk:1,purchase:1,payment:1,sessionType:2,sessionMinutes:2,complete:2};
-const WIZ_PHASE_LABELS=['Account Details','Purchase','Session'];
+const WIZ_STEP_ORDER=['personal','id','skin','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
+const WIZ_STEP_LABELS={personal:'Personal Info',id:'ID Checks',skin:'Skin Assessment',purchaseAsk:'Purchase?',purchase:'Purchase',payment:'Payment',sessionType:'Session Type',sessionMinutes:'Session Minutes'};
+const WIZ_STEP_PHASE_CLASS={personal:'phase-account',id:'phase-account',skin:'phase-account',purchaseAsk:'phase-purchase',purchase:'phase-purchase',payment:'phase-purchase',sessionType:'phase-session',sessionMinutes:'phase-session'};
+function wizRenderChevrons(currentKey){
+  let currentIndex=WIZ_STEP_ORDER.indexOf(currentKey);
+  document.getElementById('wizardChevrons').innerHTML=WIZ_STEP_ORDER.map((key,i)=>
+    `<div class='wizardChevron ${WIZ_STEP_PHASE_CLASS[key]} ${i===currentIndex?'active':i<currentIndex?'done':''}'>${WIZ_STEP_LABELS[key]}</div>`
+  ).join('');
+}
 
 function openNewCustomerWizard(){
   wizCustomerId=null;
@@ -45,12 +52,6 @@ function exitNewCustomerWizard(){
       : 'Exit this journey? Nothing has been saved yet.'))return;
   }
   document.getElementById('newCustomerWizardModal').classList.remove('show');
-}
-function wizRenderChevrons(currentKey){
-  let currentPhase=WIZ_STEP_PHASE[currentKey];
-  document.getElementById('wizardChevrons').innerHTML=WIZ_PHASE_LABELS.map((label,i)=>
-    `<div class='wizardChevron ${i===currentPhase?'active':i<currentPhase?'done':''}'>${i+1}. ${label}</div>`
-  ).join('');
 }
 const WIZ_STEP_IDS={personal:'wizPersonal',id:'wizId',skin:'wizSkin',purchaseAsk:'wizPurchaseAsk',purchase:'wizPurchase',payment:'wizPayment',sessionType:'wizSessionType',sessionMinutes:'wizSessionMinutes',complete:'wizComplete'};
 function wizGoTo(stepKey){
