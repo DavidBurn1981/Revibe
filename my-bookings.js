@@ -79,7 +79,9 @@ async function saveClinicianNotes(){
     let {error}=await sb.from('treatment_bookings').update({clinician_notes:notes||null}).eq('id',editingMyBookingId);
     if(error)throw error;
     closeBookingDetail();
-    await loadLiveData();renderMyBookings();
+    await loadLiveData();
+    if(document.getElementById('myBookingsTable'))renderMyBookings();
+    if(document.getElementById('calendar'))renderCalendar();
   }catch(e){err.textContent=e.message||'Could not save notes.';err.style.display='block'}
 }
 async function deleteMyBooking(){
@@ -88,5 +90,7 @@ async function deleteMyBooking(){
   let {error}=await sb.from('treatment_bookings').delete().eq('id',editingMyBookingId);
   if(error)return alert(error.message);
   closeBookingDetail();
-  await loadLiveData();renderMyBookings();
+  await loadLiveData();
+  if(document.getElementById('myBookingsTable'))renderMyBookings();
+  if(document.getElementById('calendar'))renderCalendar();
 }
