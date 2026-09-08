@@ -1342,7 +1342,8 @@ body.loading .app{visibility:hidden}
     <h3>Session Type</h3>
     <p class='muted'>Is today's session Hybrid or Red Light Therapy?</p>
     <div class='sessionTypeChoices' style='margin-top:14px'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='wizSessionRlt' type='checkbox' onchange="wizExclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='wizSessionHybrid' type='checkbox' onchange="wizExclusiveSessionType('hybrid')"></label></div>
-    <div class='wizardNav'><button onclick='wizGoToBeforeSession()'>← Back</button><button class='primary' onclick='wizGoTo("sessionMinutes")'>Next: Session Minutes →</button></div>
+    <div id='wizSessionTypeError' class='loginError' style='margin-top:12px'></div>
+    <div class='wizardNav'><button onclick='wizGoToBeforeSession()'>← Back</button><button class='primary' onclick='wizSessionTypeNext()'>Next: Session Minutes →</button></div>
   </div>
 
   <div id='wizSessionMinutes' class='wizardStep' style='display:none'>
