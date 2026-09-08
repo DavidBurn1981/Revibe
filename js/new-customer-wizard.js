@@ -6,27 +6,31 @@ let wizBoughtBlockMinutes=false;
 let wizCurrentPurchaseCategory=null;
 let wizSessionBackTarget='purchaseAsk';
 
-const WIZ_STEP_ORDER=['personal','id','skin','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
-const WIZ_STEP_LABELS={personal:'Personal Info',id:'ID Checks',skin:'Skin Assessment',purchaseAsk:'Purchase?',purchase:'Purchase',payment:'Payment',sessionType:'Session Type',sessionMinutes:'Session Minutes'};
-const WIZ_STEP_PHASE_CLASS={personal:'phase-account',id:'phase-account',skin:'phase-account',purchaseAsk:'phase-purchase',purchase:'phase-purchase',payment:'phase-purchase',sessionType:'phase-session',sessionMinutes:'phase-session'};
-const WIZ_CHEVRON_GROUPS=[
-  {label:'Setup Customer',keys:['personal','id','skin']},
-  {label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},
-  {label:'Session',keys:['sessionType','sessionMinutes']}
-];
+let wizMode='new';
+function wizGetStepOrder(){
+  return wizMode==='existing'
+    ? ['selectCustomer','purchaseAsk','purchase','payment','sessionType','sessionMinutes']
+    : ['personal','id','skin','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
+}
+function wizGetChevronGroups(){
+  return wizMode==='existing'
+    ? [{label:'Select Customer',keys:['selectCustomer']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}]
+    : [{label:'Setup Customer',keys:['personal','id','skin']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}];
+}
+const WIZ_STEP_LABELS={personal:'Personal Info',id:'ID Checks',skin:'Skin Assessment',selectCustomer:'Select Customer',purchaseAsk:'Purchase?',purchase:'Purchase',payment:'Payment',sessionType:'Session Type',sessionMinutes:'Session Minutes'};
+const WIZ_STEP_PHASE_CLASS={personal:'phase-account',id:'phase-account',skin:'phase-account',selectCustomer:'phase-account',purchaseAsk:'phase-purchase',purchase:'phase-purchase',payment:'phase-purchase',sessionType:'phase-session',sessionMinutes:'phase-session'};
 function wizRenderChevrons(currentKey){
-  let currentIndex=WIZ_STEP_ORDER.indexOf(currentKey);
-  document.getElementById('wizardChevrons').innerHTML=WIZ_CHEVRON_GROUPS.map(group=>
-    `<div class='wizardChevronGroup'><div class='wizardChevronGroupLabel'>${group.label}</div><div class='wizardChevronRow'>${
-      group.keys.map(key=>{
-        let i=WIZ_STEP_ORDER.indexOf(key);
-        return `<div class='wizardChevron ${WIZ_STEP_PHASE_CLASS[key]} ${i===currentIndex?'active':i<currentIndex?'done':''}'>${i+1}. ${WIZ_STEP_LABELS[key]}</div>`;
-      }).join('')
-    }</div></div>`
+  let stepOrder=wizGetStepOrder(),currentIndex=stepOrder.indexOf(currentKey),groups=wizGetChevronGroups();
+  let labelsHtml=groups.map(g=>`<div class='wizardChevronGroupLabel' style='flex-grow:${g.keys.length}'>${g.label}</div>`).join('');
+  let chevronsHtml=stepOrder.map((key,i)=>
+    `<div class='wizardChevron ${WIZ_STEP_PHASE_CLASS[key]} ${i===currentIndex?'active':i<currentIndex?'done':''}'>${i+1}. ${WIZ_STEP_LABELS[key]}</div>`
   ).join('');
+  document.getElementById('wizardChevrons').innerHTML=`<div class='wizardChevronLabels'>${labelsHtml}</div><div class='wizardChevronRow'>${chevronsHtml}</div>`;
 }
 
 function openNewCustomerWizard(){
+  wizMode='new';
+  document.getElementById('wizModalTitle').textContent='Process New Customer';
   wizCustomerId=null;
   wizSelectedSkinType=null;
   wizPurchaseSelection={treatments:[],glowStudio:[]};
@@ -55,6 +59,29 @@ function openNewCustomerWizard(){
   wizGoTo('personal');
   document.getElementById('newCustomerWizardModal').classList.add('show');
 }
+function openExistingCustomerWizard(){
+  wizMode='existing';
+  document.getElementById('wizModalTitle').textContent='Process Existing Customer';
+  wizCustomerId=null;
+  wizPurchaseSelection={treatments:[],glowStudio:[]};
+  wizBoughtBlockMinutes=false;
+  wizSessionBackTarget='purchaseAsk';
+  document.getElementById('wizSelectCustomerSearch').value='';
+  document.getElementById('wizSelectCustomerSearch').style.display='block';
+  document.getElementById('wizSelectedCustomerId').value='';
+  document.getElementById('wizSelectCustomerSelected').style.display='none';
+  document.getElementById('wizSelectCustomerBalance').innerHTML='Select a customer to see their account details.';
+  document.getElementById('wizSelectCustomerError').style.display='none';
+  document.getElementById('wizPurchaseError').style.display='none';
+  document.getElementById('wizPaymentError').style.display='none';
+  document.getElementById('wizSessionError').style.display='none';
+  document.getElementById('wizSessionRlt').checked=false;
+  document.getElementById('wizSessionHybrid').checked=false;
+  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName'].forEach(id=>document.getElementById(id).value='');
+  wizRenderPurchaseLists();
+  wizGoTo('selectCustomer');
+  document.getElementById('newCustomerWizardModal').classList.add('show');
+}
 function exitNewCustomerWizard(){
   let onCompleteScreen=document.getElementById('wizComplete').style.display!=='none';
   if(!onCompleteScreen){
@@ -64,7 +91,7 @@ function exitNewCustomerWizard(){
   }
   document.getElementById('newCustomerWizardModal').classList.remove('show');
 }
-const WIZ_STEP_IDS={personal:'wizPersonal',id:'wizId',skin:'wizSkin',purchaseAsk:'wizPurchaseAsk',purchase:'wizPurchase',payment:'wizPayment',sessionType:'wizSessionType',sessionMinutes:'wizSessionMinutes',complete:'wizComplete'};
+const WIZ_STEP_IDS={personal:'wizPersonal',id:'wizId',skin:'wizSkin',selectCustomer:'wizSelectCustomer',purchaseAsk:'wizPurchaseAsk',purchase:'wizPurchase',payment:'wizPayment',sessionType:'wizSessionType',sessionMinutes:'wizSessionMinutes',complete:'wizComplete'};
 function wizGoTo(stepKey){
   Object.values(WIZ_STEP_IDS).forEach(id=>{document.getElementById(id).style.display='none'});
   document.getElementById(WIZ_STEP_IDS[stepKey]).style.display='block';
@@ -73,12 +100,54 @@ function wizGoTo(stepKey){
   if(stepKey==='sessionMinutes')wizRenderSessionCustomerBalance();
 }
 function wizRenderSessionCustomerBalance(){
-  let c=data.customers.find(x=>x.id===wizCustomerId),el=document.getElementById('wizSessionCustomerBalance');
+  wizRenderCustomerBalanceInto('wizSessionCustomerBalance');
+}
+function wizRenderCustomerBalanceInto(elId){
+  let c=data.customers.find(x=>x.id===wizCustomerId),el=document.getElementById(elId);
   if(!c){el.innerHTML='';return}
   let uvAllowed=!!c.uvAllowed;
   let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
   let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
   el.innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}`;
+}
+function wizHideSelectCustomerResultsDelayed(){
+  setTimeout(()=>{document.getElementById('wizSelectCustomerResults').style.display='none'},150);
+}
+function wizSearchSelectCustomer(){
+  let q=document.getElementById('wizSelectCustomerSearch').value.trim().toLowerCase();
+  let results=document.getElementById('wizSelectCustomerResults');
+  if(!q){results.style.display='none';results.innerHTML='';return}
+  let matches=(data.customers||[]).filter(c=>c.active!==false&&`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)).slice(0,8);
+  results.innerHTML=matches.length
+    ? matches.map(c=>`<div class='customerSearchResultRow' onclick="wizPickSelectCustomer('${c.id}')"><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b><div class='sub'>${escapeHtml(c.accountNumber)}</div></div>`).join('')
+    : `<div class='customerSearchResultRow muted'>No matching customers.</div>`;
+  results.style.display='block';
+}
+function wizPickSelectCustomer(id){
+  let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
+  wizCustomerId=id;
+  document.getElementById('wizSelectedCustomerId').value=id;
+  document.getElementById('wizSelectCustomerSearch').style.display='none';
+  document.getElementById('wizSelectCustomerResults').style.display='none';
+  document.getElementById('wizSelectCustomerResults').innerHTML='';
+  let selectedDiv=document.getElementById('wizSelectCustomerSelected');
+  selectedDiv.innerHTML=`<span>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</span><button type='button' onclick='wizClearSelectCustomer()'>✕</button>`;
+  selectedDiv.style.display='flex';
+  wizRenderCustomerBalanceInto('wizSelectCustomerBalance');
+  document.getElementById('wizSelectCustomerError').style.display='none';
+}
+function wizClearSelectCustomer(){
+  wizCustomerId=null;
+  document.getElementById('wizSelectedCustomerId').value='';
+  document.getElementById('wizSelectCustomerSearch').value='';
+  document.getElementById('wizSelectCustomerSearch').style.display='block';
+  document.getElementById('wizSelectCustomerSelected').style.display='none';
+  document.getElementById('wizSelectCustomerBalance').innerHTML='Select a customer to see their account details.';
+}
+function wizSelectCustomerNext(){
+  let err=document.getElementById('wizSelectCustomerError');err.style.display='none';
+  if(!wizCustomerId){err.textContent='Please select a customer before continuing.';err.style.display='block';return}
+  wizGoTo('purchaseAsk');
 }
 function wizGoToBeforeSession(){wizGoTo(wizSessionBackTarget)}
 
