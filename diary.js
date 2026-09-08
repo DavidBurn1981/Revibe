@@ -137,10 +137,20 @@ function chooseBookingClinic(clinicId){
   document.getElementById('bookingTreatmentStep').style.display='block';
   document.getElementById('bookingDetailsStep').style.display='none';
   document.getElementById('saveTreatmentBookingBtn').disabled=true;
-  document.getElementById('treatmentButtons').innerHTML=treatments.map(t=>{
+  let groupings=(data.treatmentGroupings||[]).filter(g=>g.productId===clinic.productId||data.treatments.some(t=>t.groupingId===g.id&&t.product===clinic.product)).sort((a,b)=>(a.displayOrder||0)-(b.displayOrder||0));
+  let treatmentBtn=t=>{
     let available=clinicAvailableTimes(clinic,t).length>0;
-    return `<button class='choiceBtn ${available?'':'full'}' ${available?'':'disabled'} onclick="chooseTreatment(\'${t.id}\')"><b>${t.name}</b><span class='small'>${t.duration} min${t.buffer?` + ${t.buffer} min buffer`:''} · £${t.price}${available?'':' · NO SLOT AVAILABLE'}</span></button>`;
-  }).join('');
+    return `<button class='choiceBtn ${available?'':'full'}' ${available?'':'disabled'} onclick="chooseTreatment('${t.id}')"><b>${t.name}</b><span class='small'>${t.duration} min${t.buffer?` + ${t.buffer} min buffer`:''} · £${t.price}${available?'':' · NO SLOT AVAILABLE'}</span></button>`;
+  };
+  let html='';
+  for(let g of groupings){
+    let groupTreatments=treatments.filter(t=>t.groupingId===g.id);
+    if(!groupTreatments.length)continue;
+    html+=`<div class='bookingGroupTitle'>${escapeHtml(g.name)}</div><div class='bookingGroupChoices'>${groupTreatments.map(treatmentBtn).join('')}</div>`;
+  }
+  let ungrouped=treatments.filter(t=>!t.groupingId||!groupings.some(g=>g.id===t.groupingId));
+  if(ungrouped.length)html+=`<div class='bookingGroupChoices'>${ungrouped.map(treatmentBtn).join('')}</div>`;
+  document.getElementById('treatmentButtons').innerHTML=html;
   let r=data.renters.find(x=>x.id===clinic.renterId);
   document.getElementById('bookingWhen').textContent=`${clinic.product} · ${formatSunbedDisplayDate(clinic.date)} · ${r?.name||''}`;
 }
