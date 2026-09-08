@@ -554,6 +554,14 @@ body.loading .app{visibility:hidden}
 .paygChargeRow{margin-top:8px;color:#fff;font-weight:800;font-size:13px}
 .paygAmountLine{margin-top:6px;color:var(--green);font-weight:800;font-size:14px}
 .sessionAccountWarningLine{margin-top:6px;color:#ff3131;font-weight:700;font-size:12px}
+.wizardBox{max-width:820px;width:95vw;max-height:90vh;overflow-y:auto}
+.wizardChevrons{display:flex;gap:6px;margin:18px 0 24px;flex-wrap:wrap}
+.wizardChevron{flex:1;min-width:140px;text-align:center;padding:10px 8px;border-radius:6px;background:#20242b;color:var(--muted);font-weight:700;font-size:13px;border:1px solid #2a2f38}
+.wizardChevron.active{background:rgba(255,45,120,.18);border-color:var(--pink);color:#fff}
+.wizardChevron.done{background:rgba(43,213,118,.14);border-color:var(--green);color:var(--green)}
+.wizardStep h3{margin-top:0}
+.wizardNav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.wizardNav button{width:auto}
 .acTimeline{display:grid;grid-template-columns:110px repeat(14,minmax(100px,1fr));gap:4px;margin-top:6px;overflow-x:auto;padding-bottom:8px}
 .acTimelineHeadCell.weekBoundary,.acDayCell.weekBoundary{border-left:3px solid var(--pink);padding-left:8px}
 .acToday{color:#ff9800!important;font-weight:900!important}
@@ -754,7 +762,7 @@ body.loading .app{visibility:hidden}
     </div>
   </div>
 </section>
-<section id='bedtracker' class='page active'><div class='top'><div><h1>RECORD SESSIONS AND PURCHASES</h1><div class='muted'>Record and monitor sunbed and red light therapy sessions.</div></div><button class='primary' style='width:auto' onclick='openCustomerCreate()'>+ Create New Account</button></div><div class='trackergrid'><div class='trackerpanel recordSessionPanel'><h2>Record New Session</h2><div class='muted'>Enter the session details below.</div><div class='sessionform'><div><label>Session Date</label><div style='display:flex;gap:8px'><input id='sessionDateDisplay' readonly style='flex:1;cursor:pointer' onclick="openUniversalDatePicker('session')"><button type='button' onclick="openUniversalDatePicker('session')">📅</button></div><input id='sessionDate' type='hidden'></div><div style='position:relative'><label>Customer <span class='muted'>(optional)</span></label><input id='sessionCustomerSearch' autocomplete='off' placeholder='Type a name to search...' oninput='searchSessionCustomer()' onfocus='searchSessionCustomer()' onblur='hideSessionCustomerResultsDelayed()'><input type='hidden' id='sessionCustomerId'><div id='sessionCustomerSelected' class='customerSearchSelected' style='display:none'></div><div id='sessionCustomerResults' class='customerSearchResults' style='display:none'></div></div><div id='sessionCustomerBalance' class='customerBalance' style='opacity:.55'>Select a customer to see account minutes, or leave blank.</div><div class='sessionDivider'></div><div class='sessionDetailsTitle'>Session Details</div><label class='fieldInlineCheck'><span>New Sign Up</span><input id='sessionSignup' type='checkbox' onchange='toggleBlockBookingQuestion()'></label><label id='blockBookingRow' class='fieldInlineCheck' style='display:none'><span>Purchased Block Booking?</span><input id='sessionBlockBooking' type='checkbox'></label><div class='sessionTypeChoices'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='sessionRlt' type='checkbox' onchange="exclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='sessionHybrid' type='checkbox' onchange="exclusiveSessionType('hybrid')"></label></div><div class='sessionDivider'></div><div class='sessionDetailsTitle'>Session Minutes</div><div class='sessionMinutesGrid'><div><label>CASH (Pay As You Go)</label><input id='sessionCashMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'><div id='sessionCashPaygAmount' class='paygAmountLine' style='display:none'></div></div><div><label>CARD (Pay As You Go)</label><input id='sessionCardMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'><div id='sessionCardPaygAmount' class='paygAmountLine' style='display:none'></div></div></div><div id='paygChargeRow' class='paygChargeRow' style='display:none'></div><div class='sessionMinutesGrid'><div><label>MINUTES FROM ACCOUNT</label><input id='sessionAccountMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'><div id='sessionAccountInsufficientLine' class='sessionAccountWarningLine' style='display:none'></div></div><div><label>FREE</label><input id='sessionFreeMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'></div></div><div class='sessionMinutesGrid'><div><label>STAFF</label><input id='sessionStaffMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'></div><div><label>RERUN MINUTES</label><input id='sessionRerunMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'></div></div><div id='staffMemberNameRow' style='display:none'><label>Staff Member Name</label><input id='sessionStaffMemberName' placeholder='Name of staff member'></div><div id='rerunReasonRow' style='display:none'><label>Rerun Reason</label><select id='sessionRerunReason'><option value=''>Select a reason...</option><option value='Bed Failed - UV Lights Did Not Turn On'>Bed Failed - UV Lights Did Not Turn On</option><option value='Customer Made Mistake Setting Bed'>Customer Made Mistake Setting Bed</option></select></div><div><label class='sessionTotalLabel'>Total Session Length</label><input id='sessionLength' type='number' min='1' step='1' placeholder='Minutes' readonly class='sessionTotalInput'></div><div style='display:none'><label>Payment Type</label><select id='sessionPayment'><option value='Account Minutes' selected>Account Minutes</option><option value='PAYG - Cash'>PAYG - Cash</option><option value='PAYG - Card'>PAYG - Card</option><option value='Free'>Free Session</option></select></div><div id='sessionSuccess' class='successmsg'>Session recorded successfully.</div><button class='primary recordbtn' onclick='recordBedSession()'>Record Session</button></div></div><div class='trackerpanel purchaseProcessingPanel'><h2>Purchase Processing <span class='doNotUseYet'>DO NOT USE YET</span></h2><div class='muted'>Log a purchase against this session.</div><div style='margin:14px 0;position:relative'><label>Customer <span class='muted'>(optional)</span></label><input id='purchaseCustomerSearch' autocomplete='off' placeholder='Type a name to search...' oninput='searchPurchaseCustomer()' onfocus='searchPurchaseCustomer()' onblur='hidePurchaseCustomerResultsDelayed()'><input type='hidden' id='purchaseCustomerId'><div id='purchaseCustomerSelected' class='customerSearchSelected' style='display:none'></div><div id='purchaseCustomerResults' class='customerSearchResults' style='display:none'></div></div><div class='purchaseProcessingButtons'><button type='button' class='purchaseProcessingBtn' onclick='openBlockMinutesPurchase()'>Block Minutes</button><button type='button' class='purchaseProcessingBtn' onclick='openTangiblesPurchase()'>Tangibles</button><button type='button' class='purchaseProcessingBtn' onclick='openRltProgrammePurchase()'>RLT Programme</button></div><div class='sessionDivider' style='margin:40px 0 24px'></div><h3 class='itemsAddedTitle'>PURCHASE BASKET</h3><div class='dottedDivider'></div><div class='purchaseListSection'><h3>Revibe Treatments Items</h3><div id='purchaseListTreatments' class='purchaseItemList'></div><div class='purchaseListTotalRow'><label>Total</label><input id='purchaseTotalTreatments' readonly value='£0.00'></div></div><div class='purchaseListSection'><h3>Revibe Glow Studio Items</h3><div id='purchaseListGlowStudio' class='purchaseItemList'></div><div class='purchaseListTotalRow'><label>Total</label><input id='purchaseTotalGlowStudio' readonly value='£0.00'></div></div><div id='confirmPurchaseError' class='loginError' style='margin-top:10px'></div><button class='primary confirmPurchaseBtn' onclick='openProcessPurchasesModal()'>Process Purchases</button><div class='dottedDivider'></div><div class='grandTotalPayableRow'>Grand Total Payable <span id='purchaseGrandTotalPayable'>£0.00</span></div></div></div>
+<section id='bedtracker' class='page active'><div class='top'><div><h1>RECORD SESSIONS AND PURCHASES</h1><div class='muted'>Record and monitor sunbed and red light therapy sessions.</div></div><button class='primary' style='width:auto' onclick='openCustomerCreate()'>+ Create New Account</button><button class='primary' style='width:auto' onclick='openNewCustomerWizard()'>Process New Customer</button></div><div class='trackergrid'><div class='trackerpanel recordSessionPanel'><h2>Record New Session</h2><div class='muted'>Enter the session details below.</div><div class='sessionform'><div><label>Session Date</label><div style='display:flex;gap:8px'><input id='sessionDateDisplay' readonly style='flex:1;cursor:pointer' onclick="openUniversalDatePicker('session')"><button type='button' onclick="openUniversalDatePicker('session')">📅</button></div><input id='sessionDate' type='hidden'></div><div style='position:relative'><label>Customer <span class='muted'>(optional)</span></label><input id='sessionCustomerSearch' autocomplete='off' placeholder='Type a name to search...' oninput='searchSessionCustomer()' onfocus='searchSessionCustomer()' onblur='hideSessionCustomerResultsDelayed()'><input type='hidden' id='sessionCustomerId'><div id='sessionCustomerSelected' class='customerSearchSelected' style='display:none'></div><div id='sessionCustomerResults' class='customerSearchResults' style='display:none'></div></div><div id='sessionCustomerBalance' class='customerBalance' style='opacity:.55'>Select a customer to see account minutes, or leave blank.</div><div class='sessionDivider'></div><div class='sessionDetailsTitle'>Session Details</div><label class='fieldInlineCheck'><span>New Sign Up</span><input id='sessionSignup' type='checkbox' onchange='toggleBlockBookingQuestion()'></label><label id='blockBookingRow' class='fieldInlineCheck' style='display:none'><span>Purchased Block Booking?</span><input id='sessionBlockBooking' type='checkbox'></label><div class='sessionTypeChoices'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='sessionRlt' type='checkbox' onchange="exclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='sessionHybrid' type='checkbox' onchange="exclusiveSessionType('hybrid')"></label></div><div class='sessionDivider'></div><div class='sessionDetailsTitle'>Session Minutes</div><div class='sessionMinutesGrid'><div><label>CASH (Pay As You Go)</label><input id='sessionCashMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'><div id='sessionCashPaygAmount' class='paygAmountLine' style='display:none'></div></div><div><label>CARD (Pay As You Go)</label><input id='sessionCardMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'><div id='sessionCardPaygAmount' class='paygAmountLine' style='display:none'></div></div></div><div id='paygChargeRow' class='paygChargeRow' style='display:none'></div><div class='sessionMinutesGrid'><div><label>MINUTES FROM ACCOUNT</label><input id='sessionAccountMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'><div id='sessionAccountInsufficientLine' class='sessionAccountWarningLine' style='display:none'></div></div><div><label>FREE</label><input id='sessionFreeMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'></div></div><div class='sessionMinutesGrid'><div><label>STAFF</label><input id='sessionStaffMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'></div><div><label>RERUN MINUTES</label><input id='sessionRerunMinutes' type='number' min='0' step='1' placeholder='0' oninput='updateSessionLengthTotal()'></div></div><div id='staffMemberNameRow' style='display:none'><label>Staff Member Name</label><input id='sessionStaffMemberName' placeholder='Name of staff member'></div><div id='rerunReasonRow' style='display:none'><label>Rerun Reason</label><select id='sessionRerunReason'><option value=''>Select a reason...</option><option value='Bed Failed - UV Lights Did Not Turn On'>Bed Failed - UV Lights Did Not Turn On</option><option value='Customer Made Mistake Setting Bed'>Customer Made Mistake Setting Bed</option></select></div><div><label class='sessionTotalLabel'>Total Session Length</label><input id='sessionLength' type='number' min='1' step='1' placeholder='Minutes' readonly class='sessionTotalInput'></div><div style='display:none'><label>Payment Type</label><select id='sessionPayment'><option value='Account Minutes' selected>Account Minutes</option><option value='PAYG - Cash'>PAYG - Cash</option><option value='PAYG - Card'>PAYG - Card</option><option value='Free'>Free Session</option></select></div><div id='sessionSuccess' class='successmsg'>Session recorded successfully.</div><button class='primary recordbtn' onclick='recordBedSession()'>Record Session</button></div></div><div class='trackerpanel purchaseProcessingPanel'><h2>Purchase Processing <span class='doNotUseYet'>DO NOT USE YET</span></h2><div class='muted'>Log a purchase against this session.</div><div style='margin:14px 0;position:relative'><label>Customer <span class='muted'>(optional)</span></label><input id='purchaseCustomerSearch' autocomplete='off' placeholder='Type a name to search...' oninput='searchPurchaseCustomer()' onfocus='searchPurchaseCustomer()' onblur='hidePurchaseCustomerResultsDelayed()'><input type='hidden' id='purchaseCustomerId'><div id='purchaseCustomerSelected' class='customerSearchSelected' style='display:none'></div><div id='purchaseCustomerResults' class='customerSearchResults' style='display:none'></div></div><div class='purchaseProcessingButtons'><button type='button' class='purchaseProcessingBtn' onclick='openBlockMinutesPurchase()'>Block Minutes</button><button type='button' class='purchaseProcessingBtn' onclick='openTangiblesPurchase()'>Tangibles</button><button type='button' class='purchaseProcessingBtn' onclick='openRltProgrammePurchase()'>RLT Programme</button></div><div class='sessionDivider' style='margin:40px 0 24px'></div><h3 class='itemsAddedTitle'>PURCHASE BASKET</h3><div class='dottedDivider'></div><div class='purchaseListSection'><h3>Revibe Treatments Items</h3><div id='purchaseListTreatments' class='purchaseItemList'></div><div class='purchaseListTotalRow'><label>Total</label><input id='purchaseTotalTreatments' readonly value='£0.00'></div></div><div class='purchaseListSection'><h3>Revibe Glow Studio Items</h3><div id='purchaseListGlowStudio' class='purchaseItemList'></div><div class='purchaseListTotalRow'><label>Total</label><input id='purchaseTotalGlowStudio' readonly value='£0.00'></div></div><div id='confirmPurchaseError' class='loginError' style='margin-top:10px'></div><button class='primary confirmPurchaseBtn' onclick='openProcessPurchasesModal()'>Process Purchases</button><div class='dottedDivider'></div><div class='grandTotalPayableRow'>Grand Total Payable <span id='purchaseGrandTotalPayable'>£0.00</span></div></div></div>
 <div class='card dailyTakingsPanel' style='margin-top:16px'>
   <h2 style='margin:0 0 6px'>End of Day Information</h2>
   <div style='max-width:320px;margin-bottom:14px'><label>Takings Date</label><div style='display:flex;gap:8px'><input id='dailyTakingsDateDisplay' readonly style='flex:1;cursor:pointer' onclick="openUniversalDatePicker('takings')"><button type='button' onclick="openUniversalDatePicker('takings')">📅</button></div><input id='dailyTakingsDate' type='hidden'></div>
@@ -1197,6 +1205,138 @@ body.loading .app{visibility:hidden}
 </div></div>
 
 <div class='modal' id='duplicateCustomerModal'><div class='modalbox' style='max-width:460px;text-align:center'><div class='top'><div><h1>Customer Already Exists</h1></div><button onclick="document.getElementById('duplicateCustomerModal').classList.remove('show')">✕</button></div><div id='duplicateCustomerMessage' class='warningBig' style='margin-bottom:18px'></div><button class='primary' style='min-width:200px' onclick='viewDuplicateCustomer()'>View Existing Customer</button></div></div>
+
+<div class='modal' id='newCustomerWizardModal'><div class='modalbox wizardBox'>
+  <div class='top'><div><h1>Process New Customer</h1><div class='muted' id='wizStepSub'></div></div><button onclick='exitNewCustomerWizard()'>✕ Exit</button></div>
+  <div class='wizardChevrons' id='wizardChevrons'></div>
+
+  <div id='wizPersonal' class='wizardStep'>
+    <h3>Personal Information</h3>
+    <div class='formgrid'>
+      <div><label>First Name</label><input id='wizFirst'></div>
+      <div><label>Last Name</label><input id='wizLast'></div>
+      <div><label>Phone Number</label><input id='wizPhone'></div>
+      <div><label>Email</label><input id='wizEmail' type='email'></div>
+      <div style='grid-column:1/-1'><label>Address</label><input id='wizAddress'></div>
+      <div><label>Bed Use</label><select id='wizBedUse'><option value='Hybrid'>Hybrid</option><option value='Red Light Therapy Only'>Red Light Therapy Only</option></select></div>
+      <div><label>Preferred Bed</label><select id='wizPreferredBed'><option value='Any Bed'>Any Bed</option><option value='Any Lie Down'>Any Lie Down</option><option value='Any Stand Up'>Any Stand Up</option><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option></select></div>
+      <div><label>Waiver Signed and Present?</label><select id='wizWaiverSigned'><option value='false'>No</option><option value='true'>Yes</option></select></div>
+    </div>
+    <div id='wizPersonalError' class='loginError' style='margin-top:12px'></div>
+    <div class='wizardNav'><span></span><button class='primary' onclick='wizStep1Next()'>Next: ID Checks →</button></div>
+  </div>
+
+  <div id='wizId' class='wizardStep' style='display:none'>
+    <h3>ID Checks</h3>
+    <div class='formgrid'>
+      <div><label>Date of Birth</label><input id='wizDob' type='date' onchange='wizHandleDobChange();wizCheckAgeWarnings()'></div>
+      <div><label>ID Checked?</label><select id='wizIdChecked' onchange='wizHandleDobChange()'><option value='false'>No</option><option value='true'>Yes</option></select></div>
+      <div><label>ID Checked Date</label><input id='wizIdDate' readonly></div>
+      <div><label>UV Allowed?</label><select id='wizUvAllowed' class='topFieldSelect uvAllowedSelect' onchange='wizUpdateUvAllowedColour()'><option value='false'>No</option><option value='true'>Yes</option></select></div>
+    </div>
+    <div id='wizVerifiedByRow' style='display:none;margin-top:18px'>
+      <label>Verified By</label>
+      <div class='verifiedByGrid'>
+        <label class='fieldInlineCheck'><span>Drivers License</span><input type='checkbox' class='wizVerifiedByCheck' value='Drivers License'></label>
+        <label class='fieldInlineCheck'><span>Passport</span><input type='checkbox' class='wizVerifiedByCheck' value='Passport'></label>
+        <label class='fieldInlineCheck'><span>PASS CARD</span><input type='checkbox' class='wizVerifiedByCheck' value='PASS CARD'></label>
+        <label class='fieldInlineCheck'><span>Military Card</span><input type='checkbox' class='wizVerifiedByCheck' value='Military Card'></label>
+        <label class='fieldInlineCheck'><span>Student ID</span><input type='checkbox' class='wizVerifiedByCheck' value='Student ID'></label>
+        <label class='fieldInlineCheck'><span>Other</span><input type='checkbox' class='wizVerifiedByCheck' value='Other'></label>
+      </div>
+    </div>
+    <div class='wizardNav'><button onclick='wizGoTo("personal")'>← Back</button><button class='primary' onclick='wizGoTo("skin")'>Next: Skin Assessment →</button></div>
+  </div>
+
+  <div id='wizSkin' class='wizardStep' style='display:none'>
+    <h3>Skin Assessment</h3>
+    <label>Skin Type</label>
+    <div class='skinTypeGrid'>
+      <button type='button' class='skinTypeBtn' data-type='1' onclick='wizSelectSkinType(1)'>Type 1</button>
+      <button type='button' class='skinTypeBtn' data-type='2' onclick='wizSelectSkinType(2)'>Type 2</button>
+      <button type='button' class='skinTypeBtn' data-type='3' onclick='wizSelectSkinType(3)'>Type 3</button>
+      <button type='button' class='skinTypeBtn' data-type='4' onclick='wizSelectSkinType(4)'>Type 4</button>
+      <button type='button' class='skinTypeBtn' data-type='5' onclick='wizSelectSkinType(5)'>Type 5</button>
+      <button type='button' class='skinTypeBtn' data-type='6' onclick='wizSelectSkinType(6)'>Type 6</button>
+    </div>
+    <label style='margin-top:18px;display:block'>General Health Notes</label>
+    <textarea id='wizHealthNotes' rows='4' style='width:100%;background:#111318;border:1px solid #363b44;color:#fff;padding:10px;border-radius:6px;font-family:inherit;margin-top:6px'></textarea>
+    <div id='wizSkinError' class='loginError' style='margin-top:12px'></div>
+    <div class='wizardNav'><button onclick='wizGoTo("id")'>← Back</button><button class='primary' id='wizCreateAccountBtn' onclick='wizCreateAccount()'>Create Account →</button></div>
+  </div>
+
+  <div id='wizPurchaseAsk' class='wizardStep' style='display:none'>
+    <h3 id='wizAccountCreatedTitle'>Account Created</h3>
+    <p class='muted' id='wizAccountCreatedSub'></p>
+    <p style='margin-top:18px;font-size:16px;font-weight:700'>Does the customer wish to purchase anything today?</p>
+    <div class='wizardNav'><button class='primary' onclick='wizGoTo("sessionType")'>No — Skip to Session</button><button class='primary' onclick='wizGoTo("purchase")'>Yes — Take a Purchase</button></div>
+  </div>
+
+  <div id='wizPurchase' class='wizardStep' style='display:none'>
+    <h3>Purchase</h3>
+    <div class='purchaseProcessingButtons'><button type='button' class='purchaseProcessingBtn' onclick='wizOpenBlockMinutesPurchase()'>Block Minutes</button><button type='button' class='purchaseProcessingBtn' onclick='wizOpenTangiblesPurchase()'>Tangibles</button><button type='button' class='purchaseProcessingBtn' onclick='wizOpenRltProgrammePurchase()'>RLT Programme</button></div>
+    <div class='sessionDivider' style='margin:30px 0 18px'></div>
+    <h3 class='itemsAddedTitle'>PURCHASE BASKET</h3>
+    <div class='dottedDivider'></div>
+    <div class='purchaseListSection'><h3>Revibe Treatments Items</h3><div id='wizPurchaseListTreatments' class='purchaseItemList'></div><div class='purchaseListTotalRow'><label>Total</label><input id='wizPurchaseTotalTreatments' readonly value='£0.00'></div></div>
+    <div class='purchaseListSection'><h3>Revibe Glow Studio Items</h3><div id='wizPurchaseListGlowStudio' class='purchaseItemList'></div><div class='purchaseListTotalRow'><label>Total</label><input id='wizPurchaseTotalGlowStudio' readonly value='£0.00'></div></div>
+    <div id='wizPurchaseError' class='loginError' style='margin-top:10px'></div>
+    <div class='wizardNav'><button onclick='wizGoTo("purchaseAsk")'>← Back</button><button class='primary' onclick='wizGoToPayment()'>Process Purchases →</button></div>
+  </div>
+
+  <div id='wizPayment' class='wizardStep' style='display:none'>
+    <h3>Payment</h3>
+    <div class='processPurchasesGrid'>
+      <div class='processPurchasesHalf'>
+        <h3>Revibe Glow Studio Items</h3>
+        <div class='processPurchasesDue'>Amount Due<span id='wizPpGlowStudioDue'>£0.00</span></div>
+        <label>Card Amount</label>
+        <input id='wizPpGlowStudioCard' type='number' min='0' step='0.01' placeholder='0.00' oninput='wizUpdatePaymentSplitStatus()'>
+        <label>Cash Amount</label>
+        <input id='wizPpGlowStudioCash' type='number' min='0' step='0.01' placeholder='0.00' oninput='wizUpdatePaymentSplitStatus()'>
+        <div class='processPurchasesCheck' id='wizPpGlowStudioCheck'></div>
+      </div>
+      <div class='processPurchasesHalf'>
+        <h3>Revibe Treatments Items</h3>
+        <div class='processPurchasesDue'>Amount Due<span id='wizPpTreatmentsDue'>£0.00</span></div>
+        <label>Card Amount</label>
+        <input id='wizPpTreatmentsCard' type='number' min='0' step='0.01' placeholder='0.00' oninput='wizUpdatePaymentSplitStatus()'>
+        <label>Cash Amount</label>
+        <input id='wizPpTreatmentsCash' type='number' min='0' step='0.01' placeholder='0.00' oninput='wizUpdatePaymentSplitStatus()'>
+        <div class='processPurchasesCheck' id='wizPpTreatmentsCheck'></div>
+      </div>
+    </div>
+    <div class='muted' style='margin-top:14px'>Amount Being Paid: <b id='wizAmountBeingPaid'>£0.00</b></div>
+    <div id='wizPaymentError' class='loginError' style='margin-top:12px'></div>
+    <div class='wizardNav'><button onclick='wizGoTo("purchase")'>← Back</button><button class='primary' onclick='wizConfirmPurchases()'>Confirm Purchases →</button></div>
+  </div>
+
+  <div id='wizSessionType' class='wizardStep' style='display:none'>
+    <h3>Session Type</h3>
+    <p class='muted'>Is today's session Hybrid or Red Light Therapy?</p>
+    <div class='sessionTypeChoices' style='margin-top:14px'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='wizSessionRlt' type='checkbox' onchange="wizExclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='wizSessionHybrid' type='checkbox' onchange="wizExclusiveSessionType('hybrid')"></label></div>
+    <div class='wizardNav'><button onclick='wizGoToBeforeSession()'>← Back</button><button class='primary' onclick='wizGoTo("sessionMinutes")'>Next: Session Minutes →</button></div>
+  </div>
+
+  <div id='wizSessionMinutes' class='wizardStep' style='display:none'>
+    <h3>Session Minutes</h3>
+    <div class='sessionMinutesGrid'><div><label>CASH (Pay As You Go)</label><input id='wizSessionCashMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionCashPaygAmount' class='paygAmountLine' style='display:none'></div></div><div><label>CARD (Pay As You Go)</label><input id='wizSessionCardMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionCardPaygAmount' class='paygAmountLine' style='display:none'></div></div></div>
+    <div id='wizPaygChargeRow' class='paygChargeRow' style='display:none'></div>
+    <div class='sessionMinutesGrid'><div><label>MINUTES FROM ACCOUNT</label><input id='wizSessionAccountMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionAccountInsufficientLine' class='sessionAccountWarningLine' style='display:none'></div></div><div><label>FREE</label><input id='wizSessionFreeMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'></div></div>
+    <div class='sessionMinutesGrid'><div><label>STAFF</label><input id='wizSessionStaffMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'></div><div><label>RERUN MINUTES</label><input id='wizSessionRerunMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'></div></div>
+    <div id='wizStaffMemberNameRow' style='display:none'><label>Staff Member Name</label><input id='wizSessionStaffMemberName' placeholder='Name of staff member'></div>
+    <div id='wizRerunReasonRow' style='display:none'><label>Rerun Reason</label><select id='wizSessionRerunReason'><option value=''>Select a reason...</option><option value='Bed Failed - UV Lights Did Not Turn On'>Bed Failed - UV Lights Did Not Turn On</option><option value='Customer Made Mistake Setting Bed'>Customer Made Mistake Setting Bed</option></select></div>
+    <div><label class='sessionTotalLabel'>Total Session Length</label><input id='wizSessionLength' type='number' min='1' step='1' placeholder='Minutes' readonly class='sessionTotalInput'></div>
+    <div id='wizSessionError' class='loginError' style='margin-top:12px'></div>
+    <div class='wizardNav'><button onclick='wizGoTo("sessionType")'>← Back</button><button class='primary' onclick='wizRecordSession()'>Record Session</button></div>
+  </div>
+
+  <div id='wizComplete' class='wizardStep' style='display:none'>
+    <h3>All Done</h3>
+    <p class='muted'>The account, purchase and session have been recorded successfully.</p>
+    <div class='wizardNav'><span></span><button class='primary' onclick='exitNewCustomerWizard()'>Finish</button></div>
+  </div>
+</div></div>
 
 <div class='modal' id='purchaseModal'><div class='modalbox'><div class='top'><h1>Purchase Block Minutes</h1><button onclick="document.getElementById('purchaseModal').classList.remove('show')">✕</button></div><div id='purchaseSummary' class='warningBig'></div><div style='margin-top:14px'><label>Quantity</label><input id='purchaseQty' type='number' min='1' value='1' oninput='updatePurchaseSummary()'></div><div style='text-align:right;margin-top:18px'><button onclick="document.getElementById('purchaseModal').classList.remove('show')">Cancel</button><button class='primary' onclick='completeBlockPurchase()'>Complete Purchase</button></div></div></div>
 
@@ -1756,6 +1896,7 @@ body.loading .app{visibility:hidden}
 <script src='js/clinicians.js'></script>
 <script src='js/business-planner.js'></script>
 <script src='js/apartments.js'></script>
+<script src='js/new-customer-wizard.js'></script>
 <script src='js/my-bookings.js'></script>
 <script src='js/my-treatment-type.js'></script>
 <script src='js/customer-purchases.js'></script>
