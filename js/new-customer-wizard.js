@@ -52,6 +52,7 @@ function openNewCustomerWizard(){
   document.getElementById('wizPurchaseError').style.display='none';
   document.getElementById('wizPaymentError').style.display='none';
   document.getElementById('wizSessionError').style.display='none';
+  document.getElementById('wizSessionTypeError').style.display='none';
   document.getElementById('wizSessionRlt').checked=false;
   document.getElementById('wizSessionHybrid').checked=false;
   ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName'].forEach(id=>document.getElementById(id).value='');
@@ -75,6 +76,7 @@ function openExistingCustomerWizard(){
   document.getElementById('wizPurchaseError').style.display='none';
   document.getElementById('wizPaymentError').style.display='none';
   document.getElementById('wizSessionError').style.display='none';
+  document.getElementById('wizSessionTypeError').style.display='none';
   document.getElementById('wizSessionRlt').checked=false;
   document.getElementById('wizSessionHybrid').checked=false;
   ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName'].forEach(id=>document.getElementById(id).value='');
@@ -389,6 +391,13 @@ function wizExclusiveSessionType(which){
     let c=data.customers.find(x=>x.id===wizCustomerId);
     if(c&&!c.uvAllowed)alert('This Customer can not use UV. Please check their Customer record to see why.');
   }
+}
+function wizSessionTypeNext(){
+  let err=document.getElementById('wizSessionTypeError');err.style.display='none';
+  if(!document.getElementById('wizSessionRlt').checked&&!document.getElementById('wizSessionHybrid').checked){
+    err.textContent='Please select either Red Light Therapy or Hybrid before continuing.';err.style.display='block';return
+  }
+  wizGoTo('sessionMinutes');
 }
 
 // --- Session Minutes ---
