@@ -17,7 +17,7 @@
 .bpAction.cleaningTaskDone{opacity:.55}
 .bpAction.cleaningTaskDone .bpActionDesc{text-decoration:line-through}
 .cleaningTaskDeleteBtn{margin-top:6px;background:none;border:none;color:#ff7777;font-size:11px;font-weight:700;padding:0;cursor:pointer}
-.cleaningTaskDeleteBtn:hover{text-decoration:underline}.modal{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;z-index:10}.modal.show{display:flex}.modalbox{width:min(620px,92vw);background:#181b20;border:1px solid #3a3f48;border-radius:12px;padding:20px}.treatments{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.treat{padding:12px 14px;background:#272c34;border:1px solid #3a404a;border-radius:8px}.treat:hover{border-color:var(--pink)}.productgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.producttile{background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);border-radius:12px;padding:20px;min-height:150px;cursor:pointer;transition:.15s;position:relative}.producttile:hover{transform:translateY(-2px);border-color:#555c67}.producttile h3{margin:0 0 8px;font-size:20px}.producttile .count{color:var(--muted);font-size:12px}.producttile .openhint{position:absolute;right:16px;bottom:14px;color:var(--pink);font-weight:700;font-size:12px}.producttile.new{border-style:dashed;display:flex;align-items:center;justify-content:center;text-align:center;color:#bbb}.producttile.new strong{font-size:30px;display:block;color:var(--pink);margin-bottom:6px}.muted{color:var(--muted)}.trackergrid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}.trackerpanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+.cleaningTaskDeleteBtn:hover{text-decoration:underline}.modal{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;z-index:10}.modal.show{display:flex}#purchaseProductModal.show,#duplicateCustomerModal.show{z-index:20}.modalbox{width:min(620px,92vw);background:#181b20;border:1px solid #3a3f48;border-radius:12px;padding:20px}.treatments{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.treat{padding:12px 14px;background:#272c34;border:1px solid #3a404a;border-radius:8px}.treat:hover{border-color:var(--pink)}.productgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.producttile{background:linear-gradient(180deg,#1d2026,#17191e);border:1px solid var(--line);border-radius:12px;padding:20px;min-height:150px;cursor:pointer;transition:.15s;position:relative}.producttile:hover{transform:translateY(-2px);border-color:#555c67}.producttile h3{margin:0 0 8px;font-size:20px}.producttile .count{color:var(--muted);font-size:12px}.producttile .openhint{position:absolute;right:16px;bottom:14px;color:var(--pink);font-weight:700;font-size:12px}.producttile.new{border-style:dashed;display:flex;align-items:center;justify-content:center;text-align:center;color:#bbb}.producttile.new strong{font-size:30px;display:block;color:var(--pink);margin-bottom:6px}.muted{color:var(--muted)}.trackergrid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}.trackerpanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
 .purchaseProcessingButtons{display:flex;flex-direction:column;gap:10px;margin-top:18px}
 .purchaseProcessingBtn{padding:14px;font-size:14px;font-weight:700;border-radius:8px;background:#18d7e8;color:#061316;border:none}
 .purchaseProcessingBtn:hover{filter:brightness(1.08)}
@@ -555,7 +555,10 @@ body.loading .app{visibility:hidden}
 .paygAmountLine{margin-top:6px;color:var(--green);font-weight:800;font-size:14px}
 .sessionAccountWarningLine{margin-top:6px;color:#ff3131;font-weight:700;font-size:12px}
 .wizardBox{max-width:820px;width:95vw;max-height:90vh;overflow-y:auto}
-.wizardChevrons{display:flex;margin:18px 0 24px;flex-wrap:wrap;gap:0}
+.wizardChevrons{margin:18px 0 24px}
+.wizardChevronGroup{margin-bottom:14px}
+.wizardChevronGroupLabel{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--muted);margin-bottom:6px;text-transform:uppercase}
+.wizardChevronRow{display:flex;gap:0}
 .wizardChevron{flex:1;min-width:100px;text-align:center;padding:12px 14px 12px 22px;color:rgba(255,255,255,.55);font-weight:700;font-size:12px;position:relative;margin-left:-14px;background:#20242b;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,14px 50%)}
 .wizardChevron:first-child{margin-left:0;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)}
 .wizardChevron.phase-account{background:rgba(24,215,232,.18)}
@@ -569,6 +572,7 @@ body.loading .app{visibility:hidden}
 .wizardStep h3{margin-top:0}
 .wizardNav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
 .wizardNav button{width:auto}
+.dangerBtn{background:#ff3131!important;color:#fff!important;border:none;font-weight:700}
 .acTimeline{display:grid;grid-template-columns:110px repeat(14,minmax(100px,1fr));gap:4px;margin-top:6px;overflow-x:auto;padding-bottom:8px}
 .acTimelineHeadCell.weekBoundary,.acDayCell.weekBoundary{border-left:3px solid var(--pink);padding-left:8px}
 .acToday{color:#ff9800!important;font-weight:900!important}
@@ -1225,7 +1229,7 @@ body.loading .app{visibility:hidden}
       <div><label>Phone Number</label><input id='wizPhone'></div>
       <div><label>Email</label><input id='wizEmail' type='email'></div>
       <div style='grid-column:1/-1'><label>Address</label><input id='wizAddress'></div>
-      <div><label>Bed Use</label><select id='wizBedUse'><option value='Hybrid'>Hybrid</option><option value='Red Light Therapy Only'>Red Light Therapy Only</option></select></div>
+      <div><label>Bed Use</label><select id='wizBedUse' onchange='wizSyncBedUse(this.value)'><option value='Hybrid'>Hybrid</option><option value='Red Light Therapy Only'>Red Light Therapy Only</option></select></div>
       <div><label>Preferred Bed</label><select id='wizPreferredBed'><option value='Any Bed'>Any Bed</option><option value='Any Lie Down'>Any Lie Down</option><option value='Any Stand Up'>Any Stand Up</option><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option></select></div>
       <div><label>Waiver Signed and Present?</label><select id='wizWaiverSigned'><option value='false'>No</option><option value='true'>Yes</option></select></div>
     </div>
@@ -1239,8 +1243,10 @@ body.loading .app{visibility:hidden}
       <div><label>Date of Birth</label><input id='wizDob' type='date' onchange='wizHandleDobChange();wizCheckAgeWarnings()'></div>
       <div><label>ID Checked?</label><select id='wizIdChecked' onchange='wizHandleDobChange()'><option value='false'>No</option><option value='true'>Yes</option></select></div>
       <div><label>ID Checked Date</label><input id='wizIdDate' readonly></div>
-      <div><label>UV Allowed?</label><select id='wizUvAllowed' class='topFieldSelect uvAllowedSelect' onchange='wizUpdateUvAllowedColour()'><option value='false'>No</option><option value='true'>Yes</option></select></div>
+      <div><label>UV Allowed?</label><select id='wizUvAllowed' class='topFieldSelect uvAllowedSelect' onchange='wizGuardUvAllowedChange()'><option value='false'>No</option><option value='true'>Yes</option></select></div>
+      <div><label>Bed Use</label><select id='wizBedUse2' onchange='wizSyncBedUse(this.value)'><option value='Hybrid'>Hybrid</option><option value='Red Light Therapy Only'>Red Light Therapy Only</option></select></div>
     </div>
+    <div id='wizIdError' class='loginError' style='margin-top:12px'></div>
     <div id='wizVerifiedByRow' style='display:none;margin-top:18px'>
       <label>Verified By</label>
       <div class='verifiedByGrid'>
@@ -1252,7 +1258,7 @@ body.loading .app{visibility:hidden}
         <label class='fieldInlineCheck'><span>Other</span><input type='checkbox' class='wizVerifiedByCheck' value='Other'></label>
       </div>
     </div>
-    <div class='wizardNav'><button onclick='wizGoTo("personal")'>← Back</button><button class='primary' onclick='wizGoTo("skin")'>Next: Skin Assessment →</button></div>
+    <div class='wizardNav'><button onclick='wizGoTo("personal")'>← Back</button><button class='primary' onclick='wizStep2Next()'>Next: Skin Assessment →</button></div>
   </div>
 
   <div id='wizSkin' class='wizardStep' style='display:none'>
@@ -1276,7 +1282,7 @@ body.loading .app{visibility:hidden}
     <h3 id='wizAccountCreatedTitle'>Account Created</h3>
     <p class='muted' id='wizAccountCreatedSub'></p>
     <p style='margin-top:18px;font-size:16px;font-weight:700'>Does the customer wish to purchase anything today?</p>
-    <div class='wizardNav'><button class='primary' onclick='wizGoTo("sessionType")'>No — Skip to Session</button><button class='primary' onclick='wizGoTo("purchase")'>Yes — Take a Purchase</button></div>
+    <div class='wizardNav'><span></span><div style='display:flex;gap:10px'><button class='dangerBtn' onclick='wizGoTo("sessionType")'>No — Skip to Session</button><button class='primary' onclick='wizGoTo("purchase")'>Yes — Take a Purchase</button></div></div>
   </div>
 
   <div id='wizPurchase' class='wizardStep' style='display:none'>
@@ -1327,6 +1333,7 @@ body.loading .app{visibility:hidden}
 
   <div id='wizSessionMinutes' class='wizardStep' style='display:none'>
     <h3>Session Minutes</h3>
+    <div id='wizSessionCustomerBalance' class='customerBalance'></div>
     <div class='sessionMinutesGrid'><div><label>CASH (Pay As You Go)</label><input id='wizSessionCashMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionCashPaygAmount' class='paygAmountLine' style='display:none'></div></div><div><label>CARD (Pay As You Go)</label><input id='wizSessionCardMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionCardPaygAmount' class='paygAmountLine' style='display:none'></div></div></div>
     <div id='wizPaygChargeRow' class='paygChargeRow' style='display:none'></div>
     <div class='sessionMinutesGrid'><div><label>MINUTES FROM ACCOUNT</label><input id='wizSessionAccountMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionAccountInsufficientLine' class='sessionAccountWarningLine' style='display:none'></div></div><div><label>FREE</label><input id='wizSessionFreeMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'></div></div>

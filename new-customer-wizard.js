@@ -9,10 +9,20 @@ let wizSessionBackTarget='purchaseAsk';
 const WIZ_STEP_ORDER=['personal','id','skin','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
 const WIZ_STEP_LABELS={personal:'Personal Info',id:'ID Checks',skin:'Skin Assessment',purchaseAsk:'Purchase?',purchase:'Purchase',payment:'Payment',sessionType:'Session Type',sessionMinutes:'Session Minutes'};
 const WIZ_STEP_PHASE_CLASS={personal:'phase-account',id:'phase-account',skin:'phase-account',purchaseAsk:'phase-purchase',purchase:'phase-purchase',payment:'phase-purchase',sessionType:'phase-session',sessionMinutes:'phase-session'};
+const WIZ_CHEVRON_GROUPS=[
+  {label:'Setup Customer',keys:['personal','id','skin']},
+  {label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},
+  {label:'Session',keys:['sessionType','sessionMinutes']}
+];
 function wizRenderChevrons(currentKey){
   let currentIndex=WIZ_STEP_ORDER.indexOf(currentKey);
-  document.getElementById('wizardChevrons').innerHTML=WIZ_STEP_ORDER.map((key,i)=>
-    `<div class='wizardChevron ${WIZ_STEP_PHASE_CLASS[key]} ${i===currentIndex?'active':i<currentIndex?'done':''}'>${WIZ_STEP_LABELS[key]}</div>`
+  document.getElementById('wizardChevrons').innerHTML=WIZ_CHEVRON_GROUPS.map(group=>
+    `<div class='wizardChevronGroup'><div class='wizardChevronGroupLabel'>${group.label}</div><div class='wizardChevronRow'>${
+      group.keys.map(key=>{
+        let i=WIZ_STEP_ORDER.indexOf(key);
+        return `<div class='wizardChevron ${WIZ_STEP_PHASE_CLASS[key]} ${i===currentIndex?'active':i<currentIndex?'done':''}'>${i+1}. ${WIZ_STEP_LABELS[key]}</div>`;
+      }).join('')
+    }</div></div>`
   ).join('');
 }
 
@@ -24,6 +34,7 @@ function openNewCustomerWizard(){
   wizSessionBackTarget='purchaseAsk';
   ['wizFirst','wizLast','wizPhone','wizEmail','wizAddress','wizDob','wizIdDate','wizHealthNotes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('wizBedUse').value='Hybrid';
+  document.getElementById('wizBedUse2').value='Hybrid';
   document.getElementById('wizPreferredBed').value='Any Bed';
   document.getElementById('wizWaiverSigned').value='false';
   document.getElementById('wizIdChecked').value='false';
@@ -59,14 +70,32 @@ function wizGoTo(stepKey){
   document.getElementById(WIZ_STEP_IDS[stepKey]).style.display='block';
   wizRenderChevrons(stepKey);
   if(stepKey==='sessionType')wizSessionBackTarget=wizCustomerId&&wizPurchaseSelection.treatments.length+wizPurchaseSelection.glowStudio.length>0?'payment':'purchaseAsk';
+  if(stepKey==='sessionMinutes')wizRenderSessionCustomerBalance();
+}
+function wizRenderSessionCustomerBalance(){
+  let c=data.customers.find(x=>x.id===wizCustomerId),el=document.getElementById('wizSessionCustomerBalance');
+  if(!c){el.innerHTML='';return}
+  let uvAllowed=!!c.uvAllowed;
+  let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
+  let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
+  el.innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}`;
 }
 function wizGoToBeforeSession(){wizGoTo(wizSessionBackTarget)}
 
 // --- Personal Info ---
 function wizStep1Next(){
-  let first=document.getElementById('wizFirst').value.trim(),last=document.getElementById('wizLast').value.trim(),err=document.getElementById('wizPersonalError');
+  let first=document.getElementById('wizFirst').value.trim(),last=document.getElementById('wizLast').value.trim(),
+      phone=document.getElementById('wizPhone').value.trim(),address=document.getElementById('wizAddress').value.trim(),
+      email=document.getElementById('wizEmail').value.trim(),waiverSigned=document.getElementById('wizWaiverSigned').value==='true',
+      err=document.getElementById('wizPersonalError');
   err.style.display='none';
   if(!first||!last){err.textContent='First name and last name are required.';err.style.display='block';return}
+  if(!phone){err.textContent='Phone number is required.';err.style.display='block';return}
+  if(!address){err.textContent='Address is required.';err.style.display='block';return}
+  if(!waiverSigned){err.textContent='Waiver Signed and Present must be set to Yes before continuing.';err.style.display='block';return}
+  if(!email){
+    if(!confirm('Are you sure the customer will not provide an email address? You can continue without one.'))return;
+  }
   wizGoTo('id');
 }
 
@@ -101,6 +130,24 @@ function wizCheckAgeWarnings(){
 }
 
 // --- Skin Assessment ---
+function wizSyncBedUse(value){
+  document.getElementById('wizBedUse').value=value;
+  document.getElementById('wizBedUse2').value=value;
+}
+function wizGuardUvAllowedChange(){
+  let dob=document.getElementById('wizDob').value,age=ageFromDob(dob);
+  if(document.getElementById('wizUvAllowed').value==='true'&&age!==null&&age<18){
+    document.getElementById('wizUvAllowed').value='false';
+    alert('This customer is under 18 and their account can never be set to UV Allowed: Yes.');
+  }
+  wizUpdateUvAllowedColour();
+}
+function wizStep2Next(){
+  let dob=document.getElementById('wizDob').value,err=document.getElementById('wizIdError');
+  err.style.display='none';
+  if(!dob){err.textContent='Date of Birth is required.';err.style.display='block';return}
+  wizGoTo('skin');
+}
 function wizSelectSkinType(type){
   wizSelectedSkinType=type;
   document.querySelectorAll('#wizSkin .skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===type));
@@ -120,6 +167,7 @@ async function wizCreateAccount(){
       age=ageFromDob(dob),err=document.getElementById('wizSkinError');
   err.style.display='none';
   if(!first||!last||!dob){err.textContent='First name, last name and date of birth are required before creating the account.';err.style.display='block';wizGoTo('personal');return}
+  if(!wizSelectedSkinType){err.textContent='Please select a skin type before creating the account.';err.style.display='block';return}
   if(age<18){alert('CUSTOMER IS BELOW 18 AND CAN NOT BE A CUSTOMER.');return}
   let duplicate=(data.customers||[]).find(c=>c.dob===dob&&c.firstName.trim().toLowerCase()===first.toLowerCase()&&c.lastName.trim().toLowerCase()===last.toLowerCase());
   if(duplicate){showDuplicateCustomerModal(duplicate);return}
