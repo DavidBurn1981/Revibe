@@ -14,6 +14,17 @@ document.addEventListener('click',(e)=>{
   if(e.target.closest && e.target.closest('#nav button'))closeMobileNav();
 });
 function resetPageScroll(){window.scrollTo({top:0,left:0,behavior:'instant'});document.querySelector('.main')?.scrollTo?.({top:0,left:0,behavior:'instant'})}
+function ensureRecordSessionPanelIn(targetContainerId,anchorId){
+  let panel=document.querySelector('.recordSessionPanel');
+  let target=document.getElementById(targetContainerId);
+  if(!panel||!target)return;
+  if(anchorId){
+    let anchor=document.getElementById(anchorId);
+    if(anchor)anchor.insertAdjacentElement('afterend',panel);
+  }else{
+    target.insertBefore(panel,target.firstChild);
+  }
+}
 function renderPageForNavigation(pageId){
   switch(pageId){
     case 'performancereporting':
@@ -71,6 +82,17 @@ function renderPageForNavigation(pageId){
       break;
     }
     case 'bedtracker': {
+      ensureRecordSessionPanelIn('bedtrackerGrid','recordSessionHomeAnchor');
+      let today=localDateKey(),
+          sessionDate=document.getElementById('sessionDate'),
+          sessionDateDisplay=document.getElementById('sessionDateDisplay');
+      if(sessionDate)sessionDate.value=today;
+      if(sessionDateDisplay)sessionDateDisplay.value=formatSunbedDisplayDate(today);
+      renderBedTracker();
+      break;
+    }
+    case 'recordasession': {
+      ensureRecordSessionPanelIn('recordASessionMount');
       let today=localDateKey(),
           sessionDate=document.getElementById('sessionDate'),
           sessionDateDisplay=document.getElementById('sessionDateDisplay');
