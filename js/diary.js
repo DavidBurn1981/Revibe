@@ -196,7 +196,7 @@ async function saveBooking(){
     clinic_day_id:booking.clinicId,treatment_id:booking.treatment,customer_name:name,customer_phone:phone,
     booking_date:booking.date,start_time:time,duration_minutes:+t.duration,buffer_minutes:+t.buffer||0,
     price:+t.price||0,clinic_discount_percent:+clinic.discountPercent||0,amount_payable:(+t.price||0)*(1-(+clinic.discountPercent||0)/100),
-    notes:document.getElementById('bookNotes').value,status:'Booked'
+    notes:document.getElementById('bookNotes').value,status:'BOOKED'
   });
   if(error){let n=document.getElementById('bookingTimeNotice');n.style.display='block';n.textContent=error.message;return;}
   closeBooking();await loadLiveData();renderAll();
