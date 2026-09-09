@@ -579,6 +579,12 @@ body.loading .app{visibility:hidden}
 .wizardNav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
 .wizardNav button{width:auto}
 .dangerBtn{background:#ff3131!important;color:#fff!important;border:none;font-weight:700}
+.bookingStatusBadge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700}
+.bookingStatusBadge.bookingStatusBooked{background:rgba(255,214,10,.18);color:#ffd60a}
+.bookingStatusBadge.bookingStatusConfirmed{background:rgba(43,213,118,.18);color:var(--green)}
+.bookingStatusBadge.bookingStatusCancelled{background:rgba(255,49,49,.18);color:#ff6b6b}
+.appt.apptCancelled{opacity:.55;border-left-color:#ff3131!important;text-decoration:line-through}
+.appt.apptCancelled .apptCancelledLabel{text-decoration:none;display:inline-block;margin-top:2px;font-size:10px;font-weight:800;color:#ff6b6b}
 .skinTypeWarningBox{max-width:440px;text-align:center;background:rgba(120,20,20,.55);border:1px solid rgba(255,60,60,.55);padding:28px}
 .skinTypeWarningIcon{font-size:34px;color:#ff6b6b;margin-bottom:12px}
 .skinTypeWarningText{font-size:15px;font-weight:700;color:#ffd6d6;line-height:1.5;margin-bottom:20px}
@@ -1793,12 +1799,18 @@ body.loading .app{visibility:hidden}
       <button onclick='closeBookingDetail()'>✕</button>
     </div>
     <div id='bookingDetailInfo' class='summary' style='margin-bottom:16px'></div>
+    <label>Status</label>
+    <select id='bookingDetailStatus' style='margin-bottom:14px'>
+      <option value='BOOKED'>Booked</option>
+      <option value='BOOKING CONFIRMED'>Booking Confirmed</option>
+      <option value='CANCELLED BY CUSTOMER'>Cancelled by Customer</option>
+    </select>
     <label>Clinician Notes</label>
     <textarea id='bookingClinicianNotes' rows='4' placeholder='Any notes about this customer or booking' style='width:100%;background:#111318;border:1px solid #363b44;color:white;padding:9px;border-radius:6px;font-family:inherit'></textarea>
     <div id='bookingDetailError' class='loginError' style='margin-top:12px'></div>
     <div style='display:flex;justify-content:space-between;margin-top:18px'>
       <button id='deleteMyBookingBtn' onclick='deleteMyBooking()'>Delete Booking</button>
-      <div><button onclick='closeBookingDetail()'>Cancel</button> <button class='primary' onclick='saveClinicianNotes()'>Save Notes</button></div>
+      <div><button onclick='closeBookingDetail()'>Cancel</button> <button class='primary' onclick='saveBookingDetail()'>Save Changes</button></div>
     </div>
   </div>
 </div>
