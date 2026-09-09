@@ -514,7 +514,7 @@ body.loading .app{visibility:hidden}
   #bedSessionsModal #bedSessionsTable{min-width:780px!important}
 }
 
-#dailysessions .bedSessionsKpiBar{display:flex!important;justify-content:flex-end!important}
+#dailysessions .bedSessionsKpiBar{display:flex!important;justify-content:flex-end!important;gap:14px!important}
 #dailysessions .bedSessionsKpi{
   display:block!important;
   min-width:270px!important;
@@ -650,7 +650,7 @@ body.loading .app{visibility:hidden}
     <button onclick="openPerformance('month')">Month Detail View <span>→</span></button><button onclick="openBonusPerformance()">Bonus Performance <span>→</span></button>
     <button onclick="openPerformance('charts')">Performance Charts <span>→</span></button>
   </div>
-  <div class='trackerpanel' style='margin-bottom:16px'><h2>Today's Performance</h2><div class='muted' id='trackerDate'></div><div class='metricgrid'><div class='metric'><div class='label'>Sessions Today</div><div class='value' id='metricSessions'>0</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value' id='metricMinutes'>0</div></div><div class='metric'><div class='label'>Total New Sign Ups</div><div class='value' id='metricSignups'>0</div></div><div class='metric'><div class='label'>Total Red Light Minutes Today</div><div class='value' id='metricRltMinutes'>0</div></div><div class='metric'><div class='label'>Total Hybrid Minutes Today</div><div class='value' id='metricHybridMinutes'>0</div></div><div class='metric' style='opacity:.45'><div class='label'>Compared to Daily Average</div><div class='value' id='metricDailyAverage'>—</div><div class='kpiSub' id='metricDailyAverageDetail'></div></div><div class='metric kpiMetric'><div class='label'>Minutes Per Bed Per Hour (for all minutes)</div><div class='value' id='metricKpi'>0.0</div><div class='kpiTargetLine' id='metricKpiTarget'>Target: not set</div><div class='kpiSub' id='metricKpiDetail'>Based on 4 beds and elapsed opening hours today.</div></div><div class='metric kpiMetric'><div class='label'>Minutes Per Bed Per Hour (Paid Minutes)</div><div class='value' id='metricPaidKpi'>0.0</div><div class='kpiSub' id='metricPaidKpiDetail'>Cash, Card and Account minutes only — Free and Staff minutes excluded.</div></div><div class='metric kpiMetric'><div class='label'>Month-to-Date Minutes Per Bed Per Hour</div><div class='value' id='metricMonthKpi'>0.0</div><div class='kpiSub' id='metricMonthKpiDetail'>Based on total minutes and opening hours so far this month.</div></div></div></div>
+  <div class='trackerpanel' style='margin-bottom:16px'><h2>Today's Performance</h2><div class='muted' id='trackerDate'></div><div class='metricgrid'><div class='metric'><div class='label'>Sessions Today</div><div class='value' id='metricSessions'>0</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value' id='metricMinutes'>0</div></div><div class='metric'><div class='label'>Total New Sign Ups</div><div class='value' id='metricSignups'>0</div></div><div class='metric'><div class='label'>Total Red Light Minutes Today</div><div class='value' id='metricRltMinutes'>0</div></div><div class='metric'><div class='label'>Total Hybrid Minutes Today</div><div class='value' id='metricHybridMinutes'>0</div></div><div class='metric' style='opacity:.45'><div class='label'>Compared to Daily Average</div><div class='value' id='metricDailyAverage'>—</div><div class='kpiSub' id='metricDailyAverageDetail'></div></div><div class='metric kpiMetric'><div class='label'>Minutes Per Bed Per Hour (for all minutes)</div><div class='value' id='metricKpi'>0.0</div><div class='kpiTargetLine' id='metricKpiTarget'>Target: not set</div><div class='kpiSub' id='metricKpiDetail'>Based on 4 beds and elapsed opening hours today.</div></div><div class='metric kpiMetric'><div class='label'>Minutes Per Bed Per Hour (Paid Minutes)</div><div class='value' id='metricPaidKpi'>0.0</div><div class='kpiSub' id='metricPaidKpiDetail'>Cash, Card and Account minutes only — Free and Staff minutes excluded.</div></div><div class='metric kpiMetric'><div class='label'>Month-to-Date Minutes Per Bed Per Hour (All Minutes)</div><div class='value' id='metricMonthKpi'>0.0</div><div class='kpiSub' id='metricMonthKpiDetail'>Based on total minutes and opening hours so far this month.</div></div><div class='metric kpiMetric'><div class='label'>Month-to-Date Minutes Per Bed Per Hour (Paid Minutes)</div><div class='value' id='metricMonthPaidKpi'>0.0</div><div class='kpiSub' id='metricMonthPaidKpiDetail'>Cash, Card and Account minutes only.</div></div></div></div>
   <div id='performanceReportingContent'></div>
 </section>
 <section id='sunbedsettings' class='page'>
@@ -791,8 +791,12 @@ body.loading .app{visibility:hidden}
 
   <div class='bedSessionsKpiBar' style='margin-bottom:18px'>
     <div class='bedSessionsKpi'>
-      <div class='label'>Minutes Per Bed Per Hour</div>
+      <div class='label'>Minutes Per Bed Per Hour (All Minutes)</div>
       <div class='value' id='dailySessionsKpiValue'>0.0</div>
+    </div>
+    <div class='bedSessionsKpi'>
+      <div class='label'>Minutes Per Bed Per Hour (Paid Minutes)</div>
+      <div class='value' id='dailySessionsPaidKpiValue'>0.0</div>
     </div>
   </div>
 
