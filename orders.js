@@ -4,13 +4,15 @@ function renderOrders(){
       rows=[...(data.orders||[])].sort((a,b)=>b.date.localeCompare(a.date)),
       monthRows=rows.filter(x=>{let d=parseLocalDateKey(x.date);return d.getMonth()+1===month&&d.getFullYear()===year}),
       sunbed=monthRows.filter(x=>x.card==='Sunbed').reduce((s,x)=>s+x.amount,0),
-      treatments=monthRows.filter(x=>x.card==='Treatments').reduce((s,x)=>s+x.amount,0);
+      treatments=monthRows.filter(x=>x.card==='Treatments').reduce((s,x)=>s+x.amount,0),
+      cash=monthRows.filter(x=>x.card==='Cash').reduce((s,x)=>s+x.amount,0);
 
   document.getElementById('ordersMonthTotals').innerHTML=`
     <div class='financeStatTile'><div class='label'>Total Orders Sunbed</div><div class='value'>£${sunbed.toFixed(2)}</div></div>
-    <div class='financeStatTile'><div class='label'>Total Orders Treatments</div><div class='value'>£${treatments.toFixed(2)}</div></div>`;
+    <div class='financeStatTile'><div class='label'>Total Orders Treatments</div><div class='value'>£${treatments.toFixed(2)}</div></div>
+    <div class='financeStatTile'><div class='label'>Total Orders Cash</div><div class='value'>£${cash.toFixed(2)}</div></div>`;
 
-  let header="<tr><th>Date</th><th>Description</th><th>Supplier</th><th>Amount</th><th>Card Used</th><th>Ordered By</th></tr>";
+  let header="<tr><th>Date</th><th>Description</th><th>Supplier</th><th>Amount</th><th>Payment Type</th><th>Ordered By</th></tr>";
   let rowHtml=r=>{let staff=data.staffMembers.find(s=>s.id===r.staffId);return `<tr class='clinicRow' onclick="openOrderEdit('${r.id}')"><td>${formatSunbedDisplayDate(r.date)}</td><td><b>${escapeHtml(r.description)}</b></td><td>${escapeHtml(r.supplier||'')}</td><td>£${r.amount.toFixed(2)}</td><td>${escapeHtml(r.card)}</td><td>${escapeHtml(staff?.name||'')}</td></tr>`};
 
   current.innerHTML=header+(monthRows.length?monthRows.map(rowHtml).join(''):"<tr><td colspan='6' class='muted'>No orders placed this month.</td></tr>");

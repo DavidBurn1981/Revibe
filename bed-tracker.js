@@ -183,9 +183,9 @@ renderDailyAverageComparison();
 }
 function parseLocalDateKey(key){let [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d)}
 function dayKpi(dateKey,totalMinutes){let today=localDateKey(),h=effectiveHoursForDate(dateKey);let hours=dateKey===today?getElapsedOpeningHours(new Date()):hoursDuration(h);return hours>0?totalMinutes/BED_COUNT/hours:0}
-function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.reduce((a,b)=>a+perfMinutes(b),0);return {sessions:rows.length,minutes:total,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0)}}
+function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.reduce((a,b)=>a+perfMinutes(b),0),paid=rows.reduce((a,b)=>a+paidMinutes(b),0);return {sessions:rows.length,minutes:total,paidMinutes:paid,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0)}}
 function dateRangeKeys(start,end){let keys=[],d=new Date(start);d.setHours(12,0,0,0);let e=new Date(end);e.setHours(12,0,0,0);while(d<=e){keys.push(localDateKey(d));d.setDate(d.getDate()+1)}return keys}
-function summaryMetricsHtml(a,kpi,label){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div><div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>${label||'KPI'}</div><div class='value'>${kpi.toFixed(1)}</div></div></div>`}
+function summaryMetricsHtml(a,kpi,paidKpi){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div><div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>KPI (All Minutes)</div><div class='value'>${kpi.toFixed(1)}</div></div><div class='metric'><div class='label'>KPI (Paid Minutes)</div><div class='value'>${paidKpi.toFixed(1)}</div></div></div>`}
 function periodOpenHours(keys){let today=localDateKey();return keys.reduce((sum,k)=>sum+(k===today?getElapsedOpeningHours(new Date()):hoursDuration(effectiveHoursForDate(k))),0)}
 let currentPeriodMode=null,currentPeriodRefDate=null;
 function renderPeriodPerformance(mode,refDate){
@@ -216,6 +216,7 @@ function renderPeriodPerformance(mode,refDate){
       a=aggregateSessions(rows),
       hours=periodOpenHours(keys),
       kpi=hours>0?a.minutes/BED_COUNT/hours:0,
+      paidKpi=hours>0?a.paidMinutes/BED_COUNT/hours:0,
       revenue=periodRevenue(keys);
 
   document.getElementById('perfTitle').textContent=title;
@@ -224,7 +225,7 @@ function renderPeriodPerformance(mode,refDate){
 
   let daily=keys.map(k=>{
     let r=rows.filter(x=>x.date===k),m=aggregateSessions(r),t=getDailyTakings(k);
-    return {key:k,...m,kpi:dayKpi(k,m.minutes),takings:t};
+    return {key:k,...m,kpi:dayKpi(k,m.minutes),paidKpi:dayKpi(k,m.paidMinutes),takings:t};
   });
 
   let revenueSummary=`<div class='periodRevenueSummary'>
@@ -235,12 +236,12 @@ function renderPeriodPerformance(mode,refDate){
 
   document.getElementById('perfContent').innerHTML=
     revenueSummary+
-    summaryMetricsHtml(a,kpi,'Minutes / Bed / Hour')+
+    summaryMetricsHtml(a,kpi,paidKpi)+
     `<div class='card perfTableWrap'><table class='table'>
-      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Total Revenue</th></tr>
+      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI (All)</th><th>KPI (Paid)</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Total Revenue</th></tr>
       ${daily.map(d=>`<tr>
         <td><b>${parseLocalDateKey(d.key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td>
-        <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td><td>${d.kpi.toFixed(1)}</td>
+        <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td><td>${d.kpi.toFixed(1)}</td><td>${d.paidKpi.toFixed(1)}</td>
         <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${takingsTotal(d.takings).toFixed(2)}</td>
       </tr>`).join('')}
     </table></div>`;
