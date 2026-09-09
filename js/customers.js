@@ -87,19 +87,19 @@ async function confirmAddMinutesManually(){
   let err=document.getElementById('addMinutesError');err.style.display='none';
   let minutes=+document.getElementById('addMinutesAmount').value||0,
       reason=document.getElementById('addMinutesReason').value.trim();
-  if(!minutes||minutes<1){err.textContent='Please enter a number of minutes to add.';err.style.display='block';return}
-  if(!reason){err.textContent='Please enter a reason for adding these minutes.';err.style.display='block';return}
+  if(!minutes){err.textContent='Please enter a number of minutes to add or remove.';err.style.display='block';return}
+  if(!reason){err.textContent='Please enter a reason for this change.';err.style.display='block';return}
   try{
     let {error}=await sb.rpc('add_minutes_to_customer_account',{
       p_customer:editingCustomerId,p_minutes:minutes,p_transaction_type:'Adjustment',
-      p_title:'Manual Addition',p_notes:reason,p_total_value:0
+      p_title:'Manual Adjustment',p_notes:reason,p_total_value:0
     });
     if(error)throw error;
     document.getElementById('addMinutesModal').classList.remove('show');
     await loadLiveData();
     openCustomer(editingCustomerId);
-    alert('Minutes added successfully.');
-  }catch(e){err.textContent=e.message||'Could not add minutes.';err.style.display='block'}
+    alert(minutes>0?`${minutes} minutes added successfully.`:`${Math.abs(minutes)} minutes removed successfully.`);
+  }catch(e){err.textContent=e.message||'Could not update minutes.';err.style.display='block'}
 }
 let duplicateCustomerId=null;
 function showDuplicateCustomerModal(existingCustomer){
