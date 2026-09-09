@@ -1,6 +1,13 @@
 function renderCustomers(){
  let t=document.getElementById('customerTable');if(!t)return;
- let rows=[...(data.customers||[])].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
+ let all=data.customers||[];
+ let totalEl=document.getElementById('customerSummaryTotal');
+ if(totalEl){
+   totalEl.textContent=all.length;
+   document.getElementById('customerSummaryOverThree').textContent=all.filter(c=>(c.minutesLeft||0)>3).length;
+   document.getElementById('customerSummaryTotalMinutes').textContent=all.reduce((sum,c)=>sum+(+c.minutesLeft||0),0);
+ }
+ let rows=[...all].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
  let q=(document.getElementById('customerSearchInput')?.value||'').trim().toLowerCase();
  if(q)rows=rows.filter(c=>`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)||(c.accountNumber||'').toLowerCase().includes(q)||(c.phone||'').toLowerCase().includes(q));
  let canEdit=hasRolePermission('treatment_booking_settings','edit');
