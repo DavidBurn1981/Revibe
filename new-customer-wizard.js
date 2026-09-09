@@ -137,6 +137,7 @@ function wizPickSelectCustomer(id){
   selectedDiv.style.display='flex';
   wizRenderCustomerBalanceInto('wizSelectCustomerBalance');
   document.getElementById('wizSelectCustomerError').style.display='none';
+  checkExistingCustomerUsageWarning(id);
 }
 function wizClearSelectCustomer(){
   wizCustomerId=null;
