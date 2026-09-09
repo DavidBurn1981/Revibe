@@ -425,6 +425,7 @@ function wizUpdateSessionLengthTotal(){
   let showInsufficient=c&&account>c.minutesLeft;
   insufficientLine.style.display=showInsufficient?'block':'none';
   if(showInsufficient)insufficientLine.textContent='Customer does not have enough mins on account, either purchase more or enter additional mins into Cash or Card pay as you go fields.';
+  checkSkinTypeSessionWarning(wizCustomerId,cash+card+account+free+staff+rerun);
 }
 async function wizRecordSession(){
   let c=data.customers.find(x=>x.id===wizCustomerId);
