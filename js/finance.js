@@ -74,7 +74,7 @@ function renderFinance(){
   document.getElementById('financeOrdersSummary').innerHTML=
     `<div class='financeOrdersTotal'>Total Orders: £${orderTotal.toFixed(2)}</div>`+
     (monthOrders.length
-      ?`<div style='overflow-x:auto'><table class='table'><tr><th>Date</th><th>Description</th><th>Supplier</th><th>Amount</th><th>Card Used</th></tr>${monthOrders.map(x=>`<tr class='clinicRow' onclick="openOrderEdit('${x.id}')"><td>${formatSunbedDisplayDate(x.date)}</td><td>${x.description}</td><td>${x.supplier||''}</td><td>£${(+x.amount||0).toFixed(2)}</td><td>${x.card}</td></tr>`).join('')}</table></div>`
+      ?`<div style='overflow-x:auto'><table class='table'><tr><th>Date</th><th>Description</th><th>Supplier</th><th>Amount</th><th>Payment Type</th></tr>${monthOrders.map(x=>`<tr class='clinicRow' onclick="openOrderEdit('${x.id}')"><td>${formatSunbedDisplayDate(x.date)}</td><td>${x.description}</td><td>${x.supplier||''}</td><td>£${(+x.amount||0).toFixed(2)}</td><td>${x.card}</td></tr>`).join('')}</table></div>`
       :`<div class='muted'>No orders recorded for this month.</div>`);
 
   let saved=currentFinanceOutgoings(),
