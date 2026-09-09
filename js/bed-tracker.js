@@ -20,7 +20,8 @@ function editExclusiveSessionType(which){
   if(which==='hybrid'&&h.checked)r.checked=false;
 }
 function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
-function perfMinutes(x){return (+x.length||0)-(+x.rerunMinutes||0)}
+function perfMinutes(x){return (+x.length||0)-(+x.rerunMinutes||0)-(+x.staffMinutes||0)}
+function paidMinutes(x){return (+x.cashMinutes||0)+(+x.cardMinutes||0)+(+x.accountMinutes||0)}
 function isPerformanceSession(x){let p=String(x?.payment||'').trim().toLowerCase();return p!=='free session'&&p!=='free'}
 function performanceSessions(rows){return (rows||[]).filter(isPerformanceSession)}
 function isLastDayOfCurrentMonth(){
@@ -126,7 +127,7 @@ function renderBedTracker(){
   el.textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
   let total=rows.reduce((a,b)=>a+perfMinutes(b),0),
-      paidTotal=rows.reduce((a,b)=>a+(+b.cashMinutes||0)+(+b.cardMinutes||0)+(+b.accountMinutes||0),0),
+      paidTotal=rows.reduce((a,b)=>a+paidMinutes(b),0),
       signups=rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,
       rlt=rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),
       hybrid=rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0),
@@ -160,13 +161,22 @@ function renderBedTracker(){
       monthKeys=dateRangeKeys(monthStart,now),
       monthRows=performanceSessions(data.bedSessions.filter(x=>monthKeys.includes(x.date))),
       monthMinutes=monthRows.reduce((sum,x)=>sum+perfMinutes(x),0),
+      monthPaidMinutes=monthRows.reduce((sum,x)=>sum+paidMinutes(x),0),
       monthHours=periodOpenHours(monthKeys),
-      monthKpi=monthHours>0?monthMinutes/BED_COUNT/monthHours:0;
+      monthKpi=monthHours>0?monthMinutes/BED_COUNT/monthHours:0,
+      monthPaidKpi=monthHours>0?monthPaidMinutes/BED_COUNT/monthHours:0;
 
   document.getElementById('metricMonthKpi').textContent=monthKpi.toFixed(1);
   document.getElementById('metricMonthKpiDetail').textContent=monthHours>0
     ?`${monthMinutes} month-to-date minutes ÷ ${BED_COUNT} beds ÷ ${monthHours.toFixed(1)} opening hours`
     :'No elapsed opening hours yet this month.';
+  let monthPaidKpiEl=document.getElementById('metricMonthPaidKpi');
+  if(monthPaidKpiEl){
+    monthPaidKpiEl.textContent=monthPaidKpi.toFixed(1);
+    document.getElementById('metricMonthPaidKpiDetail').textContent=monthHours>0
+      ?`${monthPaidMinutes} paid-for month-to-date minutes ÷ ${BED_COUNT} beds ÷ ${monthHours.toFixed(1)} opening hours`
+      :'No elapsed opening hours yet this month.';
+  }
   renderMonthlyReviewsRecorder();
   renderDailyTakings();
 renderDailyAverageComparison();
@@ -300,6 +310,11 @@ function bedSessionHistoryKpi(dateKey){
   let performanceMinutes=performanceSessions(rows).reduce((sum,x)=>sum+perfMinutes(x),0);
   return dayKpi(dateKey,performanceMinutes);
 }
+function bedSessionHistoryPaidKpi(dateKey){
+  let rows=(data.bedSessions||[]).filter(x=>x.date===dateKey);
+  let paid=performanceSessions(rows).reduce((sum,x)=>sum+paidMinutes(x),0);
+  return dayKpi(dateKey,paid);
+}
 function getBedSessionHistoryData(){
   return {sessions:bedSessionHistoryRows()};
 }
@@ -367,6 +382,10 @@ function renderDailySessionsPage(key){
   let kpi=Number(bedSessionHistoryKpi(key));
   let kpiEl=document.getElementById('dailySessionsKpiValue');
   if(kpiEl)kpiEl.textContent=Number.isFinite(kpi)?kpi.toFixed(1):'0.0';
+
+  let paidKpi=Number(bedSessionHistoryPaidKpi(key));
+  let paidKpiEl=document.getElementById('dailySessionsPaidKpiValue');
+  if(paidKpiEl)paidKpiEl.textContent=Number.isFinite(paidKpi)?paidKpi.toFixed(1):'0.0';
 
   let picker=document.getElementById('dailySessionsDatePicker');
   if(picker&&picker.value!==key)picker.value=key;
@@ -744,6 +763,24 @@ function checkSkinTypeSessionWarning(customerId,totalLength){
   if(lastSkinTypeWarningKey===key)return;
   lastSkinTypeWarningKey=key;
   document.getElementById('skinTypeWarningModal').classList.add('show');
+}
+function checkExistingCustomerUsageWarning(customerId){
+  if(!customerId)return;
+  let sessions=(data.bedSessions||[]).filter(x=>x.customerId===customerId);
+  let sessionDates=new Set(sessions.map(x=>x.date));
+  let today=localDateKey();
+  let usedToday=sessionDates.has(today);
+
+  let streakOfFour=true;
+  for(let i=1;i<=4;i++){
+    let d=parseLocalDateKey(today);
+    d.setDate(d.getDate()-i);
+    if(!sessionDates.has(iso(d))){streakOfFour=false;break}
+  }
+
+  if(usedToday||streakOfFour){
+    document.getElementById('usageFrequencyWarningModal').classList.add('show');
+  }
 }
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
