@@ -142,6 +142,10 @@ function renderBedTracker(){
   document.getElementById('metricHybridMinutes').textContent=hybrid;
   document.getElementById('metricKpi').textContent=kpi.toFixed(1);
   document.getElementById('metricPaidKpi').textContent=paidKpi.toFixed(1);
+  let headerKpiEl=document.getElementById('headerKpiValue');
+  if(headerKpiEl)headerKpiEl.textContent=kpi.toFixed(1);
+  let headerPaidKpiEl=document.getElementById('headerPaidKpiValue');
+  if(headerPaidKpiEl)headerPaidKpiEl.textContent=paidKpi.toFixed(1);
   document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
     ?`${paidTotal} paid-for minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
     :'Cash, Card and Account minutes only — Free and Staff minutes excluded.';
