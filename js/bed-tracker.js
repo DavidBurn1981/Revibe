@@ -734,6 +734,17 @@ function paygChargeDetails(cashMin,cardMin){
     cardAmount:cardMin>0?cardPence/100:null
   };
 }
+let lastSkinTypeWarningKey=null;
+function checkSkinTypeSessionWarning(customerId,totalLength){
+  let c=customerId?data.customers.find(x=>x.id===customerId):null;
+  if(!c||!c.skinType){lastSkinTypeWarningKey=null;return}
+  let threshold=c.skinType===1?6:c.skinType===2?8:c.skinType===3?10:null;
+  if(threshold===null||totalLength<=threshold){lastSkinTypeWarningKey=null;return}
+  let key=`${customerId}-${totalLength}`;
+  if(lastSkinTypeWarningKey===key)return;
+  lastSkinTypeWarningKey=key;
+  document.getElementById('skinTypeWarningModal').classList.add('show');
+}
 function updateSessionLengthTotal(){
   let cash=+document.getElementById('sessionCashMinutes').value||0,
       card=+document.getElementById('sessionCardMinutes').value||0,
@@ -760,6 +771,7 @@ function updateSessionLengthTotal(){
   let showInsufficient=selectedCustomer&&account>selectedCustomer.minutesLeft;
   insufficientLine.style.display=showInsufficient?'block':'none';
   if(showInsufficient)insufficientLine.textContent='Customer does not have enough mins on account, either purchase more or enter additional mins into Cash or Card pay as you go fields.';
+  checkSkinTypeSessionWarning(selectedCustomerId,cash+card+account+free+staff+rerun);
 }
 function updateEditSessionLengthTotal(){
   let cash=+document.getElementById('editSessionCashMinutes').value||0,

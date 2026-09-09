@@ -7,11 +7,18 @@ function renderCustomers(){
    document.getElementById('customerSummaryOverThree').textContent=all.filter(c=>(c.minutesLeft||0)>3).length;
    document.getElementById('customerSummaryTotalMinutes').textContent=all.reduce((sum,c)=>sum+(+c.minutesLeft||0),0);
  }
+ let lastSessionByCustomer={},lastPurchaseByCustomer={};
+ (data.bedSessions||[]).forEach(s=>{if(!s.customerId)return;if(!lastSessionByCustomer[s.customerId]||s.date>lastSessionByCustomer[s.customerId])lastSessionByCustomer[s.customerId]=s.date});
+ (data.customerPurchases||[]).forEach(p=>{if(!p.customerId)return;if(!lastPurchaseByCustomer[p.customerId]||p.date>lastPurchaseByCustomer[p.customerId])lastPurchaseByCustomer[p.customerId]=p.date});
  let rows=[...all].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
  let q=(document.getElementById('customerSearchInput')?.value||'').trim().toLowerCase();
  if(q)rows=rows.filter(c=>`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)||(c.accountNumber||'').toLowerCase().includes(q)||(c.phone||'').toLowerCase().includes(q));
  let canEdit=hasRolePermission('treatment_booking_settings','edit');
- t.innerHTML="<tr><th>Account</th><th>Name</th><th>DOB</th><th>Phone</th><th>Minutes Left</th><th>ID Checked</th><th></th></tr>"+(rows.length?rows.map(c=>`<tr class='clinicRow' onclick="openCustomer('${c.id}')"><td>${escapeHtml(c.accountNumber)}</td><td><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b></td><td>${formatSunbedDisplayDate(c.dob)}</td><td>${escapeHtml(c.phone||'')}</td><td><b>${c.minutesLeft}</b></td><td>${c.idChecked?'Yes':'No'}</td><td>${canEdit?`<button onclick="event.stopPropagation();deleteCustomer('${c.id}')">Delete</button>`:''}</td></tr>`).join(''):`<tr><td colspan='7' class='muted'>${q?'No customers match your search.':'No customers yet.'}</td></tr>`);
+ t.innerHTML="<tr><th>Account</th><th>Name</th><th>Last Sunbed Session</th><th>Last Purchase</th><th>Phone</th><th>Minutes Left</th><th>UV Allowed</th><th>ID Checked</th><th></th></tr>"+(rows.length?rows.map(c=>{
+   let lastSession=lastSessionByCustomer[c.id]?formatSunbedDisplayDate(lastSessionByCustomer[c.id]):'—';
+   let lastPurchase=lastPurchaseByCustomer[c.id]?formatSunbedDisplayDate(lastPurchaseByCustomer[c.id]):'—';
+   return `<tr class='clinicRow' onclick="openCustomer('${c.id}')"><td>${escapeHtml(c.accountNumber)}</td><td><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b></td><td>${lastSession}</td><td>${lastPurchase}</td><td>${escapeHtml(c.phone||'')}</td><td><b>${c.minutesLeft}</b></td><td>${c.uvAllowed?'Yes':'No'}</td><td>${c.idChecked?'Yes':'No'}</td><td>${canEdit?`<button onclick="event.stopPropagation();deleteCustomer('${c.id}')">Delete</button>`:''}</td></tr>`;
+ }).join(''):`<tr><td colspan='9' class='muted'>${q?'No customers match your search.':'No customers yet.'}</td></tr>`);
 }
 async function deleteCustomer(id){
  let c=data.customers.find(x=>x.id===id);if(!c)return;
