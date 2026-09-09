@@ -111,6 +111,7 @@ function renderPageForNavigation(pageId){
 }
 function goToPage(pageId){
   resetPageScroll();
+  document.querySelectorAll('.modal.show').forEach(m=>m.classList.remove('show'));
 
   document.querySelectorAll('nav button,.page').forEach(x=>x.classList.remove('active'));
 
