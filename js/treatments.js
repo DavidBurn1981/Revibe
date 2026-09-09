@@ -69,7 +69,7 @@ function renderClinicDays(){
       let r=data.renters.find(z=>z.id===x.renterId),
           d=parseLocalDateKey(x.date),
           label=d.toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}),
-          booked=(data.appointments||[]).filter(a=>a.clinicDayId===x.id&&String(a.status||'').toLowerCase()!=='cancelled'),
+          booked=(data.appointments||[]).filter(a=>a.clinicDayId===x.id&&String(a.status||'').toLowerCase()!=='cancelled by customer'),
           sessionCount=booked.length,
           totalMinutes=booked.reduce((s,a)=>s+(+a.durationMinutes||0),0),
           totalPayable=booked.reduce((s,a)=>s+(+a.amountPayable||0),0);
