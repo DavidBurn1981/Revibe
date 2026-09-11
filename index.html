@@ -514,10 +514,10 @@ body.loading .app{visibility:hidden}
   #bedSessionsModal #bedSessionsTable{min-width:780px!important}
 }
 
-#dailysessions .bedSessionsKpiBar{display:flex!important;justify-content:flex-end!important;gap:14px!important}
+#dailysessions .bedSessionsKpiBar{display:flex!important;justify-content:flex-end!important;flex-wrap:wrap!important;gap:14px!important}
 #dailysessions .bedSessionsKpi{
   display:block!important;
-  min-width:270px!important;
+  min-width:200px!important;
   background:#20242b!important;
   border:1px solid #30353d!important;
   border-radius:10px!important;
@@ -525,7 +525,7 @@ body.loading .app{visibility:hidden}
   text-align:right!important;
 }
 #dailysessions .bedSessionsKpi .label{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.6px}
-#dailysessions .bedSessionsKpi .value{font-size:32px;font-weight:900;margin-top:4px}
+#dailysessions .bedSessionsKpi .value{font-size:28px;font-weight:900;margin-top:4px}
 #dailysessions .bedSessionsTableWrap{overflow:auto;-webkit-overflow-scrolling:touch}
 #dailysessions #dailySessionsTable thead th{position:sticky;top:0;background:#20242b;z-index:2}
 #dailysessions #dailySessionsTable tfoot td{font-weight:900;background:#20242b;border-top:2px solid #444b56}
@@ -807,6 +807,18 @@ body.loading .app{visibility:hidden}
     <div class='bedSessionsKpi'>
       <div class='label'>Minutes Per Bed Per Hour (Paid Minutes)</div>
       <div class='value' id='dailySessionsPaidKpiValue'>0.0</div>
+    </div>
+    <div class='bedSessionsKpi'>
+      <div class='label'>Total Cash</div>
+      <div class='value' id='dailySessionsCashValue'>£0.00</div>
+    </div>
+    <div class='bedSessionsKpi'>
+      <div class='label'>Total Treatment Card</div>
+      <div class='value' id='dailySessionsTreatmentsCardValue'>£0.00</div>
+    </div>
+    <div class='bedSessionsKpi'>
+      <div class='label'>Total Sunbed Card</div>
+      <div class='value' id='dailySessionsBedCardValue'>£0.00</div>
     </div>
   </div>
 

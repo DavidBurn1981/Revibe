@@ -373,7 +373,11 @@ async function wizConfirmPurchases(){
       });
       if(minutesError)throw minutesError;
     }
-    await loadLiveData();renderAll();
+    let {error:takingsError}=await sb.rpc('add_to_daily_takings',{
+      p_date:localDateKey(),p_cash:glowStudioCash+treatmentsCash,p_treatments_card:treatmentsCard,p_bed_card:glowStudioCard
+    });
+    if(takingsError)throw takingsError;
+    await loadLiveData();renderAll();renderDailyTakings();
     wizGoTo('sessionType');
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}
 }
