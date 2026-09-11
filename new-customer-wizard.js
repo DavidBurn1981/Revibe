@@ -215,9 +215,6 @@ function wizGuardUvAllowedChange(){
   wizUpdateUvAllowedColour();
 }
 function wizStep2Next(){
-  let dob=document.getElementById('wizDob').value,err=document.getElementById('wizIdError');
-  err.style.display='none';
-  if(!dob){err.textContent='Date of Birth is required.';err.style.display='block';return}
   wizGoTo('skin');
 }
 function wizSelectSkinType(type){
@@ -238,7 +235,8 @@ async function wizCreateAccount(){
       healthNotes=document.getElementById('wizHealthNotes').value.trim(),
       age=ageFromDob(dob),err=document.getElementById('wizSkinError');
   err.style.display='none';
-  if(!first||!last||!dob){err.textContent='First name, last name and date of birth are required before creating the account.';err.style.display='block';wizGoTo('personal');return}
+  if(!first||!last){document.getElementById('wizPersonalError').textContent='First name and last name are required before creating the account.';document.getElementById('wizPersonalError').style.display='block';wizGoTo('personal');return}
+  if(!dob){document.getElementById('wizIdError').textContent='Date of Birth is required before creating the account.';document.getElementById('wizIdError').style.display='block';wizGoTo('id');return}
   if(!wizSelectedSkinType){err.textContent='Please select a skin type before creating the account.';err.style.display='block';return}
   if(age<18){alert('CUSTOMER IS BELOW 18 AND CAN NOT BE A CUSTOMER.');return}
   let duplicate=(data.customers||[]).find(c=>c.dob===dob&&c.firstName.trim().toLowerCase()===first.toLowerCase()&&c.lastName.trim().toLowerCase()===last.toLowerCase());
