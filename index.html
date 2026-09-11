@@ -820,6 +820,10 @@ body.loading .app{visibility:hidden}
       <div class='label'>Total Sunbed Card</div>
       <div class='value' id='dailySessionsBedCardValue'>£0.00</div>
     </div>
+    <div class='bedSessionsKpi'>
+      <div class='label'>Total Purchases</div>
+      <div class='value' id='dailySessionsPurchasesValue'>£0.00</div>
+    </div>
   </div>
 
   <div class='card' style='padding:0;overflow:hidden'>
@@ -829,6 +833,13 @@ body.loading .app{visibility:hidden}
         <tbody id='dailySessionsRows'></tbody>
         <tfoot id='dailySessionsTotals'></tfoot>
       </table>
+    </div>
+  </div>
+
+  <div class='muted' style='margin:24px 0 10px;font-weight:800;font-size:15px;color:#fff'>Purchases for this day</div>
+  <div class='card' style='padding:0;overflow:hidden'>
+    <div class='bedSessionsTableWrap' style='max-height:420px'>
+      <table class='table' id='dailySessionsPurchasesTable' style='margin:0'></table>
     </div>
   </div>
 </section>
