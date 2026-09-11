@@ -454,7 +454,7 @@ async function wizRecordSession(){
   if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');
   if(accountMin>c.minutesLeft){err.textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;err.style.display='block';return}
   try{
-    let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:true,p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue});
+    let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue});
     if(error)throw error;
     await loadLiveData();renderAll();
     wizGoTo('complete');
