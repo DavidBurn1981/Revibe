@@ -450,6 +450,9 @@ async function wizRecordSession(){
   if(staffMin>0&&!staffMemberName){err.textContent='Please enter the Staff Member Name.';err.style.display='block';return}
   if(rerunMin>0&&!rerunReason){err.textContent='Please select a Rerun Reason.';err.style.display='block';return}
   let sessionTypeValue=rlt?'Red Light Therapy':'Hybrid';
+  if(findRecentDuplicateSession(wizCustomerId,date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,wizMode==='new',wizBoughtBlockMinutes)){
+    if(!confirm('This exact session has just been recorded, for the same user and amount of minutes. Do you want to proceed?'))return;
+  }
   let age=ageFromDob(c.dob);
   if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');
   if(hybrid&&age<25&&!c.idChecked)return alert('NO ID HAS BEEN CHECKED FOR THIS CUSTOMER. CHECK CUSTOMER ID BEFORE UV USE.');
