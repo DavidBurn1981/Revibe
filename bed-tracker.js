@@ -88,7 +88,20 @@ function renderDailyTakings(){
   let hidden=document.getElementById('dailyTakingsDate');if(!hidden)return;
   if(!hidden.value)hidden.value=localDateKey();let key=hidden.value,row=getDailyTakings(key);
   document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(key);
-  document.getElementById('dailyCashTaken').value=(+row?.cash||0).toFixed(2);document.getElementById('dailyTreatmentsCardTaken').value=(+row?.treatmentsCard||0).toFixed(2);document.getElementById('dailyBedCardTaken').value=(+row?.bedCard||0).toFixed(2);document.getElementById('dailyFridgeReading').value=row?.fridgeReading===''||row?.fridgeReading===undefined||row?.fridgeReading===null?'':row.fridgeReading;document.getElementById('dailyGoogleReviews').value=row?.googleReviews===''||row?.googleReviews===undefined||row?.googleReviews===null?'':row.googleReviews;document.getElementById('dailyFacebookReviews').value=row?.facebookReviews===''||row?.facebookReviews===undefined||row?.facebookReviews===null?'':row.facebookReviews;updateDailyTakingsTotal();
+  let cashValue,treatmentsCardValue,bedCardValue;
+  if(key===localDateKey()){
+    // Today is still in progress - recalculate live from actual purchases rather than trusting
+    // a separately-accumulated running total, so a missed increment can never understate the day.
+    let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
+    cashValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0);
+    treatmentsCardValue=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0);
+    bedCardValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0);
+  }else{
+    // Past days are already finalised - respect whatever was saved (including any manual
+    // till-reconciliation correction staff made at the time) rather than recalculating over it.
+    cashValue=+row?.cash||0;treatmentsCardValue=+row?.treatmentsCard||0;bedCardValue=+row?.bedCard||0;
+  }
+  document.getElementById('dailyCashTaken').value=cashValue.toFixed(2);document.getElementById('dailyTreatmentsCardTaken').value=treatmentsCardValue.toFixed(2);document.getElementById('dailyBedCardTaken').value=bedCardValue.toFixed(2);document.getElementById('dailyFridgeReading').value=row?.fridgeReading===''||row?.fridgeReading===undefined||row?.fridgeReading===null?'':row.fridgeReading;document.getElementById('dailyGoogleReviews').value=row?.googleReviews===''||row?.googleReviews===undefined||row?.googleReviews===null?'':row.googleReviews;document.getElementById('dailyFacebookReviews').value=row?.facebookReviews===''||row?.facebookReviews===undefined||row?.facebookReviews===null?'':row.facebookReviews;updateDailyTakingsTotal();
   let canEdit=hasRolePermission('daily_session_tracker','edit');['dailyCashTaken','dailyTreatmentsCardTaken','dailyBedCardTaken','dailyFridgeReading','dailyGoogleReviews','dailyFacebookReviews'].forEach(id=>document.getElementById(id).readOnly=!canEdit);document.getElementById('saveDailyTakingsBtn').style.display=canEdit?'inline-block':'none';
 }
 async function saveDailyTakings(){if(!requireRolePermission('daily_session_tracker','edit'))return;let key=document.getElementById('dailyTakingsDate').value||localDateKey(),cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,fridgeRaw=document.getElementById('dailyFridgeReading').value,fridge=fridgeRaw===''?null:+fridgeRaw,googleRaw=document.getElementById('dailyGoogleReviews').value,googleReviews=googleRaw===''?null:+googleRaw,facebookRaw=document.getElementById('dailyFacebookReviews').value,facebookReviews=facebookRaw===''?null:+facebookRaw,err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');err.style.display='none';if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}if(fridge!==null&&!Number.isFinite(fridge)){err.textContent='Please enter a valid Fridge Reading.';err.style.display='block';return}if(googleReviews!==null&&(!Number.isFinite(googleReviews)||googleReviews<0)){err.textContent='Please enter a valid number of Google Reviews.';err.style.display='block';return}if(facebookReviews!==null&&(!Number.isFinite(facebookReviews)||facebookReviews<0)){err.textContent='Please enter a valid number of Facebook Reviews.';err.style.display='block';return}btn.disabled=true;btn.textContent='Saving...';try{let {error}=await sb.from('daily_takings').upsert({takings_date:key,cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,fridge_reading:fridge,google_reviews:googleReviews,facebook_reviews:facebookReviews,updated_at:new Date().toISOString()},{onConflict:'takings_date'});if(error)throw error;await loadLiveData();renderDailyTakings();renderPerformanceReporting()}catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Save Daily Takings'}}
@@ -146,6 +159,16 @@ function renderBedTracker(){
   if(headerKpiEl)headerKpiEl.textContent=kpi.toFixed(1);
   let headerPaidKpiEl=document.getElementById('headerPaidKpiValue');
   if(headerPaidKpiEl)headerPaidKpiEl.textContent=paidKpi.toFixed(1);
+  let todayKey=localDateKey();
+  let purchasesToday=(data.customerPurchases||[]).filter(p=>p.date===todayKey);
+  let headerCashEl=document.getElementById('headerCashValue');
+  if(headerCashEl)headerCashEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0).toFixed(2)}`;
+  let headerTreatmentsCardEl=document.getElementById('headerTreatmentsCardValue');
+  if(headerTreatmentsCardEl)headerTreatmentsCardEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.treatmentsCardAmount,0).toFixed(2)}`;
+  let headerBedCardEl=document.getElementById('headerBedCardValue');
+  if(headerBedCardEl)headerBedCardEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0).toFixed(2)}`;
+  let headerPurchasesEl=document.getElementById('headerPurchasesValue');
+  if(headerPurchasesEl)headerPurchasesEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.grandTotal,0).toFixed(2)}`;
   document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
     ?`${paidTotal} paid-for minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
     :'Cash, Card and Account minutes only — Free and Staff minutes excluded.';
