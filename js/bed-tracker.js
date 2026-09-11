@@ -946,9 +946,10 @@ function resetBedSessionForm(){
   clearSessionCustomer();
   pendingPaygSplit=null;
 }
-function findRecentDuplicateSession(date,cash,card,account,free,staff,rerun,sessionType,newSignup,purchasedBlock){
+function findRecentDuplicateSession(customerId,date,cash,card,account,free,staff,rerun,sessionType,newSignup,purchasedBlock){
   let cutoff=Date.now()-2*60*1000;
   return (data.bedSessions||[]).find(x=>
+    (x.customerId||null)===(customerId||null)&&
     x.date===date&&
     (+x.cashMinutes||0)===cash&&(+x.cardMinutes||0)===card&&(+x.accountMinutes||0)===account&&
     (+x.freeMinutes||0)===free&&(+x.staffMinutes||0)===staff&&(+x.rerunMinutes||0)===rerun&&
@@ -974,8 +975,8 @@ async function recordBedSession(){
  if(staffMin>0&&!staffMemberName)return alert('Please enter the Staff Member Name.');
  if(rerunMin>0&&!rerunReason)return alert('Please select a Rerun Reason.');
  let sessionTypeValue=rlt?'Red Light Therapy':'Hybrid';
- if(findRecentDuplicateSession(date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,newSignup,purchasedBlock)){
-   if(!confirm('A Session with the exact same details has just been entered. If there was only one actual session, close this and do not record. If there were two actual sessions, please confirm to record this session.'))return;
+ if(findRecentDuplicateSession(customerId,date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,newSignup,purchasedBlock)){
+   if(!confirm('This exact session has just been recorded, for the same user and amount of minutes. Do you want to proceed?'))return;
  }
  if(!c){
    let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,rerun_minutes:rerunMin,rerun_reason:rerunMin>0?rerunReason:null,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:cashMin+cardMin};
