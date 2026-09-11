@@ -364,8 +364,30 @@ function openDailySessionsCalendar(){
     picker.focus();
   }
 }
+function renderDailySessionsPurchases(key){
+  let table=document.getElementById('dailySessionsPurchasesTable');if(!table)return;
+  let rows=(data.customerPurchases||[])
+    .filter(p=>p.date===key)
+    .sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+
+  let dayTotal=rows.reduce((s,p)=>s+p.grandTotal,0);
+  let totalEl=document.getElementById('dailySessionsPurchasesValue');
+  if(totalEl)totalEl.textContent=`£${dayTotal.toFixed(2)}`;
+
+  table.innerHTML='<tr><th>Time</th><th>Customer</th><th>Items</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
+    (rows.length?rows.map(p=>{
+      let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
+      let itemSummary=items.map(i=>escapeHtml(i.title)).join(', ')||'—';
+      let timeLabel=p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
+      let customer=p.customerId?data.customers.find(c=>c.id===p.customerId):null;
+      let customerLabel=customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</a>`:'—';
+      return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td>${timeLabel}</td><td>${customerLabel}</td><td>${itemSummary}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
+    }).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this day.</td></tr>`);
+}
 function renderDailySessionsPage(key){
   if(!key)key=localDateKey();
+
+  renderDailySessionsPurchases(key);
 
   let rows=bedSessionHistoryRows()
     .filter(x=>x.date===key)
