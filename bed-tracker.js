@@ -415,13 +415,16 @@ function renderDailySessionsPage(key){
   let paidKpiEl=document.getElementById('dailySessionsPaidKpiValue');
   if(paidKpiEl)paidKpiEl.textContent=Number.isFinite(paidKpi)?paidKpi.toFixed(1):'0.0';
 
-  let takingsForDay=getDailyTakings(key);
+  let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
+  let cashFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0);
+  let treatmentsCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0);
+  let bedCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0);
   let cashEl=document.getElementById('dailySessionsCashValue');
-  if(cashEl)cashEl.textContent=`£${(+takingsForDay?.cash||0).toFixed(2)}`;
+  if(cashEl)cashEl.textContent=`£${cashFromPurchases.toFixed(2)}`;
   let treatmentsCardEl=document.getElementById('dailySessionsTreatmentsCardValue');
-  if(treatmentsCardEl)treatmentsCardEl.textContent=`£${(+takingsForDay?.treatmentsCard||0).toFixed(2)}`;
+  if(treatmentsCardEl)treatmentsCardEl.textContent=`£${treatmentsCardFromPurchases.toFixed(2)}`;
   let bedCardEl=document.getElementById('dailySessionsBedCardValue');
-  if(bedCardEl)bedCardEl.textContent=`£${(+takingsForDay?.bedCard||0).toFixed(2)}`;
+  if(bedCardEl)bedCardEl.textContent=`£${bedCardFromPurchases.toFixed(2)}`;
 
   let picker=document.getElementById('dailySessionsDatePicker');
   if(picker&&picker.value!==key)picker.value=key;
