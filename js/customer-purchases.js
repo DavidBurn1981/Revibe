@@ -32,7 +32,7 @@ function renderCustomerPurchasesReport(){
       let dateLabel=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
       let timeLabel=p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
       let customer=p.customerId?data.customers.find(c=>c.id===p.customerId):null;
-      let customerLabel=customer?`${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}`:'—';
+      let customerLabel=customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</a>`:'—';
       return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${dateLabel}</b></td><td>${timeLabel}</td><td>${customerLabel}</td><td>${itemSummary}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
     }).join(''):`<tr><td colspan='7' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this month.</td></tr>`);
 }

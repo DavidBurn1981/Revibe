@@ -392,6 +392,14 @@ function renderDailySessionsPage(key){
   let paidKpiEl=document.getElementById('dailySessionsPaidKpiValue');
   if(paidKpiEl)paidKpiEl.textContent=Number.isFinite(paidKpi)?paidKpi.toFixed(1):'0.0';
 
+  let takingsForDay=getDailyTakings(key);
+  let cashEl=document.getElementById('dailySessionsCashValue');
+  if(cashEl)cashEl.textContent=`£${(+takingsForDay?.cash||0).toFixed(2)}`;
+  let treatmentsCardEl=document.getElementById('dailySessionsTreatmentsCardValue');
+  if(treatmentsCardEl)treatmentsCardEl.textContent=`£${(+takingsForDay?.treatmentsCard||0).toFixed(2)}`;
+  let bedCardEl=document.getElementById('dailySessionsBedCardValue');
+  if(bedCardEl)bedCardEl.textContent=`£${(+takingsForDay?.bedCard||0).toFixed(2)}`;
+
   let picker=document.getElementById('dailySessionsDatePicker');
   if(picker&&picker.value!==key)picker.value=key;
 
@@ -406,7 +414,7 @@ function renderDailySessionsPage(key){
         let customer=x.customerId?data.customers.find(c=>c.id===x.customerId):null;
         return `<tr class='clinicRow' onclick="openDailySessionEdit('${escapeHtml(x.id)}')">
         <td>${escapeHtml(x.time||'')}</td>
-        <td>${customer?escapeHtml(customer.firstName+' '+customer.lastName):'—'}</td>
+        <td>${customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName+' '+customer.lastName)}</a>`:'—'}</td>
         <td>${escapeHtml(x.length)} min</td>
         <td>${x.cashMinutes} min</td>
         <td>${x.cardMinutes} min</td>
@@ -700,11 +708,15 @@ async function confirmPurchases(){
         if(minutesError)throw minutesError;
       }
     }
+    let {error:takingsError}=await sb.rpc('add_to_daily_takings',{
+      p_date:localDateKey(),p_cash:glowStudioCash+treatmentsCash,p_treatments_card:treatmentsCard,p_bed_card:glowStudioCard
+    });
+    if(takingsError)throw takingsError;
     purchaseSelection={treatments:[],glowStudio:[]};
     clearPurchaseCustomer();
     closeProcessPurchasesModal();
     renderPurchaseLists();
-    await loadLiveData();renderAll();
+    await loadLiveData();renderAll();renderDailyTakings();
     alert('Purchase confirmed.');
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}
 }
