@@ -77,7 +77,7 @@ function requireRolePermission(key,action='edit',message){
   return false;
 }
 const REVIBE_ACTION_PERMISSION_RULES={
-  recordBedSession:['daily_session_tracker','edit'],
+  recordBedSession:['daily_session_tracker','edit'], deleteBedSessionFromHistory:['daily_session_tracker','delete'], deleteDailySession:['daily_session_tracker','delete'], deleteBedSessionFromModal:['daily_session_tracker','delete'], deleteDailySessionFromEdit:['daily_session_tracker','delete'],
   openBlockMinutesPurchase:['daily_session_tracker','edit'], openTangiblesPurchase:['daily_session_tracker','edit'], openRltProgrammePurchase:['daily_session_tracker','edit'], openPaygMinutesPurchase:['daily_session_tracker','edit'],
   addProductToPurchase:['daily_session_tracker','edit'], removePurchaseItem:['daily_session_tracker','edit'], openProcessPurchasesModal:['daily_session_tracker','edit'], confirmPurchases:['daily_session_tracker','edit'],
   openCustomerPurchaseDetail:['customer_purchases','view'], deleteCustomerPurchase:['customer_purchases','delete'],

@@ -1,6 +1,7 @@
 // ==================== NEW CUSTOMER WIZARD ====================
 let wizCustomerId=null;
 let wizSelectedSkinType=null;
+let wizUvAllowedManuallySet=false;
 let wizPurchaseSelection={treatments:[],glowStudio:[]};
 let wizBoughtBlockMinutes=false;
 let wizCurrentPurchaseCategory=null;
@@ -32,6 +33,7 @@ function openNewCustomerWizard(){
   wizMode='new';
   document.getElementById('wizModalTitle').textContent='Process New Customer';
   wizCustomerId=null;
+  wizUvAllowedManuallySet=false;
   wizSelectedSkinType=null;
   wizPurchaseSelection={treatments:[],glowStudio:[]};
   wizBoughtBlockMinutes=false;
@@ -121,7 +123,7 @@ function wizSearchSelectCustomer(){
   if(!q){results.style.display='none';results.innerHTML='';return}
   let matches=(data.customers||[]).filter(c=>c.active!==false&&`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)).slice(0,8);
   results.innerHTML=matches.length
-    ? matches.map(c=>`<div class='customerSearchResultRow' onclick="wizPickSelectCustomer('${c.id}')"><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b><div class='sub'>${escapeHtml(c.accountNumber)}</div></div>`).join('')
+    ? matches.map(c=>`<div class='customerSearchResultRow' onmousedown="event.preventDefault();wizPickSelectCustomer('${c.id}')"><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b><div class='sub'>${escapeHtml(c.accountNumber)}</div></div>`).join('')
     : `<div class='customerSearchResultRow muted'>No matching customers.</div>`;
   results.style.display='block';
 }
@@ -186,7 +188,7 @@ function wizHandleDobChange(){
     document.getElementById('wizIdDate').value='';
   }
   let dob=document.getElementById('wizDob').value,age=ageFromDob(dob);
-  if(idChecked&&age!==null&&age>=18)document.getElementById('wizUvAllowed').value='true';
+  if(idChecked&&age!==null&&age>=18&&!wizUvAllowedManuallySet)document.getElementById('wizUvAllowed').value='true';
   wizUpdateUvAllowedColour();
 }
 function wizCheckAgeWarnings(){
@@ -207,6 +209,7 @@ function wizSyncBedUse(value){
   document.getElementById('wizBedUse2').value=value;
 }
 function wizGuardUvAllowedChange(){
+  wizUvAllowedManuallySet=true;
   let dob=document.getElementById('wizDob').value,age=ageFromDob(dob);
   if(document.getElementById('wizUvAllowed').value==='true'&&age!==null&&age<18){
     document.getElementById('wizUvAllowed').value='false';
@@ -364,6 +367,11 @@ async function wizConfirmPurchases(){
     }));
     let {error:itemsError}=await sb.from('customer_purchase_items').insert(itemRows);
     if(itemsError)throw itemsError;
+    let tangibleItems=allItems.filter(item=>item.productType==='Tangible');
+    for(let item of tangibleItems){
+      let {error:stockError}=await sb.rpc('decrement_product_stock',{p_product_id:item.productId,p_quantity:1});
+      if(stockError)throw stockError;
+    }
     let blockMinuteItems=allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0);
     if(blockMinuteItems.length)wizBoughtBlockMinutes=true;
     for(let item of blockMinuteItems){
@@ -377,6 +385,8 @@ async function wizConfirmPurchases(){
       p_date:localDateKey(),p_cash:glowStudioCash+treatmentsCash,p_treatments_card:treatmentsCard,p_bed_card:glowStudioCard
     });
     if(takingsError)throw takingsError;
+    wizPurchaseSelection={treatments:[],glowStudio:[]};
+    wizRenderPurchaseLists();
     await loadLiveData();renderAll();renderDailyTakings();
     wizGoTo('sessionType');
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}

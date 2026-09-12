@@ -28,6 +28,7 @@ async function deleteCustomer(id){
  await loadLiveData();renderCustomers();
 }
 let selectedSkinType=null;
+let uvAllowedManuallySet=false;
 function updateUvAllowedColour(){
   let el=document.getElementById('custUvAllowed');
   el.classList.toggle('uvYes',el.value==='true');
@@ -57,7 +58,7 @@ function handleDobOrIdCheckedChange(){
   }
   if(!editingCustomerId){
     let dob=document.getElementById('custDob').value,age=ageFromDob(dob);
-    if(idChecked&&age!==null&&age>=18)document.getElementById('custUvAllowed').value='true';
+    if(idChecked&&age!==null&&age>=18&&!uvAllowedManuallySet)document.getElementById('custUvAllowed').value='true';
   }
   updateUvAllowedColour();
 }
@@ -73,7 +74,7 @@ function checkNewCustomerAgeWarnings(){
     alert('Challenge 25, ask for ID');
   }
 }
-function openCustomerCreate(){editingCustomerId=null;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custPreferredBed').value=c.preferredBed||'Any Bed';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function closeCustomerModal(){document.getElementById('customerModal').classList.remove('show')}
 function openAddMinutesModal(){
@@ -116,10 +117,12 @@ async function saveCustomer(){
  let first=document.getElementById('custFirst').value.trim(),last=document.getElementById('custLast').value.trim(),dob=document.getElementById('custDob').value,phone=document.getElementById('custPhone').value.trim(),email=document.getElementById('custEmail').value.trim(),address=document.getElementById('custAddress').value.trim(),uv=document.getElementById('custUv').value==='true',idChecked=document.getElementById('custIdChecked').value==='true',idCheckedDate=document.getElementById('custIdDate').value||null,uvAllowed=document.getElementById('custUvAllowed').value==='true',waiverSigned=document.getElementById('custWaiverSigned').value==='true',bedUse=document.getElementById('custBedUse').value,preferredBed=document.getElementById('custPreferredBed').value,bedDemo=document.getElementById('custBedDemo').value==='true',verifiedBy=idChecked?getVerifiedBySelections():[],healthNotes=document.getElementById('custHealthNotes').value.trim(),age=ageFromDob(dob),err=document.getElementById('customerError');err.style.display='none';
  if(!first||!last||!dob){err.textContent='First name, last name and DOB are required.';err.style.display='block';return}
  if(age<18){alert('CUSTOMER IS BELOW 18 AND CAN NOT BE A CUSTOMER.');return}
+ let isNewCustomer=!editingCustomerId;
+ if(isNewCustomer&&!selectedSkinType){err.textContent='Please select a skin type before creating the account.';err.style.display='block';return}
+ if(isNewCustomer&&!waiverSigned){err.textContent='Waiver Signed and Present must be set to Yes before creating the account.';err.style.display='block';return}
  let duplicate=(data.customers||[]).find(c=>c.id!==editingCustomerId&&c.dob===dob&&c.firstName.trim().toLowerCase()===first.toLowerCase()&&c.lastName.trim().toLowerCase()===last.toLowerCase());
  if(duplicate){showDuplicateCustomerModal(duplicate);return}
  if(uv&&age<25&&!idChecked)alert('CHECK CUSTOMER ID');
- let isNewCustomer=!editingCustomerId;
  let payload={first_name:first,last_name:last,date_of_birth:dob,phone_number:phone||null,email:email||null,address:address||null,intends_uv_or_injectables:uv,id_checked:idChecked,id_checked_date:idCheckedDate,uv_allowed:uvAllowed,waiver_signed_present:waiverSigned,bed_use:bedUse,preferred_bed:preferredBed,bed_demo_provided:bedDemo,verified_by:verifiedBy,skin_type:selectedSkinType,general_health_notes:healthNotes||null,updated_at:new Date().toISOString()},error,row;
  if(editingCustomerId)({data:row,error}=await sb.from('customers').update(payload).eq('id',editingCustomerId).select().single());else({data:row,error}=await sb.from('customers').insert(payload).select().single());
  if(error){
@@ -150,9 +153,53 @@ function renderCustomerPurchases(c){
    return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${dateLabel}</b></td><td>${itemSummary}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
  }).join(''):"<tr><td colspan='3' class='muted'>No purchases yet.</td></tr>")
 }
-function openBlockPurchase(id){purchaseProductId=id;document.getElementById('purchaseQty').value='1';updatePurchaseSummary();document.getElementById('purchaseModal').classList.add('show')}
-function updatePurchaseSummary(){let p=data.tanningProducts.find(x=>x.id===purchaseProductId),q=Math.max(1,+document.getElementById('purchaseQty').value||1);if(p)document.getElementById('purchaseSummary').textContent=`Purchasing ${q} × ${p.title} (${p.minutes*q} minutes) for £${(p.price*q).toFixed(2)}.`}
-async function completeBlockPurchase(){let q=Math.max(1,+document.getElementById('purchaseQty').value||1),{data:bal,error}=await sb.rpc('purchase_block_minutes',{p_customer:editingCustomerId,p_product:purchaseProductId,p_quantity:q});if(error)return alert(error.message);document.getElementById('purchaseModal').classList.remove('show');await loadLiveData();openCustomer(editingCustomerId);alert(`Purchase complete. ${bal} minutes left on account.`)}
+function openBlockPurchase(id){purchaseProductId=id;document.getElementById('purchaseQty').value='1';document.getElementById('purchaseCardAmount').value='';document.getElementById('purchaseCashAmount').value='';document.getElementById('purchaseModalError').textContent='';document.getElementById('purchaseModalError').style.display='none';updatePurchaseSummary();document.getElementById('purchaseModal').classList.add('show')}
+function updatePurchaseSummary(){
+  let p=data.tanningProducts.find(x=>x.id===purchaseProductId),q=Math.max(1,+document.getElementById('purchaseQty').value||1);
+  if(!p)return;
+  let total=p.price*q;
+  document.getElementById('purchaseSummary').textContent=`Purchasing ${q} × ${p.title} (${p.minutes*q} minutes) for £${total.toFixed(2)}.`;
+  let card=+document.getElementById('purchaseCardAmount').value||0,cash=+document.getElementById('purchaseCashAmount').value||0;
+  let entered=pence(card)+pence(cash),due=pence(total);
+  let statusEl=document.getElementById('purchaseSplitStatus');
+  statusEl.className='processPurchasesCheck '+(entered===due?'ok':'bad');
+  statusEl.textContent=entered===due?'✓ Matches amount due':`Card + Cash must equal the amount due — ${entered<due?`Another £${((due-entered)/100).toFixed(2)} needed`:`£${((entered-due)/100).toFixed(2)} too much`}`;
+}
+async function completeBlockPurchase(){
+  let p=data.tanningProducts.find(x=>x.id===purchaseProductId);if(!p)return;
+  let q=Math.max(1,+document.getElementById('purchaseQty').value||1),
+      card=+document.getElementById('purchaseCardAmount').value||0,
+      cash=+document.getElementById('purchaseCashAmount').value||0,
+      total=p.price*q,err=document.getElementById('purchaseModalError');
+  err.textContent='';err.style.display='none';
+  if(pence(card)+pence(cash)!==pence(total)){err.textContent='Card + Cash must equal the amount due before confirming.';err.style.display='block';return}
+  try{
+    let {data:bal,error}=await sb.rpc('purchase_block_minutes',{p_customer:editingCustomerId,p_product:purchaseProductId,p_quantity:q});
+    if(error)throw error;
+    let isTreatmentsCard=p.cardMachine==='Treatment Card';
+    let {data:purchase,error:purchaseError}=await sb.from('customer_purchases').insert({
+      purchase_date:localDateKey(),
+      treatments_total:isTreatmentsCard?total:0,glow_studio_total:isTreatmentsCard?0:total,grand_total:total,
+      glow_studio_card_amount:isTreatmentsCard?0:card,glow_studio_cash_amount:isTreatmentsCard?0:cash,
+      treatments_card_amount:isTreatmentsCard?card:0,treatments_cash_amount:isTreatmentsCard?cash:0,
+      customer_id:editingCustomerId
+    }).select().single();
+    if(purchaseError)throw purchaseError;
+    let {error:itemsError}=await sb.from('customer_purchase_items').insert({
+      purchase_id:purchase.id,tanning_product_id:p.id,product_title:q>1?`${p.title} × ${q}`:p.title,
+      product_type:p.type,card_machine:p.cardMachine,price:total
+    });
+    if(itemsError)throw itemsError;
+    let {error:takingsError}=await sb.rpc('add_to_daily_takings',{
+      p_date:localDateKey(),
+      p_cash:cash,p_treatments_card:isTreatmentsCard?card:0,p_bed_card:isTreatmentsCard?0:card
+    });
+    if(takingsError)throw takingsError;
+    document.getElementById('purchaseModal').classList.remove('show');
+    await loadLiveData();openCustomer(editingCustomerId);renderAll();
+    alert(`Purchase complete. ${bal} minutes left on account.`);
+  }catch(e){err.textContent=e.message||'Could not complete this purchase.';err.style.display='block'}
+}
 function renderTanningProducts(){let t=document.getElementById('tanningProductsTable');if(!t)return;let rows=data.tanningProducts||[];let q=(document.getElementById('tanningProductSearchInput')?.value||'').trim().toLowerCase();if(q)rows=rows.filter(p=>(p.title||'').toLowerCase().includes(q)||(p.type||'').toLowerCase().includes(q));t.innerHTML="<tr><th>Type</th><th>Product</th><th>Minutes</th><th>Price</th><th>Stock</th></tr>"+(rows.length?rows.map(p=>`<tr class='clinicRow' onclick="openTanningProduct('${p.id}')"><td>${escapeHtml(p.type)}</td><td><b>${escapeHtml(p.title)}</b></td><td>${p.minutes??'—'}</td><td>£${p.price.toFixed(2)}</td><td>${p.stock??'—'}</td></tr>`).join(''):`<tr><td colspan='5' class='muted'>${q?'No products match your search.':'No products yet.'}</td></tr>`)}
 function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpCardMachine').value=p?.cardMachine||'Sunbed Card';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('deleteTanningProductBtn').style.display=p?'inline-block':'none';document.getElementById('tanningProductModal').classList.add('show')}
 async function deleteTanningProduct(){if(!editingTanningProductId)return alert('Save the product before it can be deleted.');if(!confirm('Delete this product?'))return;let {error}=await sb.from('tanning_rlt_products').delete().eq('id',editingTanningProductId);if(error)return alert(error.message);document.getElementById('tanningProductModal').classList.remove('show');await loadLiveData();renderTanningProducts()}
