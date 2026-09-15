@@ -275,7 +275,54 @@ function renderPeriodPerformance(mode,refDate){
     </table></div>`;
 }
 function drawBarChart(canvas,labels,values,valueSuffix=''){let ctx=canvas.getContext('2d'),ratio=window.devicePixelRatio||1,w=Math.max(canvas.parentElement.clientWidth,700),h=280;canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.scale(ratio,ratio);ctx.clearRect(0,0,w,h);let pad={l:48,r:18,t:22,b:52},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,max=Math.max(...values,1),step=cw/Math.max(labels.length,1),bar=Math.max(10,step*.62);ctx.font='11px Segoe UI';ctx.fillStyle='#9da3ad';ctx.strokeStyle='#30353d';ctx.lineWidth=1;for(let i=0;i<=4;i++){let y=pad.t+ch-(ch*i/4),v=Math.round(max*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(v,pad.l-38,y+4)}values.forEach((v,i)=>{let x=pad.l+i*step+(step-bar)/2,bh=max?ch*(v/max):0,y=pad.t+ch-bh;ctx.fillStyle='#ff2d78';ctx.fillRect(x,y,bar,bh);ctx.fillStyle='#f5f5f7';ctx.textAlign='center';ctx.fillText(`${Number(v).toFixed(valueSuffix?1:0)}${valueSuffix}`,x+bar/2,Math.max(12,y-6));ctx.save();ctx.translate(x+bar/2,pad.t+ch+15);ctx.rotate(-.55);ctx.fillStyle='#9da3ad';ctx.fillText(labels[i],0,0);ctx.restore()});ctx.textAlign='left'}
-function renderPerformanceCharts(){let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';let sessions=data.bedSessions||[],today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1),keys=dateRangeKeys(first,today);let days=keys.map(k=>{let a=aggregateSessions(sessions.filter(x=>x.date===k));return {key:k,minutes:a.minutes,kpi:dayKpi(k,a.minutes)}});document.getElementById('perfTitle').textContent='Performance Charts';document.getElementById('perfSubtitle').textContent='Calendar month to date';document.getElementById('perfContent').innerHTML=`<div class='chartCard'><h3>Total Minutes by Day</h3><div class='chartWrap'><canvas id='minutesChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Minutes Per Bed Per Hour KPI by Day</h3><div class='chartWrap'><canvas id='kpiChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Sessions Logged by Time of Day</h3><div class='muted' style='margin-bottom:10px'>Shows how many sessions started in each hour, so you can spot busy and quiet times of day. Defaults to the last 8 weeks, never earlier than 29 Aug — data before that was entered in bulk rather than logged as sessions happened, so it doesn't reflect real intraday timing.</div><div class='hourChartRange'><label>From <input type='date' id='hourChartFrom' onchange='renderHourOfDayChart()'></label><label>To <input type='date' id='hourChartTo' onchange='renderHourOfDayChart()'></label></div><div class='chartWrap'><canvas id='hourChart' class='chartCanvas'></canvas></div></div>`;let labels=days.map(d=>parseLocalDateKey(d.key).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));let hourFloor=new Date(2026,7,29),eightWeeksAgo=new Date(today);eightWeeksAgo.setDate(eightWeeksAgo.getDate()-56);let hourDefaultFrom=eightWeeksAgo>hourFloor?eightWeeksAgo:hourFloor;document.getElementById('hourChartFrom').value=iso(hourDefaultFrom);document.getElementById('hourChartTo').value=localDateKey();requestAnimationFrame(()=>{drawBarChart(document.getElementById('minutesChart'),labels,days.map(d=>d.minutes));drawBarChart(document.getElementById('kpiChart'),labels,days.map(d=>d.kpi),'');renderHourOfDayChart()})}
+function renderWeekdayTrendChart(){
+  let canvas=document.getElementById('weekdayTrendChart');if(!canvas)return;
+  let sessions=data.bedSessions||[],today=new Date();
+  let weekdayLabels=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  // JS getDay(): 0=Sunday...6=Saturday. Convert to Monday-first index (0=Monday...6=Sunday).
+  let jsDayToMonFirst=d=>(d+6)%7;
+  let series=weekdayLabels.map((label,monFirstIdx)=>{
+    let dates=[];
+    let cursor=new Date(today);
+    // Walk back day by day until we've collected 6 dates matching this weekday
+    while(dates.length<6){
+      if(jsDayToMonFirst(cursor.getDay())===monFirstIdx)dates.push(iso(cursor));
+      cursor.setDate(cursor.getDate()-1);
+    }
+    dates.reverse(); // oldest to newest, left to right
+    let values=dates.map(k=>aggregateSessions(sessions.filter(x=>x.date===k)).minutes);
+    return {label,dates,values};
+  });
+  requestAnimationFrame(()=>drawWeekdayTrendChart(canvas,series));
+}
+function drawWeekdayTrendChart(canvas,series){
+  let ctx=canvas.getContext('2d'),ratio=window.devicePixelRatio||1,w=Math.max(canvas.parentElement.clientWidth,700),h=200;
+  canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.scale(ratio,ratio);
+  ctx.clearRect(0,0,w,h);
+  let sectionW=w/series.length,pad={t:16,b:32},plotH=h-pad.t-pad.b;
+  ctx.font='11px Segoe UI';ctx.textAlign='center';
+  series.forEach((day,i)=>{
+    let x0=i*sectionW,x1=(i+1)*sectionW,innerPad=14,px0=x0+innerPad,px1=x1-innerPad,pw=px1-px0;
+    if(i>0){ctx.strokeStyle='#2a2f38';ctx.beginPath();ctx.moveTo(x0,pad.t);ctx.lineTo(x0,pad.t+plotH);ctx.stroke()}
+    let max=Math.max(...day.values,1),min=Math.min(...day.values,0);
+    if(max===min)max=min+1;
+    let pointX=idx=>px0+(pw*idx/(day.values.length-1||1)),
+        pointY=v=>pad.t+plotH-((v-min)/(max-min))*plotH;
+    ctx.strokeStyle='#ff2d78';ctx.lineWidth=2;ctx.beginPath();
+    day.values.forEach((v,idx)=>{let x=pointX(idx),y=pointY(v);idx===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+    ctx.stroke();
+    ctx.fillStyle='#ff2d78';
+    day.values.forEach((v,idx)=>{let x=pointX(idx),y=pointY(v);ctx.beginPath();ctx.arc(x,y,2.5,0,Math.PI*2);ctx.fill()});
+    // Label the first and last point's value so the trend is readable at a glance
+    ctx.fillStyle='#9da3ad';ctx.font='10px Segoe UI';
+    ctx.fillText(Math.round(day.values[0]),pointX(0),pointY(day.values[0])-8);
+    ctx.fillText(Math.round(day.values[day.values.length-1]),pointX(day.values.length-1),pointY(day.values[day.values.length-1])-8);
+    ctx.fillStyle='#f5f5f7';ctx.font='11px Segoe UI';
+    ctx.fillText(day.label,x0+sectionW/2,h-14);
+  });
+  ctx.textAlign='left';
+}
+function renderPerformanceCharts(){let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';let sessions=data.bedSessions||[],today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1),keys=dateRangeKeys(first,today);let days=keys.map(k=>{let a=aggregateSessions(sessions.filter(x=>x.date===k));return {key:k,minutes:a.minutes,kpi:dayKpi(k,a.minutes)}});document.getElementById('perfTitle').textContent='Performance Charts';document.getElementById('perfSubtitle').textContent='Calendar month to date';document.getElementById('perfContent').innerHTML=`<div class='chartCard'><h3>Total Minutes by Day</h3><div class='chartWrap'><canvas id='minutesChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Minutes Per Bed Per Hour KPI by Day</h3><div class='chartWrap'><canvas id='kpiChart' class='chartCanvas'></canvas></div></div><div class='chartCard'><h3>Growth by Day of Week — Last 6 Weeks</h3><div class='muted' style='margin-bottom:10px'>Each section shows the same weekday over the last 6 weeks — e.g. the Monday section plots the last 6 Mondays — so you can spot whether that day is trending up or down. Each section scales to its own range, since a quiet day's growth would otherwise be flattened next to a busy one.</div><div class='chartWrap' style='height:220px'><canvas id='weekdayTrendChart' class='chartCanvas' style='height:200px'></canvas></div></div><div class='chartCard'><h3>Sessions Logged by Time of Day</h3><div class='muted' style='margin-bottom:10px'>Shows how many sessions started in each hour, so you can spot busy and quiet times of day. Defaults to the last 8 weeks, never earlier than 29 Aug — data before that was entered in bulk rather than logged as sessions happened, so it doesn't reflect real intraday timing.</div><div class='hourChartRange'><label>From <input type='date' id='hourChartFrom' onchange='renderHourOfDayChart()'></label><label>To <input type='date' id='hourChartTo' onchange='renderHourOfDayChart()'></label></div><div class='chartWrap'><canvas id='hourChart' class='chartCanvas'></canvas></div></div>`;let labels=days.map(d=>parseLocalDateKey(d.key).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));let hourFloor=new Date(2026,7,29),eightWeeksAgo=new Date(today);eightWeeksAgo.setDate(eightWeeksAgo.getDate()-56);let hourDefaultFrom=eightWeeksAgo>hourFloor?eightWeeksAgo:hourFloor;document.getElementById('hourChartFrom').value=iso(hourDefaultFrom);document.getElementById('hourChartTo').value=localDateKey();requestAnimationFrame(()=>{drawBarChart(document.getElementById('minutesChart'),labels,days.map(d=>d.minutes));drawBarChart(document.getElementById('kpiChart'),labels,days.map(d=>d.kpi),'');renderWeekdayTrendChart();renderHourOfDayChart()})}
 function renderHourOfDayChart(){
   let canvas=document.getElementById('hourChart');if(!canvas)return;
   let from=document.getElementById('hourChartFrom').value,to=document.getElementById('hourChartTo').value;
