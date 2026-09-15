@@ -342,10 +342,13 @@ function wizUpdatePaymentSplitStatus(){
   document.getElementById('wizAmountBeingPaid').textContent=`£${(glowCard+glowCash+treatCard+treatCash).toFixed(2)}`;
 }
 async function wizConfirmPurchases(){
+  let confirmBtn=document.querySelector('.wizConfirmPurchaseBtn');
+  if(confirmBtn&&confirmBtn.disabled)return;
   let err=document.getElementById('wizPaymentError');err.style.display='none';
   let glowOk=wizHalfMatchesDue('wizPpGlowStudioCard','wizPpGlowStudioCash',document.getElementById('wizPpGlowStudioDue')),
       treatOk=wizHalfMatchesDue('wizPpTreatmentsCard','wizPpTreatmentsCash',document.getElementById('wizPpTreatmentsDue'));
   if(!glowOk||!treatOk){err.textContent='Card + Cash must equal the amount due in both halves before confirming.';err.style.display='block';return}
+  if(confirmBtn){confirmBtn.disabled=true;confirmBtn.textContent='Confirming...'}
   let glowStudioCard=+document.getElementById('wizPpGlowStudioCard').value||0,
       glowStudioCash=+document.getElementById('wizPpGlowStudioCash').value||0,
       treatmentsCard=+document.getElementById('wizPpTreatmentsCard').value||0,
@@ -390,6 +393,7 @@ async function wizConfirmPurchases(){
     await loadLiveData();renderAll();renderDailyTakings();
     wizGoTo('sessionType');
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}
+  finally{if(confirmBtn){confirmBtn.disabled=false;confirmBtn.textContent='Confirm Purchases →'}}
 }
 
 // --- Session Type ---
