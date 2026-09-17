@@ -417,46 +417,36 @@ function openCustomerProfiling(){
   document.getElementById('performanceOverlay').classList.add('show');
 }
 function openCustomerProfilingList(type){
-  let title,rows,showLastSession=true,showMinutes=false,showPurchasedMinutes=false,showAmountSpent=false,showLastPurchase=false;
+  let title,rows,extraCol=null;
   if(type==='active2'){
     title='Session in Last 2 Weeks';
     let ids=customerProfilingActiveCustomerIds(2);
     rows=(data.customers||[]).filter(c=>ids.has(c.id));
-    showLastSession=false;
   }else if(type==='minutes2wk'||type==='minutes4wk'||type==='tangibles2wk'||type==='tangibles4wk'){
     let weeks=type.includes('2wk')?2:4;
     let productType=type.startsWith('minutes')?'Block Minutes':'Tangible';
     title=`Purchased ${productType==='Block Minutes'?'Minutes':'Tangibles'} in Last ${weeks} Weeks`;
     let entries=customerProfilingPurchaseTypeCustomers(weeks,productType);
-    rows=entries.map(e=>({...e.customer,_minutesPurchased:e.minutes,_amountSpent:e.amount,_lastPurchase:e.latestDate}));
-    showLastSession=false;
-    showPurchasedMinutes=productType==='Block Minutes';
-    showAmountSpent=productType==='Tangible';
-    showLastPurchase=true;
+    let extraByCustomer={};
+    entries.forEach(e=>{extraByCustomer[e.customer.id]=productType==='Block Minutes'?`${e.minutes} mins`:`£${e.amount.toFixed(2)}`});
+    rows=entries.map(e=>e.customer);
+    extraCol={label:productType==='Block Minutes'?'Minutes Purchased':'Amount Spent',get:c=>extraByCustomer[c.id]||'—'};
   }else{
     let weeksMap={inactive2:2,inactive4:4,inactive6:6,inactive3with10:3,inactive3with20:3,inactive3with40:3};
     let minutesMap={inactive3with10:10,inactive3with20:20,inactive3with40:40};
     let weeks=weeksMap[type];
     title=minutesMap[type]?`Over ${minutesMap[type]} Mins on Account, No Session in ${weeks}+ Weeks`:`No Session in ${weeks}+ Weeks`;
     rows=customerProfilingInactiveCustomers(weeks,minutesMap[type]||null);
-    showMinutes=!!minutesMap[type];
   }
   rows=[...rows].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
-  let lastSession=customerProfilingLastSessionMap();
+  let maps=customerStandardColumnMaps();
   document.getElementById('customerProfilingListTitle').textContent=title;
-  let header=`<tr><th>Account</th><th>Name</th><th>Date Signed Up</th>${showLastSession?"<th>Last Session</th>":''}${showMinutes?"<th>Minutes Left</th>":''}${showPurchasedMinutes?"<th>Minutes Purchased</th>":''}${showAmountSpent?"<th>Amount Spent</th>":''}${showLastPurchase?"<th>Last Purchase</th>":''}</tr>`;
+  let header=`<tr><th>Date Signed Up</th>${customerStandardColumnsHeader()}${extraCol?`<th>${extraCol.label}</th>`:''}</tr>`;
   document.getElementById('customerProfilingListTable').innerHTML=header+(rows.length?rows.map(c=>{
-    let last=lastSession[c.id];
     return `<tr class='clinicRow' onclick="document.getElementById('customerProfilingListModal').classList.remove('show');openCustomer('${c.id}')">
-      <td>${escapeHtml(c.accountNumber)}</td><td><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b></td>
-      <td>${c.createdAt?formatSunbedDisplayDate(iso(new Date(c.createdAt))):'—'}</td>
-      ${showLastSession?`<td>${last?formatSunbedDisplayDate(last):'Never'}</td>`:''}
-      ${showMinutes?`<td>${c.minutesLeft}</td>`:''}
-      ${showPurchasedMinutes?`<td>${c._minutesPurchased}</td>`:''}
-      ${showAmountSpent?`<td>£${c._amountSpent.toFixed(2)}</td>`:''}
-      ${showLastPurchase?`<td>${formatSunbedDisplayDate(c._lastPurchase)}</td>`:''}
+      <td>${c.createdAt?formatSunbedDisplayDate(iso(new Date(c.createdAt))):'—'}</td>${customerStandardColumnsRow(c,maps)}${extraCol?`<td>${extraCol.get(c)}</td>`:''}
     </tr>`;
-  }).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:20px'>No customers match this.</td></tr>`);
+  }).join(''):`<tr><td colspan='11' class='muted' style='text-align:center;padding:20px'>No customers match this.</td></tr>`);
   document.getElementById('customerProfilingListModal').classList.add('show');
 }
 function openBonusPerformance(){
