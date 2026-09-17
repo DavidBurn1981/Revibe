@@ -336,6 +336,26 @@ function renderHourOfDayChart(){
   for(let h=firstHour;h<=lastHour;h++){rangeHours.push(`${h%12||12}${h<12?'am':'pm'}–${(h+1)%12||12}${h+1<12||h+1===24?'am':'pm'}`);rangeCounts.push(hours[h])}
   drawBarChart(canvas,rangeHours,rangeCounts);
 }
+function customerProfilingPurchaseTypeCustomers(weeks,productType){
+  let cutoff=iso(new Date(new Date().getTime()-weeks*7*24*60*60*1000));
+  let purchaseMeta={};
+  (data.customerPurchases||[]).forEach(p=>{if(p.customerId&&p.date>=cutoff)purchaseMeta[p.id]={customerId:p.customerId,date:p.date}});
+  let byCustomer={};
+  (data.customerPurchaseItems||[]).forEach(item=>{
+    if(item.productType!==productType)return;
+    let meta=purchaseMeta[item.purchaseId];if(!meta)return;
+    if(!byCustomer[meta.customerId])byCustomer[meta.customerId]={minutes:0,amount:0,items:0,latestDate:meta.date};
+    let entry=byCustomer[meta.customerId];
+    if(productType==='Block Minutes'){let m=item.title.match(/(\d+)/);entry.minutes+=m?+m[1]:0}
+    entry.amount+=+item.price||0;
+    entry.items+=1;
+    if(meta.date>entry.latestDate)entry.latestDate=meta.date;
+  });
+  return Object.keys(byCustomer).map(customerId=>{
+    let c=(data.customers||[]).find(x=>x.id===customerId);
+    return c?{customer:c,...byCustomer[customerId]}:null;
+  }).filter(Boolean);
+}
 function customerProfilingLastSessionMap(){
   let map={};
   (data.bedSessions||[]).forEach(s=>{
@@ -370,10 +390,20 @@ function openCustomerProfiling(){
   let inactive6=customerProfilingInactiveCustomers(6).length;
   let inactive2=customerProfilingInactiveCustomers(2).length;
   let inactive3With10=customerProfilingInactiveCustomers(3,10).length;
+  let inactive3With20=customerProfilingInactiveCustomers(3,20).length;
+  let inactive3With40=customerProfilingInactiveCustomers(3,40).length;
+  let minutes2wk=customerProfilingPurchaseTypeCustomers(2,'Block Minutes').length;
+  let tangibles2wk=customerProfilingPurchaseTypeCustomers(2,'Tangible').length;
+  let minutes4wk=customerProfilingPurchaseTypeCustomers(4,'Block Minutes').length;
+  let tangibles4wk=customerProfilingPurchaseTypeCustomers(4,'Tangible').length;
   document.getElementById('perfContent').innerHTML=`
     <div class='perfSectionTitle'>Customer Retention Data</div>
     <div class='perfMetrics'>
       <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('active2')"><div class='label'>Unique Customers — Session in Last 2 Weeks</div><div class='value'>${activeRecentCount}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('minutes2wk')"><div class='label'>Purchased Minutes in Last 2 Weeks</div><div class='value'>${minutes2wk}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('tangibles2wk')"><div class='label'>Purchased Tangibles in Last 2 Weeks</div><div class='value'>${tangibles2wk}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('minutes4wk')"><div class='label'>Purchased Minutes in Last 4 Weeks</div><div class='value'>${minutes4wk}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('tangibles4wk')"><div class='label'>Purchased Tangibles in Last 4 Weeks</div><div class='value'>${tangibles4wk}</div></div>
     </div>
     <div class='perfSectionTitle'>Customer Loss Data</div>
     <div class='perfMetrics'>
@@ -381,27 +411,40 @@ function openCustomerProfiling(){
       <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive4')"><div class='label'>Haven't Had a Session in 4 Weeks</div><div class='value'>${inactive4}</div></div>
       <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive6')"><div class='label'>Haven't Had a Session in 6 Weeks</div><div class='value'>${inactive6}</div></div>
       <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive3with10')"><div class='label'>Over 10 Mins on Account, No Session in 3+ Weeks</div><div class='value'>${inactive3With10}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive3with20')"><div class='label'>Over 20 Mins on Account, No Session in 3+ Weeks</div><div class='value'>${inactive3With20}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive3with40')"><div class='label'>Over 40 Mins on Account, No Session in 3+ Weeks</div><div class='value'>${inactive3With40}</div></div>
     </div>`;
   document.getElementById('performanceOverlay').classList.add('show');
 }
 function openCustomerProfilingList(type){
-  let title,rows,showLastSession=true,showMinutes=false;
+  let title,rows,showLastSession=true,showMinutes=false,showPurchasedMinutes=false,showAmountSpent=false,showLastPurchase=false;
   if(type==='active2'){
     title='Session in Last 2 Weeks';
     let ids=customerProfilingActiveCustomerIds(2);
     rows=(data.customers||[]).filter(c=>ids.has(c.id));
     showLastSession=false;
+  }else if(type==='minutes2wk'||type==='minutes4wk'||type==='tangibles2wk'||type==='tangibles4wk'){
+    let weeks=type.includes('2wk')?2:4;
+    let productType=type.startsWith('minutes')?'Block Minutes':'Tangible';
+    title=`Purchased ${productType==='Block Minutes'?'Minutes':'Tangibles'} in Last ${weeks} Weeks`;
+    let entries=customerProfilingPurchaseTypeCustomers(weeks,productType);
+    rows=entries.map(e=>({...e.customer,_minutesPurchased:e.minutes,_amountSpent:e.amount,_lastPurchase:e.latestDate}));
+    showLastSession=false;
+    showPurchasedMinutes=productType==='Block Minutes';
+    showAmountSpent=productType==='Tangible';
+    showLastPurchase=true;
   }else{
-    let weeksMap={inactive2:2,inactive4:4,inactive6:6,inactive3with10:3};
+    let weeksMap={inactive2:2,inactive4:4,inactive6:6,inactive3with10:3,inactive3with20:3,inactive3with40:3};
+    let minutesMap={inactive3with10:10,inactive3with20:20,inactive3with40:40};
     let weeks=weeksMap[type];
-    title=type==='inactive3with10'?`Over 10 Mins on Account, No Session in ${weeks}+ Weeks`:`No Session in ${weeks}+ Weeks`;
-    rows=customerProfilingInactiveCustomers(weeks,type==='inactive3with10'?10:null);
-    showMinutes=type==='inactive3with10';
+    title=minutesMap[type]?`Over ${minutesMap[type]} Mins on Account, No Session in ${weeks}+ Weeks`:`No Session in ${weeks}+ Weeks`;
+    rows=customerProfilingInactiveCustomers(weeks,minutesMap[type]||null);
+    showMinutes=!!minutesMap[type];
   }
   rows=[...rows].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
   let lastSession=customerProfilingLastSessionMap();
   document.getElementById('customerProfilingListTitle').textContent=title;
-  let header=`<tr><th>Account</th><th>Name</th><th>Date Signed Up</th>${showLastSession?"<th>Last Session</th>":''}${showMinutes?"<th>Minutes Left</th>":''}</tr>`;
+  let header=`<tr><th>Account</th><th>Name</th><th>Date Signed Up</th>${showLastSession?"<th>Last Session</th>":''}${showMinutes?"<th>Minutes Left</th>":''}${showPurchasedMinutes?"<th>Minutes Purchased</th>":''}${showAmountSpent?"<th>Amount Spent</th>":''}${showLastPurchase?"<th>Last Purchase</th>":''}</tr>`;
   document.getElementById('customerProfilingListTable').innerHTML=header+(rows.length?rows.map(c=>{
     let last=lastSession[c.id];
     return `<tr class='clinicRow' onclick="document.getElementById('customerProfilingListModal').classList.remove('show');openCustomer('${c.id}')">
@@ -409,8 +452,11 @@ function openCustomerProfilingList(type){
       <td>${c.createdAt?formatSunbedDisplayDate(iso(new Date(c.createdAt))):'—'}</td>
       ${showLastSession?`<td>${last?formatSunbedDisplayDate(last):'Never'}</td>`:''}
       ${showMinutes?`<td>${c.minutesLeft}</td>`:''}
+      ${showPurchasedMinutes?`<td>${c._minutesPurchased}</td>`:''}
+      ${showAmountSpent?`<td>£${c._amountSpent.toFixed(2)}</td>`:''}
+      ${showLastPurchase?`<td>${formatSunbedDisplayDate(c._lastPurchase)}</td>`:''}
     </tr>`;
-  }).join(''):`<tr><td colspan='5' class='muted' style='text-align:center;padding:20px'>No customers match this.</td></tr>`);
+  }).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:20px'>No customers match this.</td></tr>`);
   document.getElementById('customerProfilingListModal').classList.add('show');
 }
 function openBonusPerformance(){
