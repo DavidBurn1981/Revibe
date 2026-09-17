@@ -336,6 +336,77 @@ function renderHourOfDayChart(){
   for(let h=firstHour;h<=lastHour;h++){rangeHours.push(`${h%12||12}${h<12?'am':'pm'}–${(h+1)%12||12}${h+1<12||h+1===24?'am':'pm'}`);rangeCounts.push(hours[h])}
   drawBarChart(canvas,rangeHours,rangeCounts);
 }
+function customerProfilingLastSessionMap(){
+  let map={};
+  (data.bedSessions||[]).forEach(s=>{
+    if(!s.customerId)return;
+    if(!map[s.customerId]||s.date>map[s.customerId])map[s.customerId]=s.date;
+  });
+  return map;
+}
+function customerProfilingActiveCustomerIds(weeks){
+  let cutoff=iso(new Date(new Date().getTime()-weeks*7*24*60*60*1000));
+  let ids=new Set();
+  (data.bedSessions||[]).forEach(s=>{if(s.customerId&&s.date>=cutoff)ids.add(s.customerId)});
+  return ids;
+}
+function customerProfilingInactiveCustomers(weeks,minMinutes){
+  let cutoff=iso(new Date(new Date().getTime()-weeks*7*24*60*60*1000));
+  let lastSession=customerProfilingLastSessionMap();
+  return (data.customers||[]).filter(c=>{
+    if(c.active===false)return false;
+    if(minMinutes!=null&&(+c.minutesLeft||0)<=minMinutes)return false;
+    let last=lastSession[c.id];
+    return !last||last<cutoff;
+  });
+}
+function openCustomerProfiling(){
+  let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';
+  document.getElementById('perfTitle').textContent='Customer Profiling';
+  document.getElementById('perfSubtitle').textContent='Customer volumes and activity breakdown.';
+  let activeRecentCount=customerProfilingActiveCustomerIds(2).size;
+  let inactive4=customerProfilingInactiveCustomers(4).length;
+  let inactive6=customerProfilingInactiveCustomers(6).length;
+  let inactive2=customerProfilingInactiveCustomers(2).length;
+  let inactive3With10=customerProfilingInactiveCustomers(3,10).length;
+  document.getElementById('perfContent').innerHTML=`<div class='perfMetrics'>
+    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('active2')"><div class='label'>Unique Customers — Session in Last 2 Weeks</div><div class='value'>${activeRecentCount}</div></div>
+    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive2')"><div class='label'>Haven't Had a Session in 2 Weeks</div><div class='value'>${inactive2}</div></div>
+    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive4')"><div class='label'>Haven't Had a Session in 4 Weeks</div><div class='value'>${inactive4}</div></div>
+    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive6')"><div class='label'>Haven't Had a Session in 6 Weeks</div><div class='value'>${inactive6}</div></div>
+    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive3with10')"><div class='label'>Over 10 Mins on Account, No Session in 3+ Weeks</div><div class='value'>${inactive3With10}</div></div>
+  </div>`;
+  document.getElementById('performanceOverlay').classList.add('show');
+}
+function openCustomerProfilingList(type){
+  let title,rows,showLastSession=true,showMinutes=false;
+  if(type==='active2'){
+    title='Session in Last 2 Weeks';
+    let ids=customerProfilingActiveCustomerIds(2);
+    rows=(data.customers||[]).filter(c=>ids.has(c.id));
+    showLastSession=false;
+  }else{
+    let weeksMap={inactive2:2,inactive4:4,inactive6:6,inactive3with10:3};
+    let weeks=weeksMap[type];
+    title=type==='inactive3with10'?`Over 10 Mins on Account, No Session in ${weeks}+ Weeks`:`No Session in ${weeks}+ Weeks`;
+    rows=customerProfilingInactiveCustomers(weeks,type==='inactive3with10'?10:null);
+    showMinutes=type==='inactive3with10';
+  }
+  rows=[...rows].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
+  let lastSession=customerProfilingLastSessionMap();
+  document.getElementById('customerProfilingListTitle').textContent=title;
+  let header=`<tr><th>Account</th><th>Name</th><th>Date Signed Up</th>${showLastSession?"<th>Last Session</th>":''}${showMinutes?"<th>Minutes Left</th>":''}</tr>`;
+  document.getElementById('customerProfilingListTable').innerHTML=header+(rows.length?rows.map(c=>{
+    let last=lastSession[c.id];
+    return `<tr class='clinicRow' onclick="document.getElementById('customerProfilingListModal').classList.remove('show');openCustomer('${c.id}')">
+      <td>${escapeHtml(c.accountNumber)}</td><td><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b></td>
+      <td>${c.createdAt?formatSunbedDisplayDate(iso(new Date(c.createdAt))):'—'}</td>
+      ${showLastSession?`<td>${last?formatSunbedDisplayDate(last):'Never'}</td>`:''}
+      ${showMinutes?`<td>${c.minutesLeft}</td>`:''}
+    </tr>`;
+  }).join(''):`<tr><td colspan='5' class='muted' style='text-align:center;padding:20px'>No customers match this.</td></tr>`);
+  document.getElementById('customerProfilingListModal').classList.add('show');
+}
 function openBonusPerformance(){
  let n=currentMonthIdentity(),s=getTargetStackFor(n.month,n.year);if(!s)return alert('No target stack exists for the current month.');
  let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';
