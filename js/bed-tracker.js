@@ -93,9 +93,10 @@ function renderDailyTakings(){
     // Today is still in progress - recalculate live from actual purchases rather than trusting
     // a separately-accumulated running total, so a missed increment can never understate the day.
     let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
-    cashValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0);
+    let paygForDay=paygSessionTotalsForDay(key);
+    cashValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+paygForDay.cash;
     treatmentsCardValue=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0);
-    bedCardValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0);
+    bedCardValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygForDay.card;
   }else{
     // Past days are already finalised - respect whatever was saved (including any manual
     // till-reconciliation correction staff made at the time) rather than recalculating over it.
@@ -161,12 +162,13 @@ function renderBedTracker(){
   if(headerPaidKpiEl)headerPaidKpiEl.textContent=paidKpi.toFixed(1);
   let todayKey=localDateKey();
   let purchasesToday=(data.customerPurchases||[]).filter(p=>p.date===todayKey);
+  let paygToday=paygSessionTotalsForDay(todayKey);
   let headerCashEl=document.getElementById('headerCashValue');
-  if(headerCashEl)headerCashEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0).toFixed(2)}`;
+  if(headerCashEl)headerCashEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+paygToday.cash).toFixed(2)}`;
   let headerTreatmentsCardEl=document.getElementById('headerTreatmentsCardValue');
   if(headerTreatmentsCardEl)headerTreatmentsCardEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.treatmentsCardAmount,0).toFixed(2)}`;
   let headerBedCardEl=document.getElementById('headerBedCardValue');
-  if(headerBedCardEl)headerBedCardEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0).toFixed(2)}`;
+  if(headerBedCardEl)headerBedCardEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygToday.card).toFixed(2)}`;
   let headerPurchasesEl=document.getElementById('headerPurchasesValue');
   if(headerPurchasesEl)headerPurchasesEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.grandTotal,0).toFixed(2)}`;
   document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
@@ -601,9 +603,10 @@ function renderDailySessionsPage(key){
   if(paidKpiEl)paidKpiEl.textContent=Number.isFinite(paidKpi)?paidKpi.toFixed(1):'0.0';
 
   let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
-  let cashFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0);
+  let paygForDay=paygSessionTotalsForDay(key);
+  let cashFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+paygForDay.cash;
   let treatmentsCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0);
-  let bedCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0);
+  let bedCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygForDay.card;
   let cashEl=document.getElementById('dailySessionsCashValue');
   if(cashEl)cashEl.textContent=`£${cashFromPurchases.toFixed(2)}`;
   let treatmentsCardEl=document.getElementById('dailySessionsTreatmentsCardValue');
@@ -975,6 +978,17 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerSelected').style.display='none';
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
   updateSessionLengthTotal();
+}
+function paygSessionTotalsForDay(key){
+  let sessions=(data.bedSessions||[]).filter(s=>s.date===key&&((+s.cashMinutes||0)+(+s.cardMinutes||0))>0);
+  let cash=0,card=0;
+  sessions.forEach(s=>{
+    let charge=paygChargeDetails(+s.cashMinutes||0,+s.cardMinutes||0);
+    if(!charge)return;
+    cash+=charge.cashAmount||0;
+    card+=charge.cardAmount||0;
+  });
+  return {cash,card};
 }
 function paygChargeDetails(cashMin,cardMin){
   let totalMin=cashMin+cardMin;
