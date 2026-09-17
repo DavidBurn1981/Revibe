@@ -362,6 +362,7 @@ function customerProfilingInactiveCustomers(weeks,minMinutes){
 }
 function openCustomerProfiling(){
   let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';
+  document.getElementById('perfBox').classList.add('perfBoxFullScreen');
   document.getElementById('perfTitle').textContent='Customer Profiling';
   document.getElementById('perfSubtitle').textContent='Customer volumes and activity breakdown.';
   let activeRecentCount=customerProfilingActiveCustomerIds(2).size;
@@ -369,13 +370,18 @@ function openCustomerProfiling(){
   let inactive6=customerProfilingInactiveCustomers(6).length;
   let inactive2=customerProfilingInactiveCustomers(2).length;
   let inactive3With10=customerProfilingInactiveCustomers(3,10).length;
-  document.getElementById('perfContent').innerHTML=`<div class='perfMetrics'>
-    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('active2')"><div class='label'>Unique Customers — Session in Last 2 Weeks</div><div class='value'>${activeRecentCount}</div></div>
-    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive2')"><div class='label'>Haven't Had a Session in 2 Weeks</div><div class='value'>${inactive2}</div></div>
-    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive4')"><div class='label'>Haven't Had a Session in 4 Weeks</div><div class='value'>${inactive4}</div></div>
-    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive6')"><div class='label'>Haven't Had a Session in 6 Weeks</div><div class='value'>${inactive6}</div></div>
-    <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive3with10')"><div class='label'>Over 10 Mins on Account, No Session in 3+ Weeks</div><div class='value'>${inactive3With10}</div></div>
-  </div>`;
+  document.getElementById('perfContent').innerHTML=`
+    <div class='perfSectionTitle'>Customer Retention Data</div>
+    <div class='perfMetrics'>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('active2')"><div class='label'>Unique Customers — Session in Last 2 Weeks</div><div class='value'>${activeRecentCount}</div></div>
+    </div>
+    <div class='perfSectionTitle'>Customer Loss Data</div>
+    <div class='perfMetrics'>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive2')"><div class='label'>Haven't Had a Session in 2 Weeks</div><div class='value'>${inactive2}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive4')"><div class='label'>Haven't Had a Session in 4 Weeks</div><div class='value'>${inactive4}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive6')"><div class='label'>Haven't Had a Session in 6 Weeks</div><div class='value'>${inactive6}</div></div>
+      <div class='metric' style='cursor:pointer' onclick="openCustomerProfilingList('inactive3with10')"><div class='label'>Over 10 Mins on Account, No Session in 3+ Weeks</div><div class='value'>${inactive3With10}</div></div>
+    </div>`;
   document.getElementById('performanceOverlay').classList.add('show');
 }
 function openCustomerProfilingList(type){
@@ -410,6 +416,7 @@ function openCustomerProfilingList(type){
 function openBonusPerformance(){
  let n=currentMonthIdentity(),s=getTargetStackFor(n.month,n.year);if(!s)return alert('No target stack exists for the current month.');
  let nav=document.getElementById('perfPeriodNav');if(nav)nav.style.display='none';
+ document.getElementById('perfBox').classList.remove('perfBoxFullScreen');
  let a=monthPerformanceActuals(n.month,n.year);document.getElementById('perfTitle').textContent='Bonus Performance';document.getElementById('perfSubtitle').textContent=`${MONTH_NAMES[n.month-1]} ${n.year} · Current actual ${a.kpi.toFixed(2)} mins / bed / hour`;
  document.getElementById('perfContent').innerHTML=[1,2,3].map(i=>{let t=s[`bonus${i}Kpi`],amt=s[`bonus${i}Amount`],pct=t?a.kpi/t*100:0;return `<div class='card'><h3>Bonus Level ${i} · £${amt.toFixed(2)}</h3><div style='font-size:28px;font-weight:900'>${pct.toFixed(0)}%</div><div>${a.kpi.toFixed(2)} actual vs ${t.toFixed(2)} target</div><div class='progressTrack'><div class='progressFill' style='width:${Math.min(100,pct)}%'></div></div></div>`}).join('');
  document.getElementById('performanceOverlay').classList.add('show');
@@ -430,7 +437,7 @@ function navigatePeriod(delta){
   renderPeriodPerformance(currentPeriodMode,d);
 }
 function resetPeriodToCurrent(){if(currentPeriodMode)renderPeriodPerformance(currentPeriodMode,new Date())}
-function openPerformance(mode){document.getElementById('performanceOverlay').classList.add('show');if(mode==='charts')renderPerformanceCharts();else renderPeriodPerformance(mode)}
+function openPerformance(mode){document.getElementById('perfBox').classList.remove('perfBoxFullScreen');document.getElementById('performanceOverlay').classList.add('show');if(mode==='charts')renderPerformanceCharts();else renderPeriodPerformance(mode)}
 function closePerformance(){document.getElementById('performanceOverlay').classList.remove('show')}
 function bedSessionHistoryRows(){
   return (data.bedSessions||[]).map(x=>({
