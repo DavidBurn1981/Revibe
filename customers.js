@@ -1,12 +1,4 @@
-function renderCustomers(){
- let t=document.getElementById('customerTable');if(!t)return;
- let all=data.customers||[];
- let totalEl=document.getElementById('customerSummaryTotal');
- if(totalEl){
-   totalEl.textContent=all.length;
-   document.getElementById('customerSummaryOverThree').textContent=all.filter(c=>(c.minutesLeft||0)>3).length;
-   document.getElementById('customerSummaryTotalMinutes').textContent=all.reduce((sum,c)=>sum+(+c.minutesLeft||0),0);
- }
+function customerStandardColumnMaps(){
  let lastSessionByCustomer={},lastPurchaseByCustomer={},recentSessionCountByCustomer={},recentSpendByCustomer={};
  let sessionsCutoff=iso(new Date(new Date().getTime()-21*24*60*60*1000)),spendCutoff=iso(new Date(new Date().getTime()-28*24*60*60*1000));
  (data.bedSessions||[]).forEach(s=>{
@@ -19,16 +11,34 @@ function renderCustomers(){
    if(!lastPurchaseByCustomer[p.customerId]||p.date>lastPurchaseByCustomer[p.customerId])lastPurchaseByCustomer[p.customerId]=p.date;
    if(p.date>=spendCutoff)recentSpendByCustomer[p.customerId]=(recentSpendByCustomer[p.customerId]||0)+p.grandTotal;
  });
+ return {lastSessionByCustomer,lastPurchaseByCustomer,recentSessionCountByCustomer,recentSpendByCustomer};
+}
+function customerStandardColumnsHeader(){
+ return "<th>Account</th><th>Name</th><th>Last Sunbed Session</th><th>Last Purchase</th><th>Sessions (Last 3 Wks)</th><th>Purchases Spend (Last 4 Wks)</th><th>Phone</th><th>Minutes Left</th><th>UV Allowed</th><th>ID Checked</th>";
+}
+function customerStandardColumnsRow(c,maps){
+ let lastSession=maps.lastSessionByCustomer[c.id]?formatSunbedDisplayDate(maps.lastSessionByCustomer[c.id]):'—';
+ let lastPurchase=maps.lastPurchaseByCustomer[c.id]?formatSunbedDisplayDate(maps.lastPurchaseByCustomer[c.id]):'—';
+ let recentSessions=maps.recentSessionCountByCustomer[c.id]||0;
+ let recentSpend=maps.recentSpendByCustomer[c.id]||0;
+ return `<td>${escapeHtml(c.accountNumber)}</td><td><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b></td><td>${lastSession}</td><td>${lastPurchase}</td><td>${recentSessions}</td><td>£${recentSpend.toFixed(2)}</td><td>${escapeHtml(c.phone||'')}</td><td><b>${c.minutesLeft}</b></td><td>${c.uvAllowed?'Yes':'No'}</td><td>${c.idChecked?'Yes':'No'}</td>`;
+}
+function renderCustomers(){
+ let t=document.getElementById('customerTable');if(!t)return;
+ let all=data.customers||[];
+ let totalEl=document.getElementById('customerSummaryTotal');
+ if(totalEl){
+   totalEl.textContent=all.length;
+   document.getElementById('customerSummaryOverThree').textContent=all.filter(c=>(c.minutesLeft||0)>3).length;
+   document.getElementById('customerSummaryTotalMinutes').textContent=all.reduce((sum,c)=>sum+(+c.minutesLeft||0),0);
+ }
+ let maps=customerStandardColumnMaps();
  let rows=[...all].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
  let q=(document.getElementById('customerSearchInput')?.value||'').trim().toLowerCase();
  if(q)rows=rows.filter(c=>`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)||(c.accountNumber||'').toLowerCase().includes(q)||(c.phone||'').toLowerCase().includes(q));
  let canEdit=hasRolePermission('treatment_booking_settings','edit');
- t.innerHTML="<tr><th>Account</th><th>Name</th><th>Last Sunbed Session</th><th>Last Purchase</th><th>Sessions (Last 3 Wks)</th><th>Purchases Spend (Last 4 Wks)</th><th>Phone</th><th>Minutes Left</th><th>UV Allowed</th><th>ID Checked</th><th></th></tr>"+(rows.length?rows.map(c=>{
-   let lastSession=lastSessionByCustomer[c.id]?formatSunbedDisplayDate(lastSessionByCustomer[c.id]):'—';
-   let lastPurchase=lastPurchaseByCustomer[c.id]?formatSunbedDisplayDate(lastPurchaseByCustomer[c.id]):'—';
-   let recentSessions=recentSessionCountByCustomer[c.id]||0;
-   let recentSpend=recentSpendByCustomer[c.id]||0;
-   return `<tr class='clinicRow' onclick="openCustomer('${c.id}')"><td>${escapeHtml(c.accountNumber)}</td><td><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b></td><td>${lastSession}</td><td>${lastPurchase}</td><td>${recentSessions}</td><td>£${recentSpend.toFixed(2)}</td><td>${escapeHtml(c.phone||'')}</td><td><b>${c.minutesLeft}</b></td><td>${c.uvAllowed?'Yes':'No'}</td><td>${c.idChecked?'Yes':'No'}</td><td>${canEdit?`<button onclick="event.stopPropagation();deleteCustomer('${c.id}')">Delete</button>`:''}</td></tr>`;
+ t.innerHTML=`<tr>${customerStandardColumnsHeader()}<th></th></tr>`+(rows.length?rows.map(c=>{
+   return `<tr class='clinicRow' onclick="openCustomer('${c.id}')">${customerStandardColumnsRow(c,maps)}<td>${canEdit?`<button onclick="event.stopPropagation();deleteCustomer('${c.id}')">Delete</button>`:''}</td></tr>`;
  }).join(''):`<tr><td colspan='11' class='muted'>${q?'No customers match your search.':'No customers yet.'}</td></tr>`);
 }
 async function deleteCustomer(id){
