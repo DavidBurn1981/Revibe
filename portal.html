@@ -37,29 +37,34 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .authWrap::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,71,.16),rgba(255,45,120,.08) 55%,transparent 72%);filter:blur(10px)}
 .authBox{width:100%;max-width:380px;position:relative;z-index:1}
 .brand{text-align:center;margin-bottom:36px}
-.brand img{max-width:220px;max-height:74px;object-fit:contain}
-.authBox h1{font-size:24px;font-weight:600;margin:0 0 6px;line-height:1.25}
-.authBox p.sub{color:var(--muted);font-size:14px;margin:0 0 24px;line-height:1.5}
+.brand img{max-width:280px;max-height:96px;object-fit:contain}
+.authBox h1{font-size:25px;font-weight:600;margin:0 0 6px;line-height:1.25}
+.authBox p.sub{color:var(--muted);font-size:15px;margin:0 0 24px;line-height:1.5}
 .field{margin-bottom:14px}
-.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
 .field input{width:100%;padding:13px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px}
 .field input:focus{outline:none;border-color:var(--amber)}
-.authBtn{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--pink),#ff5590);color:#fff;font-size:15px;font-weight:700;margin-top:6px}
+/* Native date-picker icon defaults to a dark glyph that's invisible against a dark
+   input background - invert it so it's actually visible, alongside our own button. */
+.field input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.75;cursor:pointer}
+.dateRow{display:flex;gap:8px}
+.dateRow input{flex:1;min-width:0}
+.calBtn{width:48px;flex-shrink:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:20px;color:var(--text)}
+.authBtn{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--pink),#ff5590);color:#fff;font-size:15.5px;font-weight:700;margin-top:6px}
 .authBtn:disabled{opacity:.6}
-.authError{background:rgba(255,45,45,.12);border:1px solid rgba(255,45,45,.35);color:#ff9e9e;padding:11px 13px;border-radius:8px;font-size:13.5px;margin-bottom:14px;display:none}
-.authHint{text-align:center;color:var(--muted);font-size:13px;margin-top:20px;line-height:1.5}
+.authError{background:rgba(255,45,45,.12);border:1px solid rgba(255,45,45,.35);color:#ff9e9e;padding:11px 13px;border-radius:8px;font-size:14.5px;margin-bottom:14px;display:none}
+.authHint{text-align:center;color:var(--muted);font-size:14px;margin-top:20px;line-height:1.5}
 
 /* ---------- Portal ---------- */
 #portalScreen{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top)) 20px 18px;border-bottom:1px solid var(--line)}
-.topbar .word{font-size:12px;letter-spacing:.03em;color:var(--muted)}
-.topbarLogo{max-width:110px;max-height:32px;object-fit:contain}
-.signOut{background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline}
+.topbarLogo{max-width:150px;max-height:44px;object-fit:contain}
+.signOut{background:none;border:none;color:var(--muted);font-size:14px;text-decoration:underline}
 
 .hero{position:relative;padding:44px 20px 30px;text-align:center;overflow:hidden}
 .heroGlowBg{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,71,.35),rgba(255,45,120,.12) 55%,transparent 72%);filter:blur(8px);animation:heroPulse 4s ease-in-out infinite}
 @keyframes heroPulse{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
-.hero .greet{position:relative;font-size:14px;color:var(--muted);margin-bottom:10px}
+.hero .greet{position:relative;font-size:15px;color:var(--muted);margin-bottom:10px}
 .hero .num{position:relative;font-family:'Fraunces',serif;font-weight:600;font-size:76px;line-height:1;background:linear-gradient(135deg,#fff,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero .lbl{position:relative;font-size:15px;color:var(--muted);margin-top:6px}
 
@@ -68,27 +73,31 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .actionBig:active{transform:scale(.97)}
 .actionBig.bed{background:linear-gradient(135deg,var(--pink),#ff5590)}
 .actionBig.minutes{background:linear-gradient(135deg,var(--amber),#ff8a3d);color:#1a1200}
-.treatmentLink{display:block;width:calc(100% - 40px);margin:16px 20px 0;text-align:center;background:none;border:none;color:var(--muted);font-size:13.5px;text-decoration:underline;padding:6px}
+.treatmentLink{display:block;width:calc(100% - 40px);margin:16px 20px 0;text-align:center;background:none;border:none;color:var(--muted);font-size:14.5px;text-decoration:underline;padding:6px}
 
 .section{padding:30px 20px 0}
-.section h2{font-size:15px;font-weight:700;margin:0 0 14px;color:var(--text)}
+.section h2{font-size:16px;font-weight:700;margin:0 0 14px;color:var(--text)}
+.historyButtons{display:flex;flex-direction:column;gap:10px;padding-bottom:10px}
+.historyBtn{width:100%;padding:16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:15px;font-weight:700;text-align:center}
 .detailCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-.detailRow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.detailRow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
 .detailRow:last-child{border-bottom:none}
 .detailRow .k{color:var(--muted)}
 .detailRow .v{text-align:right;font-weight:600}
-.editLink{background:none;border:none;color:var(--amber);font-size:12.5px;text-decoration:underline;padding:0}
+.editLink{background:none;border:none;color:var(--amber);font-size:14px;text-decoration:underline;padding:0}
 
 .listCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.listRow{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line);font-size:14px}
+.listRow{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line);font-size:14.5px}
 .listRow:last-child{border-bottom:none}
+.listRow.clickable{cursor:pointer}
 .listRow .main{font-weight:600}
-.listRow .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
-.listRow .right{text-align:right;color:var(--muted);font-size:13px}
-.emptyState{padding:26px 18px;text-align:center;color:var(--muted);font-size:13.5px}
-.statusPill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;display:inline-block}
+.listRow .sub{color:var(--muted);font-size:13.5px;margin-top:2px}
+.listRow .right{text-align:right;color:var(--muted);font-size:14px}
+.emptyState{padding:26px 18px;text-align:center;color:var(--muted);font-size:14.5px}
+.statusPill{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;display:inline-block}
 .statusPill.booked{background:rgba(255,179,71,.15);color:var(--amber)}
 .statusPill.cancelled{background:rgba(255,45,45,.12);color:#ff9e9e}
+.statusPill.previous{background:rgba(154,160,171,.15);color:var(--muted)}
 
 @media(min-width:640px){
   .authWrap{padding:60px 20px}
@@ -104,14 +113,17 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .modalTop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .modalTop h2{font-size:20px;margin:0}
 .modalClose{background:var(--panel2);border:none;color:var(--muted);width:30px;height:30px;border-radius:50%;font-size:15px;line-height:1}
-.modalSub{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+.modalSub{color:var(--muted);font-size:14.5px;margin:0 0 18px}
 .pkgRow{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
-.pkgRow .pkgTitle{font-weight:700;font-size:15px}
+.pkgRow .pkgTitle{font-weight:700;font-size:15.5px}
 .pkgRow .pkgPrice{font-weight:700;color:var(--amber)}
+.sessionTypeRow{display:flex;flex-direction:column;gap:10px}
+.sessionTypeOption{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:15px;font-weight:600}
+.sessionTypeOption input{width:22px;height:22px;accent-color:var(--amber);flex-shrink:0}
 .slotGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
-.slotGrid button{padding:11px 4px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:13.5px}
+.slotGrid button{padding:11px 4px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14.5px}
 .slotGrid button:active{background:var(--amber);color:#1a1200}
-.confirmBox{background:rgba(255,179,71,.1);border:1px solid rgba(255,179,71,.3);border-radius:12px;padding:16px;font-size:14px;line-height:1.6}
+.confirmBox{background:rgba(255,179,71,.1);border:1px solid rgba(255,179,71,.3);border-radius:12px;padding:16px;font-size:14.5px;line-height:1.6}
 .modalActions{display:flex;gap:10px;margin-top:18px}
 .btnQuiet{flex:1;padding:13px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:600;font-size:14px}
 .btnPrimary{flex:1;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--pink),#ff5590);color:#fff;font-weight:700;font-size:14px}
@@ -176,9 +188,11 @@ input,select,textarea{font-family:inherit;font-size:16px}
     </div>
   </div>
 
-  <div class="section"><h2>Your Bed Bookings</h2><div class="listCard" id="bookingsList"></div></div>
-  <div class="section"><h2>Session History</h2><div class="listCard" id="sessionsList"></div></div>
-  <div class="section"><h2>Purchase History</h2><div class="listCard" id="purchasesList"></div></div>
+  <div class="section"><h2>My Bed Bookings</h2><div class="listCard" id="bookingsList"></div></div>
+  <div class="section historyButtons">
+    <button class="historyBtn" onclick="openHistoryModal('sessions')">See My Session History</button>
+    <button class="historyBtn" onclick="openHistoryModal('purchases')">See My Past Purchases</button>
+  </div>
 </div>
 
 <!-- PURCHASE MINUTES MODAL -->
@@ -197,12 +211,12 @@ input,select,textarea{font-family:inherit;font-size:16px}
   <div class="modalBox">
     <div id="bookABedStep1">
       <div class="modalTop"><h2>Book a Bed</h2><button class="modalClose" onclick="closeModal('bookABedModal')">✕</button></div>
-      <div class="field"><label>Date</label><input id="babDate" type="date"></div>
+      <div class="field"><label>Date</label><div class="dateRow"><input id="babDate" type="date"><button type="button" class="calBtn" onclick="openDatePicker('babDate')" aria-label="Open calendar">📅</button></div></div>
       <div class="field"><label>Session length (minutes)</label><input id="babLength" type="number" min="1" step="1" placeholder="e.g. 12"></div>
       <div class="field"><label>Session type</label>
-        <div style="display:flex;gap:10px">
-          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:13.5px"><input id="babRlt" type="checkbox" onchange="babExclusiveSessionType('rlt')"> Red Light</label>
-          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:13.5px"><input id="babHybrid" type="checkbox" onchange="babExclusiveSessionType('hybrid')"> Hybrid</label>
+        <div class="sessionTypeRow">
+          <label class="sessionTypeOption"><span>Red Light Therapy</span><input id="babRlt" type="checkbox" onchange="babExclusiveSessionType('rlt')"></label>
+          <label class="sessionTypeOption"><span>Hybrid Tanning</span><input id="babHybrid" type="checkbox" onchange="babExclusiveSessionType('hybrid')"></label>
         </div>
       </div>
       <div class="field"><label>Bed type preference</label>
@@ -238,6 +252,29 @@ input,select,textarea{font-family:inherit;font-size:16px}
       <p class="modalSub" id="babConfirmationText"></p>
       <button class="authBtn" onclick="closeModal('bookABedModal')">Done</button>
     </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL (Sessions / Purchases) -->
+<div class="modal" id="historyModal">
+  <div class="modalBox">
+    <div class="modalTop"><h2 id="historyModalTitle">History</h2><button class="modalClose" onclick="closeModal('historyModal')">✕</button></div>
+    <div class="listCard" id="historyModalList"></div>
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal" id="bookingDetailModal">
+  <div class="modalBox">
+    <div class="modalTop"><h2>Booking Details</h2><button class="modalClose" onclick="closeModal('bookingDetailModal')">✕</button></div>
+    <div class="detailCard">
+      <div class="detailRow"><div class="k">Date</div><div class="v" id="bdDate">—</div></div>
+      <div class="detailRow"><div class="k">Time</div><div class="v" id="bdTime">—</div></div>
+      <div class="detailRow"><div class="k">Bed</div><div class="v" id="bdBed">—</div></div>
+      <div class="detailRow"><div class="k">Length</div><div class="v" id="bdLength">—</div></div>
+      <div class="detailRow"><div class="k">Status</div><div class="v" id="bdStatus">—</div></div>
+    </div>
+    <div id="bdCancelWrap" style="margin-top:16px"><button class="btnQuiet" style="width:100%;color:#ff9e9e" onclick="cancelPortalBedBooking(pendingDetailBookingId)">Cancel This Booking</button></div>
   </div>
 </div>
 
