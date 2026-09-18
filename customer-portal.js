@@ -74,6 +74,8 @@ async function savePortalEditDetails(){
 function openPurchaseMinutesModal(){
   if(!portalPreviewCustomerId){alert('Please select a customer to preview first.');return}
   let err=document.getElementById('purchaseMinutesError');err.style.display='none';
+  document.getElementById('purchaseMinutesLoading').style.display='none';
+  document.getElementById('purchaseMinutesList').style.display='block';
   let products=(data.tanningProducts||[]).filter(p=>p.type==='Block Minutes'&&p.active!==false).sort((a,b)=>(a.minutes||0)-(b.minutes||0));
   document.getElementById('purchaseMinutesList').innerHTML=products.length
     ? products.map(p=>`<div class='purchaseProductRow' onclick="startMinutesCheckout('${p.id}')"><div><div class='title'>${escapeHtml(p.title)}</div>${p.minutes?`<div class='sub'>${p.minutes} minutes</div>`:''}</div><div class='price'>£${(+p.price||0).toFixed(2)}</div></div>`).join('')
@@ -82,6 +84,8 @@ function openPurchaseMinutesModal(){
 }
 async function startMinutesCheckout(tanningProductId){
   let err=document.getElementById('purchaseMinutesError');err.style.display='none';
+  document.getElementById('purchaseMinutesList').style.display='none';
+  document.getElementById('purchaseMinutesLoading').style.display='block';
   try{
     let {data:result,error}=await sb.functions.invoke('create-minutes-checkout',{
       body:{customer_id:portalPreviewCustomerId,tanning_product_id:tanningProductId}
@@ -89,7 +93,12 @@ async function startMinutesCheckout(tanningProductId){
     if(error)throw error;
     if(!result?.url)throw new Error('No checkout URL was returned.');
     window.location.href=result.url;
+    // Deliberately leave the loading state showing here rather than restoring the list -
+    // the page is about to navigate away, so flipping back to the list would just flash
+    // confusingly right before the redirect completes.
   }catch(e){
+    document.getElementById('purchaseMinutesLoading').style.display='none';
+    document.getElementById('purchaseMinutesList').style.display='block';
     err.textContent=e.message||'Could not start checkout. Please try again.';
     err.style.display='block';
   }
