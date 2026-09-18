@@ -127,29 +127,71 @@ function renderPortal(){
   document.getElementById('detSkinType').textContent=currentCustomer.skinType?`Type ${currentCustomer.skinType}`:'Not on file';
   document.getElementById('detAddress').textContent=currentCustomer.address||'Not on file';
 
+  let now=Date.now();
+  let withMeta=portalData.bookings.map(b=>({...b,startMs:new Date(`${b.date}T${b.time}:00`).getTime()}));
+  let future=withMeta.filter(b=>b.startMs>=now).sort((a,b)=>a.startMs-b.startMs);
+  let past=withMeta.filter(b=>b.startMs<now).sort((a,b)=>b.startMs-a.startMs);
+  let orderedBookings=[...future,...past];
+
   let bookingsEl=document.getElementById('bookingsList');
-  bookingsEl.innerHTML=portalData.bookings.length?portalData.bookings.map(b=>`
-    <div class="listRow"><div>
+  bookingsEl.innerHTML=orderedBookings.length?orderedBookings.map(b=>{
+    let pillClass='booked',pillText=b.status;
+    if(b.status==='Cancelled'){pillClass='cancelled';pillText='Cancelled'}
+    else if(b.startMs<now){pillClass='previous';pillText='Previous Booking'}
+    return `
+    <div class="listRow clickable" onclick="openBookingDetail('${b.id}')"><div>
       <div class="main">${formatDate(b.date)} at ${b.time}</div>
       <div class="sub">${b.bedName} · ${b.length} min</div>
     </div><div class="right">
-      <span class="statusPill ${b.status==='Cancelled'?'cancelled':'booked'}">${b.status}</span>
-      ${b.status==='Booked'?`<div style="margin-top:6px"><button class="editLink" onclick="cancelPortalBedBooking('${b.id}')">Cancel</button></div>`:''}
-    </div></div>
-  `).join(''):'<div class="emptyState">No bed bookings yet. Tap "Book a Bed" above to get started.</div>';
+      <span class="statusPill ${pillClass}">${pillText}</span>
+    </div></div>`;
+  }).join(''):'<div class="emptyState">No bed bookings yet. Tap "Book a Bed" above to get started.</div>';
+}
 
-  let sessionsEl=document.getElementById('sessionsList');
-  sessionsEl.innerHTML=portalData.sessions.length?portalData.sessions.map(s=>`
-    <div class="listRow"><div>
-      <div class="main">${s.sessionType||'Session'}</div>
-      <div class="sub">${formatDate(s.date)}</div>
-    </div><div class="right">${s.length} min</div></div>
-  `).join(''):'<div class="emptyState">No sessions yet.</div>';
+// ---------- History (sessions / purchases) ----------
+function openHistoryModal(type){
+  document.getElementById('historyModalTitle').textContent=type==='sessions'?'Session History':'Purchase History';
+  let listEl=document.getElementById('historyModalList');
+  if(type==='sessions'){
+    listEl.innerHTML=portalData.sessions.length?portalData.sessions.map(s=>`
+      <div class="listRow"><div>
+        <div class="main">${s.sessionType||'Session'}</div>
+        <div class="sub">${formatDate(s.date)}</div>
+      </div><div class="right">${s.length} min</div></div>
+    `).join(''):'<div class="emptyState">No sessions yet.</div>';
+  }else{
+    listEl.innerHTML=portalData.purchases.length?portalData.purchases.map(p=>`
+      <div class="listRow"><div class="main">${formatDate(p.date)}</div><div class="right">£${p.total.toFixed(2)}</div></div>
+    `).join(''):'<div class="emptyState">No purchases yet.</div>';
+  }
+  document.getElementById('historyModal').classList.add('show');
+}
 
-  let purchasesEl=document.getElementById('purchasesList');
-  purchasesEl.innerHTML=portalData.purchases.length?portalData.purchases.map(p=>`
-    <div class="listRow"><div class="main">${formatDate(p.date)}</div><div class="right">£${p.total.toFixed(2)}</div></div>
-  `).join(''):'<div class="emptyState">No purchases yet.</div>';
+// ---------- Booking detail ----------
+let pendingDetailBookingId=null;
+function openBookingDetail(bookingId){
+  let b=portalData.bookings.find(x=>x.id===bookingId);if(!b)return;
+  pendingDetailBookingId=bookingId;
+  let startMs=new Date(`${b.date}T${b.time}:00`).getTime();
+  let isPast=startMs<Date.now();
+  let statusText=b.status==='Cancelled'?'Cancelled':isPast?'Previous Booking':'Booked';
+  document.getElementById('bdDate').textContent=formatDate(b.date);
+  document.getElementById('bdTime').textContent=b.time;
+  document.getElementById('bdBed').textContent=b.bedName;
+  document.getElementById('bdLength').textContent=`${b.length} min`;
+  document.getElementById('bdStatus').textContent=statusText;
+  document.getElementById('bdCancelWrap').style.display=(b.status==='Booked'&&!isPast)?'block':'none';
+  document.getElementById('bookingDetailModal').classList.add('show');
+}
+
+// ---------- Date picker ----------
+function openDatePicker(inputId){
+  let input=document.getElementById(inputId);
+  try{
+    if(input.showPicker){input.showPicker();return}
+  }catch(e){}
+  input.focus();
+  input.click();
 }
 
 // ---------- Edit details ----------
@@ -343,6 +385,7 @@ async function confirmBedBooking(){
 // ---------- Cancel booking ----------
 function cancelPortalBedBooking(bookingId){
   let booking=portalData.bookings.find(b=>b.id===bookingId);if(!booking)return;
+  closeModal('bookingDetailModal');
   pendingCancelBookingId=bookingId;
   let startsAt=new Date(`${booking.date}T${booking.time}:00`);
   let withinOneHour=(startsAt.getTime()-Date.now())<60*60*1000;
