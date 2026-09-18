@@ -37,8 +37,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .authWrap::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,71,.16),rgba(255,45,120,.08) 55%,transparent 72%);filter:blur(10px)}
 .authBox{width:100%;max-width:380px;position:relative;z-index:1}
 .brand{text-align:center;margin-bottom:36px}
-.brand .word{font-size:15px;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
-.brand .glow{font-family:'Fraunces',serif;font-size:32px;font-weight:600;background:linear-gradient(135deg,var(--amber),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand img{max-width:220px;max-height:74px;object-fit:contain}
 .authBox h1{font-size:24px;font-weight:600;margin:0 0 6px;line-height:1.25}
 .authBox p.sub{color:var(--muted);font-size:14px;margin:0 0 24px;line-height:1.5}
 .field{margin-bottom:14px}
@@ -54,7 +53,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
 #portalScreen{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top)) 20px 18px;border-bottom:1px solid var(--line)}
 .topbar .word{font-size:12px;letter-spacing:.03em;color:var(--muted)}
-.topbar .glowmini{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--amber)}
+.topbarLogo{max-width:110px;max-height:32px;object-fit:contain}
 .signOut{background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline}
 
 .hero{position:relative;padding:44px 20px 30px;text-align:center;overflow:hidden}
@@ -128,7 +127,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
 <!-- LOGIN -->
 <div id="loginScreen" class="screen">
   <div class="authWrap"><div class="authBox">
-    <div class="brand"><div class="word">REVIBE</div><div class="glow">Glow Studio</div></div>
+    <div class="brand"><img src="LOGO.svg" alt="REVIBE Glow Studio"></div>
     <h1>Welcome back</h1>
     <p class="sub">Log in to check your minutes, book a bed, and manage your account.</p>
     <div id="loginError" class="authError"></div>
@@ -142,7 +141,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
 <!-- SET PASSWORD (from invite link) -->
 <div id="setPasswordScreen" class="screen">
   <div class="authWrap"><div class="authBox">
-    <div class="brand"><div class="word">REVIBE</div><div class="glow">Glow Studio</div></div>
+    <div class="brand"><img src="LOGO.svg" alt="REVIBE Glow Studio"></div>
     <h1>Set your password</h1>
     <p class="sub">Welcome! Choose a password to finish setting up your account.</p>
     <div id="setPasswordError" class="authError"></div>
@@ -154,7 +153,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
 
 <!-- PORTAL -->
 <div id="portalScreen" class="screen">
-  <div class="topbar"><div><span class="word">REVIBE&nbsp;</span><span class="glowmini">Glow Studio</span></div><button class="signOut" onclick="handleSignOut()">Sign out</button></div>
+  <div class="topbar"><img src="LOGO.svg" alt="REVIBE" class="topbarLogo"><button class="signOut" onclick="handleSignOut()">Sign out</button></div>
 
   <div class="hero"><div class="heroGlowBg"></div>
     <div class="greet" id="heroGreeting">Hi there</div>

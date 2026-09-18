@@ -245,23 +245,35 @@ function searchBedSlots(){
   let bufferBefore=3,turnaround=2,totalWindow=bufferBefore+length+turnaround;
   document.getElementById('babTotalLine').textContent=`Your full booking window (including 3 minutes before and 2 minutes after) will be ${totalWindow} minutes.`;
 
-  let openMin=9*60,closeMin=21*60; // 09:00-21:00, matches standard studio hours
-  let bedsOfType=portalData.beds.filter(b=>bedType==='Any'||b.type===bedType);
-  let existingBookings=[]; // this customer's own bookings only visible to them via RLS - availability search below queries live instead
+  sb.rpc('get_opening_hours_for_date',{p_date:date}).then(({data:hoursRows,error:hoursError})=>{
+    if(hoursError)throw hoursError;
+    let hours=Array.isArray(hoursRows)?hoursRows[0]:hoursRows;
+    if(!hours||!hours.opening_time||!hours.closing_time){
+      document.getElementById('babSlotGrid').innerHTML='<div class="emptyState" style="grid-column:1/-1">The studio is closed on this date. Please try another day.</div>';
+      document.getElementById('babChosenDateLabel').textContent=formatDate(date);
+      document.getElementById('babChosenLengthLabel').textContent=length;
+      babSelectedDate=null;
+      document.getElementById('bookABedStep1').style.display='none';
+      document.getElementById('bookABedStep2').style.display='block';
+      return;
+    }
+    let openMin=minutesFromTime(hours.opening_time.slice(0,5)),closeMin=minutesFromTime(hours.closing_time.slice(0,5));
+    let bedsOfType=portalData.beds.filter(b=>bedType==='Any'||b.type===bedType);
 
-  let isToday=date===new Date().toISOString().slice(0,10);
-  let now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
-  let earliestStart=isToday?Math.max(openMin,nowMin+1):openMin;
+    let isToday=date===new Date().toISOString().slice(0,10);
+    let now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
+    let earliestStart=isToday?Math.max(openMin,nowMin+1):openMin;
 
-  fetchAvailability(date,bedsOfType,earliestStart,closeMin,length,bufferBefore,turnaround).then(slots=>{
-    babSelectedDate=date;babSelectedLength=length;babSelectedBedType=bedType;babSelectedSessionType=sessionType;
-    document.getElementById('babChosenDateLabel').textContent=formatDate(date);
-    document.getElementById('babChosenLengthLabel').textContent=length;
-    document.getElementById('babSlotGrid').innerHTML=slots.length
-      ? slots.map(t=>`<button type="button" onclick="pickBedSlot('${t}')">${t}</button>`).join('')
-      : '<div class="emptyState" style="grid-column:1/-1">No slots are available for this length on this date. Try a different date.</div>';
-    document.getElementById('bookABedStep1').style.display='none';
-    document.getElementById('bookABedStep2').style.display='block';
+    return fetchAvailability(date,bedsOfType,earliestStart,closeMin,length,bufferBefore,turnaround).then(slots=>{
+      babSelectedDate=date;babSelectedLength=length;babSelectedBedType=bedType;babSelectedSessionType=sessionType;
+      document.getElementById('babChosenDateLabel').textContent=formatDate(date);
+      document.getElementById('babChosenLengthLabel').textContent=length;
+      document.getElementById('babSlotGrid').innerHTML=slots.length
+        ? slots.map(t=>`<button type="button" onclick="pickBedSlot('${t}')">${t}</button>`).join('')
+        : '<div class="emptyState" style="grid-column:1/-1">No slots are available for this length on this date. Try a different date.</div>';
+      document.getElementById('bookABedStep1').style.display='none';
+      document.getElementById('bookABedStep2').style.display='block';
+    });
   }).catch(e=>{
     err.textContent=e.message||'Could not check availability. Please try again.';
     err.style.display='block';
