@@ -974,6 +974,36 @@ function searchSessionCustomer(){
     : `<div class='customerSearchResultRow muted'>No matching customers.</div>`;
   results.style.display='block';
 }
+function subscriberStatusBadgeHtml(c){
+  let status=c.subscriptionStatus||'No';
+  if(status==='Subscriber'){
+    return `<div style='margin-top:6px;padding:7px 10px;border-radius:8px;background:rgba(43,213,118,.15);border:1px solid rgba(43,213,118,.4);color:var(--green);font-weight:800'>SUBSCRIBER SESSION — NO CHARGE</div>`;
+  }
+  if(status==='Subscriber - Failed Payment'){
+    return `<div style='margin-top:6px;padding:7px 10px;border-radius:8px;background:rgba(242,184,75,.15);border:1px solid rgba(242,184,75,.5);color:var(--amber);font-weight:800'>SUBSCRIBER — PAYMENT FAILED. Please discuss with the customer.</div>`;
+  }
+  if(status==='No - Failed Payment Grace Period Expired'){
+    return `<div style='margin-top:6px;padding:7px 10px;border-radius:8px;background:rgba(255,49,49,.12);border:1px solid rgba(255,49,49,.4);color:#ff3131;font-weight:800'>MEMBERSHIP EXPIRED — payment was never recovered.</div>`;
+  }
+  return '';
+}
+function applyTodaysBookingAutofill(customerId,prefix){
+  prefix=prefix||'session';
+  let today=localDateKey();
+  let booking=(data.sunbedBookings||[]).find(b=>b.customerId===customerId&&b.date===today&&b.status==='Booked'&&!b.fulfilledBySessionId);
+  let hint=document.getElementById(prefix+'BookedHint');
+  if(booking){
+    document.getElementById(prefix+'FulfillsBookingId').value=booking.id;
+    document.getElementById(prefix+'BookedMinutes').value=booking.length;
+    hint.textContent=`Auto-filled from their ${booking.time} online booking (${booking.bed}).`;
+    hint.style.display='block';
+    if(booking.sessionType==='Red Light Therapy'){document.getElementById(prefix+'Rlt').checked=true;document.getElementById(prefix+'Hybrid').checked=false}
+    else if(booking.sessionType){document.getElementById(prefix+'Hybrid').checked=true;document.getElementById(prefix+'Rlt').checked=false}
+  }else{
+    document.getElementById(prefix+'FulfillsBookingId').value='';
+    hint.style.display='none';
+  }
+}
 function selectSessionCustomer(id){
   let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
   document.getElementById('sessionCustomerId').value=id;
@@ -986,7 +1016,8 @@ function selectSessionCustomer(id){
   let uvAllowed=!!c.uvAllowed;
   let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
   let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
-  document.getElementById('sessionCustomerBalance').innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}`;
+  document.getElementById('sessionCustomerBalance').innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}${subscriberStatusBadgeHtml(c)}`;
+  applyTodaysBookingAutofill(id);
   updateSessionLengthTotal();
 }
 function clearSessionCustomer(){
@@ -995,6 +1026,8 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerSearch').style.display='block';
   document.getElementById('sessionCustomerSelected').style.display='none';
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
+  document.getElementById('sessionFulfillsBookingId').value='';
+  document.getElementById('sessionBookedHint').style.display='none';
   updateSessionLengthTotal();
 }
 function paygSessionTotalsForDay(key){
@@ -1057,8 +1090,10 @@ function updateSessionLengthTotal(){
       account=+document.getElementById('sessionAccountMinutes').value||0,
       free=+document.getElementById('sessionFreeMinutes').value||0,
       staff=+document.getElementById('sessionStaffMinutes').value||0,
-      rerun=+document.getElementById('sessionRerunMinutes').value||0;
-  document.getElementById('sessionLength').value=cash+card+account+free+staff+rerun;
+      rerun=+document.getElementById('sessionRerunMinutes').value||0,
+      subscriber=+document.getElementById('sessionSubscriberMinutes').value||0,
+      booked=+document.getElementById('sessionBookedMinutes').value||0;
+  document.getElementById('sessionLength').value=cash+card+account+free+staff+rerun+subscriber+booked;
   document.getElementById('staffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('rerunReasonRow').style.display=rerun>0?'block':'none';
   let paygDetails=paygChargeDetails(cash,card);
@@ -1220,7 +1255,10 @@ async function recordBedSession(){
      staffMemberName=document.getElementById('sessionStaffMemberName').value.trim(),
      rerunMin=+document.getElementById('sessionRerunMinutes').value||0,
      rerunReason=document.getElementById('sessionRerunReason').value,
-     length=cashMin+cardMin+accountMin+freeMin+staffMin+rerunMin,
+     subscriberMin=+document.getElementById('sessionSubscriberMinutes').value||0,
+     bookedMin=+document.getElementById('sessionBookedMinutes').value||0,
+     fulfilsBookingId=document.getElementById('sessionFulfillsBookingId').value||null,
+     length=cashMin+cardMin+accountMin+freeMin+staffMin+rerunMin+subscriberMin+bookedMin,
      payment=document.getElementById('sessionPayment').value,newSignup=document.getElementById('sessionSignup').checked,purchasedBlock=document.getElementById('sessionBlockBooking').checked,rlt=document.getElementById('sessionRlt').checked,hybrid=document.getElementById('sessionHybrid').checked;
  if(!Number.isInteger(length)||length<1)return alert('Please enter minutes for at least one payment type.');if(!rlt&&!hybrid)return alert('Please select Red Light Therapy or Hybrid.');
  if(staffMin>0&&!staffMemberName)return alert('Please enter the Staff Member Name.');
@@ -1230,7 +1268,7 @@ async function recordBedSession(){
    if(!confirm('This exact session has just been recorded, for the same user and amount of minutes. Do you want to proceed?'))return;
  }
  if(!c){
-   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,rerun_minutes:rerunMin,rerun_reason:rerunMin>0?rerunReason:null,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:cashMin+cardMin};
+   let payload={session_date:date,session_time:new Date().toTimeString().slice(0,8),session_length_minutes:length,cash_minutes:cashMin,card_minutes:cardMin,on_account_minutes:accountMin,free_minutes:freeMin,staff_minutes:staffMin,staff_member_name:staffMin>0?staffMemberName:null,rerun_minutes:rerunMin,rerun_reason:rerunMin>0?rerunReason:null,payment_type:payment,new_sign_up:newSignup,purchased_block_booking:purchasedBlock,session_type:rlt?'Red Light Therapy':'Hybrid',account_minutes_used:0,payg_minutes:cashMin+cardMin,subscriber_minutes:subscriberMin,booked_minutes:bookedMin};
    let {error}=await sb.from('bed_sessions').insert(payload);
    if(error)return alert(error.message);
 
@@ -1252,7 +1290,7 @@ async function recordBedSession(){
  }
  let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)alert('Customer has not had ID checked and is under 25. This is not a blocker, just a note to user. Close to continue');if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');
  if(accountMin>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}
- let {data:bal,error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:customerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:newSignup,p_purchased_block_booking:purchasedBlock,p_session_type:sessionTypeValue});
+ let {data:bal,error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:customerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:newSignup,p_purchased_block_booking:purchasedBlock,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
  if(error)return alert(error.message);
 
  resetBedSessionForm();

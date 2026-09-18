@@ -112,7 +112,7 @@ function wizRenderCustomerBalanceInto(elId){
   let uvAllowed=!!c.uvAllowed;
   let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
   let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
-  el.innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}`;
+  el.innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}${subscriberStatusBadgeHtml(c)}`;
 }
 function wizHideSelectCustomerResultsDelayed(){
   setTimeout(()=>{document.getElementById('wizSelectCustomerResults').style.display='none'},150);
@@ -140,6 +140,7 @@ function wizPickSelectCustomer(id){
   wizRenderCustomerBalanceInto('wizSelectCustomerBalance');
   document.getElementById('wizSelectCustomerError').style.display='none';
   checkExistingCustomerUsageWarning(id);
+  applyTodaysBookingAutofill(id,'wizSession');
 }
 function wizClearSelectCustomer(){
   wizCustomerId=null;
@@ -148,6 +149,8 @@ function wizClearSelectCustomer(){
   document.getElementById('wizSelectCustomerSearch').style.display='block';
   document.getElementById('wizSelectCustomerSelected').style.display='none';
   document.getElementById('wizSelectCustomerBalance').innerHTML='Select a customer to see their account details.';
+  document.getElementById('wizSessionFulfillsBookingId').value='';
+  document.getElementById('wizSessionBookedHint').style.display='none';
 }
 function wizSelectCustomerNext(){
   let err=document.getElementById('wizSelectCustomerError');err.style.display='none';
@@ -424,8 +427,10 @@ function wizUpdateSessionLengthTotal(){
       account=+document.getElementById('wizSessionAccountMinutes').value||0,
       free=+document.getElementById('wizSessionFreeMinutes').value||0,
       staff=+document.getElementById('wizSessionStaffMinutes').value||0,
-      rerun=+document.getElementById('wizSessionRerunMinutes').value||0;
-  document.getElementById('wizSessionLength').value=cash+card+account+free+staff+rerun;
+      rerun=+document.getElementById('wizSessionRerunMinutes').value||0,
+      subscriber=+document.getElementById('wizSessionSubscriberMinutes').value||0,
+      booked=+document.getElementById('wizSessionBookedMinutes').value||0;
+  document.getElementById('wizSessionLength').value=cash+card+account+free+staff+rerun+subscriber+booked;
   document.getElementById('wizStaffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('wizRerunReasonRow').style.display=rerun>0?'block':'none';
   let paygRow=document.getElementById('wizPaygChargeRow'),paygDetails=paygChargeDetails(cash,card);
@@ -442,7 +447,7 @@ function wizUpdateSessionLengthTotal(){
   let showInsufficient=c&&account>c.minutesLeft;
   insufficientLine.style.display=showInsufficient?'block':'none';
   if(showInsufficient)insufficientLine.textContent='Customer does not have enough mins on account, either purchase more or enter additional mins into Cash or Card pay as you go fields.';
-  checkSkinTypeSessionWarning(wizCustomerId,cash+card+account+free+staff+rerun);
+  checkSkinTypeSessionWarning(wizCustomerId,cash+card+account+free+staff+rerun+subscriber+booked);
 }
 async function wizRecordSession(){
   let c=data.customers.find(x=>x.id===wizCustomerId);
@@ -455,7 +460,10 @@ async function wizRecordSession(){
       staffMemberName=document.getElementById('wizSessionStaffMemberName').value.trim(),
       rerunMin=+document.getElementById('wizSessionRerunMinutes').value||0,
       rerunReason=document.getElementById('wizSessionRerunReason').value,
-      length=cashMin+cardMin+accountMin+freeMin+staffMin+rerunMin,
+      subscriberMin=+document.getElementById('wizSessionSubscriberMinutes').value||0,
+      bookedMin=+document.getElementById('wizSessionBookedMinutes').value||0,
+      fulfilsBookingId=document.getElementById('wizSessionFulfillsBookingId').value||null,
+      length=cashMin+cardMin+accountMin+freeMin+staffMin+rerunMin+subscriberMin+bookedMin,
       rlt=document.getElementById('wizSessionRlt').checked,hybrid=document.getElementById('wizSessionHybrid').checked,
       err=document.getElementById('wizSessionError');
   err.style.display='none';
@@ -473,7 +481,7 @@ async function wizRecordSession(){
   if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');
   if(accountMin>c.minutesLeft){err.textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;err.style.display='block';return}
   try{
-    let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue});
+    let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
     if(error)throw error;
     await loadLiveData();renderAll();
     wizGoTo('complete');
