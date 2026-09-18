@@ -126,9 +126,27 @@ function renderDailyAverageComparison(){
  if(!vals.length){out.textContent='—';detail.textContent=`No previous ${day} data yet.`;return}
  let avg=vals.reduce((a,b)=>a+b,0)/vals.length,diff=Math.round(actual-avg);out.textContent=`${diff>=0?'+':''}${diff} mins`;detail.textContent=`${diff>=0?'+':''}${diff} mins v Average ${day}`;out.style.color=diff>=0?'var(--green)':'#ff7777';
 }
+function renderBedNextBooked(){
+  let nowKey=localDateKey(),now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
+  for(let i=1;i<=4;i++){
+    let el=document.getElementById('bedNextBooked'+i);
+    if(!el)continue;
+    let bedName='Bed '+i;
+    let upcoming=(data.sunbedBookings||[])
+      .filter(b=>b.bed===bedName&&b.status==='Booked'&&(b.date>nowKey||(b.date===nowKey&&minutesFromTime(b.time)>=nowMin)))
+      .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
+    if(upcoming){
+      let dateLabel=upcoming.date===nowKey?'Today':formatSunbedDisplayDate(upcoming.date);
+      el.textContent=`Next Booked: ${dateLabel} at ${upcoming.time}`;
+    }else{
+      el.textContent='Next Booked: None';
+    }
+  }
+}
 function renderBedTracker(){
   if(!data.bedSessions)data.bedSessions=[];
   if(!data.sunbedBookings)data.sunbedBookings=[];
+  renderBedNextBooked();
   let sd=document.getElementById('sessionDate');if(sd){if(!sd.value)sd.value=localDateKey();let sdDisplay=document.getElementById('sessionDateDisplay');if(sdDisplay)sdDisplay.value=formatSunbedDisplayDate(sd.value)}
   let td=document.getElementById('dailyTakingsDate');if(td&&!td.value){td.value=localDateKey();document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(td.value)}
 
