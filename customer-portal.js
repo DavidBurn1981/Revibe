@@ -71,8 +71,28 @@ async function savePortalEditDetails(){
   }catch(e){err.textContent=e.message||'Could not save your details.';err.style.display='block'}
 }
 
-function purchaseMinutesPlaceholder(){
-  alert('Purchase Minutes is coming soon - online payment is still being set up.');
+function openPurchaseMinutesModal(){
+  if(!portalPreviewCustomerId){alert('Please select a customer to preview first.');return}
+  let err=document.getElementById('purchaseMinutesError');err.style.display='none';
+  let products=(data.tanningProducts||[]).filter(p=>p.type==='Block Minutes'&&p.active!==false).sort((a,b)=>(a.minutes||0)-(b.minutes||0));
+  document.getElementById('purchaseMinutesList').innerHTML=products.length
+    ? products.map(p=>`<div class='purchaseProductRow' onclick="startMinutesCheckout('${p.id}')"><div><div class='title'>${escapeHtml(p.title)}</div>${p.minutes?`<div class='sub'>${p.minutes} minutes</div>`:''}</div><div class='price'>£${(+p.price||0).toFixed(2)}</div></div>`).join('')
+    : `<div class='muted' style='text-align:center;padding:20px'>No minutes packages are set up yet.</div>`;
+  document.getElementById('purchaseMinutesModal').classList.add('show');
+}
+async function startMinutesCheckout(tanningProductId){
+  let err=document.getElementById('purchaseMinutesError');err.style.display='none';
+  try{
+    let {data:result,error}=await sb.functions.invoke('create-minutes-checkout',{
+      body:{customer_id:portalPreviewCustomerId,tanning_product_id:tanningProductId}
+    });
+    if(error)throw error;
+    if(!result?.url)throw new Error('No checkout URL was returned.');
+    window.location.href=result.url;
+  }catch(e){
+    err.textContent=e.message||'Could not start checkout. Please try again.';
+    err.style.display='block';
+  }
 }
 
 async function openBookABedFlow(){
