@@ -76,6 +76,10 @@
 
 .sunbedWeek{overflow:auto;padding-bottom:8px}
 .sunbedMatrix{display:grid;grid-template-columns:150px repeat(4,minmax(220px,1fr));gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:1050px}
+.sunbedDayGrid{display:grid;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:900px}
+.sunbedTimeLabel{background:#181b20;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 12px;font-size:11px;color:var(--muted);font-weight:700}
+.sunbedDayCell{background:var(--panel);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px}
+.sunbedDayCell:nth-last-child(-n+4){border-bottom:0}
 .sunbedMatrixHead{background:#1c2026;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px;font-weight:800}
 .sunbedMatrixHead.bed{display:flex;flex-direction:column;gap:3px}
 .sunbedMatrixDate{background:#181b20;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px;font-weight:800}
@@ -691,11 +695,12 @@ body.loading .app{visibility:hidden}
 
 <section id='sunbedbookings' class='page'>
   <div class='sunbedTop'>
-    <div><h1>Sunbed Bookings</h1><div class='muted' id='sunbedWeekLabel'>Weekly booking diary</div></div>
+    <div><h1>Sunbed Bookings</h1><div class='muted' id='sunbedWeekLabel'>Daily booking diary</div></div>
     <div class='actions'>
-      <button id='sunbedPrev'>←</button>
+      <button id='sunbedPrev'>← Previous Day</button>
       <button id='sunbedToday'>Today</button>
-      <button id='sunbedNext'>→</button>
+      <button id='sunbedNext'>Next Day →</button>
+      <div style='display:flex;gap:6px'><input id='sunbedViewDateInput' type='date' style='width:auto'><button type='button' onclick="document.getElementById('sunbedViewDateInput').showPicker&&document.getElementById('sunbedViewDateInput').showPicker()">📅</button></div>
       <button class='primary' onclick='openSunbedBooking()'>+ Book Sunbed</button>
     </div>
   </div>
