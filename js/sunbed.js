@@ -4,6 +4,7 @@ const SUNBEDS=[
   {name:'Bed 3',type:'Lie Down'},
   {name:'Bed 4',type:'Lie Down'}
 ];
+let sunbedViewDate=localDateKey();
 function normalizeBookedBed(x){return SUNBEDS.some(b=>b.name===x.bed)?x.bed:'Unassigned'}
 function openSunbedBookingDetail(id){
   let b=(data.sunbedBookings||[]).find(x=>x.id===id);if(!b)return;
@@ -31,20 +32,34 @@ function openSunbedBookingDetail(id){
 function renderSunbedCalendar(){
   let cal=document.getElementById('sunbedCalendar');if(!cal)return;
   cal.innerHTML='';
-  let end=new Date(sunbedWeekStart);end.setDate(end.getDate()+6);
-  document.getElementById('sunbedWeekLabel').textContent=`${nice(sunbedWeekStart)} – ${nice(end)} · Beds across columns, dates down rows`;
+  let viewDate=sunbedViewDate||localDateKey();
+  document.getElementById('sunbedWeekLabel').textContent=formatSunbedDisplayDate(viewDate);
+  let dateInput=document.getElementById('sunbedViewDateInput');if(dateInput)dateInput.value=viewDate;
 
-  let html=`<div class='sunbedMatrix'>
-    <div class='sunbedMatrixHead'>Date</div>
+  let hours=effectiveHoursForDate(viewDate);
+  let openMin=minutesFromTime(hours.open),closeMin=minutesFromTime(hours.close);
+  let dayBookings=(data.sunbedBookings||[]).filter(x=>x.date===viewDate&&x.status!=='Cancelled');
+  let turnaround=4; // matches the existing "4 min turnaround" shown on each booking card
+
+  let html=`<div class='sunbedDayGrid' style='grid-template-columns:90px repeat(${SUNBEDS.length},minmax(200px,1fr))'>
+    <div class='sunbedMatrixHead'>Time</div>
     ${SUNBEDS.map(b=>`<div class='sunbedMatrixHead bed'><span>${b.name}</span><span class='bedTypeTag'>${b.type}</span></div>`).join('')}`;
 
-  for(let i=0;i<7;i++){
-    let d=new Date(sunbedWeekStart);d.setDate(d.getDate()+i);let key=iso(d);
-    let dayRows=(data.sunbedBookings||[]).filter(x=>x.date===key).sort((a,b)=>a.time.localeCompare(b.time));
-    html+=`<div class='sunbedMatrixDate'>${nice(d)}</div>`;
+  let covered={};
+  for(let m=openMin;m<closeMin;m+=15){
+    let hh=String(Math.floor(m/60)).padStart(2,'0'),mm=String(m%60).padStart(2,'0'),t=`${hh}:${mm}`;
+    html+=`<div class='sunbedTimeLabel'>${t}</div>`;
     for(let b of SUNBEDS){
-      let rows=dayRows.filter(x=>normalizeBookedBed(x)===b.name);
-      html+=`<div class='sunbedMatrixCell'>${rows.length?rows.map(x=>`<div class='sunbedBooking' style='cursor:pointer' onclick="openSunbedBookingDetail('${x.id}')"><b>${x.time} · ${x.name}</b>${x.phone?`<div class='muted'>${x.phone}</div>`:''}<div>${x.length} min + 4 min turnaround</div><span class='sessionPill'>${x.sessionType||'Red Light Therapy'}</span></div>`).join(''):`<div class='sunbedEmpty'>Available</div>`}</div>`;
+      let key=b.name+'|'+m;
+      if(covered[key])continue;
+      let booking=dayBookings.find(x=>normalizeBookedBed(x)===b.name&&minutesFromTime(x.time)===m);
+      if(booking){
+        let span=Math.max(1,Math.ceil((booking.length+turnaround)/15));
+        for(let s=1;s<span;s++)covered[b.name+'|'+(m+s*15)]=true;
+        html+=`<div class='sunbedDayCell' style='grid-row:span ${span}'><div class='sunbedBooking' style='margin-top:0;height:100%' onclick="openSunbedBookingDetail('${booking.id}')"><b>${booking.time} · ${escapeHtml(booking.name||'')}</b>${booking.phone?`<div class='muted'>${escapeHtml(booking.phone)}</div>`:''}<div>${booking.length} min + ${turnaround} min turnaround</div><span class='sessionPill'>${escapeHtml(booking.sessionType||'Red Light Therapy')}</span></div></div>`;
+      }else{
+        html+=`<div class='sunbedDayCell'><div class='sunbedEmpty'>Available</div></div>`;
+      }
     }
   }
   html+=`</div>`;
