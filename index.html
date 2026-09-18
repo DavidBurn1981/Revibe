@@ -656,7 +656,7 @@ body.loading .app{visibility:hidden}
 <div id='userBar' class='userBar' style='display:none'></div>
 <button id='mobileMenuButton' class='mobileMenuButton' type='button' aria-label='Open menu' onclick='toggleMobileNav()'>☰</button>
 <div id='mobileNavBackdrop' class='mobileNavBackdrop' onclick='closeMobileNav()'></div>
-<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='mybookings'>My Bookings</button><button data-page='mytreatmenttype'>My Treatment Type</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button data-page='customerpurchases' id='customerPurchasesNavButton'>Customer Purchases</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><button data-page='recordasession'>Record A Session</button><button data-page='customerportalpreview'>Customer Portal Preview</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button><button data-page='apartmentairbnb'>Apartment Air BnB Calendar</button></nav></aside><main class='main'>
+<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='mybookings'>My Bookings</button><button data-page='mytreatmenttype'>My Treatment Type</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button data-page='customerpurchases' id='customerPurchasesNavButton'>Customer Purchases</button><button data-page='customersegments' id='customerSegmentsNavButton'>Customer Segments</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><button data-page='recordasession'>Record A Session</button><button data-page='customerportalpreview'>Customer Portal Preview</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button><button data-page='apartmentairbnb'>Apartment Air BnB Calendar</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
@@ -1203,6 +1203,37 @@ body.loading .app{visibility:hidden}
   </div>
   <div class='card'><table class='table' id='customerPurchasesTable'></table></div>
 </section>
+<section id='customersegments' class='page'>
+  <div class='top'>
+    <div><h1>Customer Segments</h1><div class='muted'>Build a query to find a group of customers, then export the list to Excel.</div></div>
+  </div>
+  <div class='card' style='margin-bottom:16px'>
+    <div id='segmentBuilderRoot'></div>
+    <div style='display:flex;gap:8px;margin-top:14px'>
+      <button class='primary' onclick='runCustomerSegmentSearch()'>Run Search</button>
+      <button onclick='resetCustomerSegmentBuilder()'>Clear</button>
+    </div>
+  </div>
+  <div class='card'>
+    <div class='top' style='margin-bottom:10px'>
+      <div><h3 style='margin:0' id='segmentResultsHeading'>Results</h3></div>
+      <div class='actions'><button id='segmentExportBtn' style='display:none' onclick='openSegmentExportModal()'>Export to Excel</button></div>
+    </div>
+    <div id='segmentResultsTableWrap' style='overflow:auto'><table class='table' id='segmentResultsTable'></table></div>
+  </div>
+</section>
+<div class='modal' id='segmentExportModal'>
+  <div class='modalbox' style='max-width:520px'>
+    <div class='top'><div><h1>Export to Excel</h1><div class='muted'>Choose which columns to include.</div></div><button onclick="document.getElementById('segmentExportModal').classList.remove('show')">✕</button></div>
+    <div style='display:flex;gap:8px;margin-bottom:10px'>
+      <button onclick='setAllSegmentExportColumns(true)'>Select All</button>
+      <button onclick='setAllSegmentExportColumns(false)'>Select None</button>
+    </div>
+    <div id='segmentExportColumnList' style='max-height:360px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px'></div>
+    <div id='segmentExportError' class='loginError' style='margin-top:10px'></div>
+    <button class='primary' style='margin-top:14px;width:100%' onclick='exportCustomerSegmentToExcel()'>Download Excel File</button>
+  </div>
+</div>
 <section id='settings' class='page'><div class='top'><h1>Settings</h1></div><div class='card'><h3>REVIBE Shop Management</h3><p class='muted'>Live system connected to Supabase. Data is shared across signed-in devices.</p></div></section>
 </main></div><div class='modal' id='sessionLoggedModal' style='z-index:2000'><div class='modalbox' style='max-width:420px;text-align:center'><h2 style='margin:0 0 10px'>Session Logged</h2><div class='muted' id='sessionLoggedMessage' style='margin-bottom:18px'>The session has been recorded successfully.</div><button class='primary' style='min-width:140px' onclick="closeSessionLoggedConfirmation()">OK</button></div></div>
 <div class='modal' id='editSessionModal'>
@@ -2152,6 +2183,7 @@ body.loading .app{visibility:hidden}
 <script src='js/orders.js'></script>
 <script src='js/holidays.js'></script>
 <script src='js/staff.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'></script>
 <script src='js/customers.js'></script>
 <script src='js/customer-portal.js'></script>
 <script src='js/treatments.js'></script>
@@ -2166,6 +2198,7 @@ body.loading .app{visibility:hidden}
 <script src='js/my-bookings.js'></script>
 <script src='js/my-treatment-type.js'></script>
 <script src='js/customer-purchases.js'></script>
+<script src='js/customer-segments.js'></script>
 <script src='js/api.js'></script>
 <script src='js/main.js'></script>
 
