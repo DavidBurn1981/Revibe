@@ -27,6 +27,7 @@ function renderPortalPreview(){
   document.getElementById('portalPreviewContent').style.display='block';
   document.getElementById('portalMinutesLeft').textContent=c.minutesLeft;
   document.getElementById('portalName').textContent=`${c.firstName} ${c.lastName}`;
+  document.getElementById('portalSkinType').textContent=c.skinType?`Type ${c.skinType}`:'Not on file';
   document.getElementById('portalAddress').textContent=c.address||'—';
 
   let sessions=(data.bedSessions||[]).filter(s=>s.customerId===c.id).sort((a,b)=>(b.date+(b.time||'')).localeCompare(a.date+(a.time||'')));
@@ -40,6 +41,28 @@ function renderPortalPreview(){
   let bookings=(data.sunbedBookings||[]).filter(b=>b.customerId===c.id).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
   document.getElementById('portalBedBookingsTable').innerHTML='<tr><th>Date</th><th>Time</th><th>Length</th><th>Bed</th><th>Status</th><th></th></tr>'+
     (bookings.length?bookings.map(b=>`<tr><td>${formatSunbedDisplayDate(b.date)}</td><td>${escapeHtml(b.time)}</td><td>${b.length} min</td><td>${escapeHtml(b.bed)}</td><td>${escapeHtml(b.status)}</td><td>${b.status==='Booked'?`<button onclick="cancelPortalBedBooking('${b.id}')">Cancel</button>`:''}</td></tr>`).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:16px'>No bed bookings yet.</td></tr>`);
+}
+
+function openPortalEditDetails(){
+  let c=(data.customers||[]).find(x=>x.id===portalPreviewCustomerId);if(!c)return;
+  document.getElementById('portalEditAddress').value=c.address||'';
+  document.getElementById('portalEditPhone').value=c.phone||'';
+  document.getElementById('portalEditEmail').value=c.email||'';
+  document.getElementById('portalEditError').style.display='none';
+  document.getElementById('portalEditDetailsModal').classList.add('show');
+}
+async function savePortalEditDetails(){
+  let err=document.getElementById('portalEditError');err.style.display='none';
+  let address=document.getElementById('portalEditAddress').value.trim(),
+      phone=document.getElementById('portalEditPhone').value.trim(),
+      email=document.getElementById('portalEditEmail').value.trim();
+  try{
+    let {error}=await sb.from('customers').update({address:address||null,phone_number:phone||null,email:email||null,updated_at:new Date().toISOString()}).eq('id',portalPreviewCustomerId);
+    if(error)throw error;
+    document.getElementById('portalEditDetailsModal').classList.remove('show');
+    await loadLiveData();
+    renderPortalPreview();
+  }catch(e){err.textContent=e.message||'Could not save your details.';err.style.display='block'}
 }
 
 function openBookABedFlow(){
