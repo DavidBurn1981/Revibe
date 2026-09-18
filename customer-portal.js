@@ -65,6 +65,10 @@ async function savePortalEditDetails(){
   }catch(e){err.textContent=e.message||'Could not save your details.';err.style.display='block'}
 }
 
+function purchaseMinutesPlaceholder(){
+  alert('Purchase Minutes is coming soon - online payment is still being set up.');
+}
+
 function openBookABedFlow(){
   if(!portalPreviewCustomerId){alert('Please select a customer to preview first.');return}
   babSelectedDate=null;babSelectedTime=null;babSelectedLength=null;
@@ -72,6 +76,7 @@ function openBookABedFlow(){
   document.getElementById('babLength').value='';
   document.getElementById('babBedType').value='Any';
   document.getElementById('babError').style.display='none';
+  document.getElementById('babPurchaseMinutesBtn').style.display='none';
   document.getElementById('bookABedStep1').style.display='block';
   document.getElementById('bookABedStep2').style.display='none';
   document.getElementById('bookABedStep3').style.display='none';
@@ -81,6 +86,7 @@ function openBookABedFlow(){
 
 function searchBedSlots(){
   let err=document.getElementById('babError');err.style.display='none';
+  document.getElementById('babPurchaseMinutesBtn').style.display='none';
   let date=document.getElementById('babDate').value;
   let length=+document.getElementById('babLength').value;
   let bedType=document.getElementById('babBedType').value;
@@ -89,8 +95,9 @@ function searchBedSlots(){
 
   let c=(data.customers||[]).find(x=>x.id===portalPreviewCustomerId);
   if(length>c.minutesLeft){
-    err.textContent=`You need ${length} minutes for this session but only have ${c.minutesLeft} on your account. Please purchase more minutes in the shop.`;
+    err.textContent=`You need ${length} minutes for this session but only have ${c.minutesLeft} on your account.`;
     err.style.display='block';
+    document.getElementById('babPurchaseMinutesBtn').style.display='inline-block';
     return;
   }
 
