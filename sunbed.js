@@ -5,6 +5,29 @@ const SUNBEDS=[
   {name:'Bed 4',type:'Lie Down'}
 ];
 function normalizeBookedBed(x){return SUNBEDS.some(b=>b.name===x.bed)?x.bed:'Unassigned'}
+function openSunbedBookingDetail(id){
+  let b=(data.sunbedBookings||[]).find(x=>x.id===id);if(!b)return;
+  let phone=b.phone;
+  if(b.customerId){
+    let c=(data.customers||[]).find(x=>x.id===b.customerId);
+    if(c&&c.phone)phone=c.phone;
+  }
+  let madeAt=b.createdAt?new Date(b.createdAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  document.getElementById('sunbedBookingDetailContent').innerHTML=`
+    <div class='formgrid' style='grid-template-columns:repeat(2,1fr)'>
+      <div><label>Customer</label><div>${escapeHtml(b.name||'')}</div></div>
+      <div><label>Phone</label><div>${escapeHtml(phone||'—')}</div></div>
+      <div><label>Date</label><div>${formatSunbedDisplayDate(b.date)}</div></div>
+      <div><label>Time</label><div>${escapeHtml(b.time)}</div></div>
+      <div><label>Bed</label><div>${escapeHtml(b.bed)}</div></div>
+      <div><label>Length</label><div>${b.length} minutes</div></div>
+      <div><label>Session Type</label><div>${escapeHtml(b.sessionType||'')}</div></div>
+      <div><label>Status</label><div>${escapeHtml(b.status)}</div></div>
+      <div><label>Booking Made</label><div>${madeAt}</div></div>
+      <div><label>Source</label><div>${b.customerId?'Online Booking':'Booked In Shop'}</div></div>
+    </div>`;
+  document.getElementById('sunbedBookingDetailModal').classList.add('show');
+}
 function renderSunbedCalendar(){
   let cal=document.getElementById('sunbedCalendar');if(!cal)return;
   cal.innerHTML='';
@@ -21,7 +44,7 @@ function renderSunbedCalendar(){
     html+=`<div class='sunbedMatrixDate'>${nice(d)}</div>`;
     for(let b of SUNBEDS){
       let rows=dayRows.filter(x=>normalizeBookedBed(x)===b.name);
-      html+=`<div class='sunbedMatrixCell'>${rows.length?rows.map(x=>`<div class='sunbedBooking'><b>${x.time} · ${x.name}</b>${x.phone?`<div class='muted'>${x.phone}</div>`:''}<div>${x.length} min + 4 min turnaround</div><span class='sessionPill'>${x.sessionType||'Red Light Therapy'}</span></div>`).join(''):`<div class='sunbedEmpty'>Available</div>`}</div>`;
+      html+=`<div class='sunbedMatrixCell'>${rows.length?rows.map(x=>`<div class='sunbedBooking' style='cursor:pointer' onclick="openSunbedBookingDetail('${x.id}')"><b>${x.time} · ${x.name}</b>${x.phone?`<div class='muted'>${x.phone}</div>`:''}<div>${x.length} min + 4 min turnaround</div><span class='sessionPill'>${x.sessionType||'Red Light Therapy'}</span></div>`).join(''):`<div class='sunbedEmpty'>Available</div>`}</div>`;
     }
   }
   html+=`</div>`;

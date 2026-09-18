@@ -1,5 +1,11 @@
 let portalPreviewCustomerId=null;
-let babSelectedDate=null,babSelectedTime=null,babSelectedLength=null,babSelectedBedType='Any';
+let babSelectedDate=null,babSelectedTime=null,babSelectedLength=null,babSelectedBedType='Any',babSelectedSessionType=null;
+let pendingCancelBookingId=null;
+
+function babExclusiveSessionType(which){
+  if(which==='rlt'){document.getElementById('babRlt').checked=true;document.getElementById('babHybrid').checked=false}
+  else{document.getElementById('babHybrid').checked=true;document.getElementById('babRlt').checked=false}
+}
 
 function searchPortalPreviewCustomer(){
   let q=document.getElementById('portalPreviewCustomerSearch').value.trim().toLowerCase();
@@ -69,12 +75,14 @@ function purchaseMinutesPlaceholder(){
   alert('Purchase Minutes is coming soon - online payment is still being set up.');
 }
 
-function openBookABedFlow(){
+async function openBookABedFlow(){
   if(!portalPreviewCustomerId){alert('Please select a customer to preview first.');return}
-  babSelectedDate=null;babSelectedTime=null;babSelectedLength=null;
-  document.getElementById('babDate').value='';
+  babSelectedDate=null;babSelectedTime=null;babSelectedLength=null;babSelectedSessionType=null;
+  document.getElementById('babDate').value=localDateKey();
   document.getElementById('babLength').value='';
   document.getElementById('babBedType').value='Any';
+  document.getElementById('babRlt').checked=false;
+  document.getElementById('babHybrid').checked=false;
   document.getElementById('babError').style.display='none';
   document.getElementById('babPurchaseMinutesBtn').style.display='none';
   document.getElementById('bookABedStep1').style.display='block';
@@ -82,6 +90,10 @@ function openBookABedFlow(){
   document.getElementById('bookABedStep3').style.display='none';
   document.getElementById('bookABedStep4').style.display='none';
   document.getElementById('bookABedModal').classList.add('show');
+  // Refresh live data before checking minutes/availability, so a purchase made
+  // elsewhere moments ago (e.g. by staff) is reflected without needing a page reload.
+  await loadLiveData();
+  renderPortalPreview();
 }
 
 function searchBedSlots(){
@@ -90,7 +102,9 @@ function searchBedSlots(){
   let date=document.getElementById('babDate').value;
   let length=+document.getElementById('babLength').value;
   let bedType=document.getElementById('babBedType').value;
+  let sessionType=document.getElementById('babRlt').checked?'Red Light Therapy':document.getElementById('babHybrid').checked?'Hybrid':null;
   if(!date){err.textContent='Please choose a date.';err.style.display='block';return}
+  if(!sessionType){err.textContent='Please choose whether this is Red Light Therapy or Hybrid Tanning.';err.style.display='block';return}
   if(!length||length<1){err.textContent='Please enter the session length.';err.style.display='block';return}
 
   let c=(data.customers||[]).find(x=>x.id===portalPreviewCustomerId);
@@ -108,8 +122,13 @@ function searchBedSlots(){
   let bedsOfType=(data.beds||[]).filter(b=>b.active!==false&&(bedType==='Any'||b.type===bedType));
   let existingBookings=(data.sunbedBookings||[]).filter(b=>b.date===date&&(b.status==='Booked'||b.status==='Completed'));
 
+  // Only offer times still in the future - if booking for today, start from now rather than opening time
+  let isToday=date===localDateKey();
+  let now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
+  let earliestStart=isToday?Math.max(openMin,nowMin+1):openMin;
+
   let slots=[];
-  for(let startMin=openMin;startMin+length+turnaround<=closeMin;startMin+=5){
+  for(let startMin=earliestStart;startMin+length+turnaround<=closeMin;startMin+=5){
     let windowStart=startMin-bufferBefore,windowEnd=startMin+length+turnaround;
     let anyBedFree=bedsOfType.some(bed=>{
       return !existingBookings.some(b=>{
@@ -124,7 +143,7 @@ function searchBedSlots(){
     }
   }
 
-  babSelectedDate=date;babSelectedLength=length;babSelectedBedType=bedType;
+  babSelectedDate=date;babSelectedLength=length;babSelectedBedType=bedType;babSelectedSessionType=sessionType;
 
   document.getElementById('babChosenDateLabel').textContent=formatSunbedDisplayDate(date);
   document.getElementById('babChosenLengthLabel').textContent=length;
@@ -149,7 +168,7 @@ async function confirmBedBooking(){
   try{
     let {data:result,error}=await sb.rpc('create_bed_booking',{
       p_customer:portalPreviewCustomerId,p_booking_date:babSelectedDate,p_start_time:babSelectedTime,
-      p_session_length_minutes:babSelectedLength,p_session_type:'Hybrid',p_preferred_bed_type:babSelectedBedType
+      p_session_length_minutes:babSelectedLength,p_session_type:babSelectedSessionType,p_preferred_bed_type:babSelectedBedType
     });
     if(error)throw error;
     let row=Array.isArray(result)?result[0]:result;
@@ -173,13 +192,25 @@ async function confirmBedBooking(){
   }
 }
 
-async function cancelPortalBedBooking(bookingId){
-  if(!confirm('Cancel this bed booking?'))return;
+function cancelPortalBedBooking(bookingId){
+  let booking=(data.sunbedBookings||[]).find(b=>b.id===bookingId);if(!booking)return;
+  pendingCancelBookingId=bookingId;
+  let startsAt=new Date(`${booking.date}T${booking.time}:00`);
+  let withinOneHour=(startsAt.getTime()-Date.now())<60*60*1000;
+  document.getElementById('cancelBookingConfirmText').textContent=withinOneHour
+    ? 'As you are within 1 hour of your booking, minutes will not be returned to your account. Proceed?'
+    : 'Cancelling this booking will refund your minutes to your account. Proceed?';
+  document.getElementById('cancelBookingConfirmModal').classList.add('show');
+}
+async function proceedWithCancelBooking(){
+  let bookingId=pendingCancelBookingId;
+  document.getElementById('cancelBookingConfirmModal').classList.remove('show');
+  if(!bookingId)return;
   try{
     let {data:result,error}=await sb.rpc('cancel_bed_booking',{p_booking_id:bookingId});
     if(error)throw error;
     let row=Array.isArray(result)?result[0]:result;
-    alert(row.refunded?`Booking cancelled. ${row.minutes_left} minutes refunded to your account.`:`Booking cancelled. Since this was within 1 hour of the start time, minutes were not refunded.`);
+    alert(row.refunded?`Booking cancelled. ${row.minutes_left} minutes refunded to your account.`:`Booking cancelled. Minutes were not refunded.`);
     await loadLiveData();
     renderPortalPreview();
   }catch(e){alert(e.message||'Could not cancel this booking.')}

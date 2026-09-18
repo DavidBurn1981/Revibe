@@ -938,9 +938,10 @@ body.loading .app{visibility:hidden}
     <div class='top'><h1>Book a Bed</h1><button onclick="document.getElementById('bookABedModal').classList.remove('show')">✕</button></div>
     <div id='bookABedStep1'>
       <div class='sessionMinutesGrid'>
-        <div><label>Date</label><input id='babDate' type='date'></div>
+        <div><label>Date</label><div style='display:flex;gap:8px'><input id='babDate' type='date' style='flex:1'><button type='button' onclick="document.getElementById('babDate').showPicker&&document.getElementById('babDate').showPicker()">📅</button></div></div>
         <div><label>Session Length (minutes)</label><input id='babLength' type='number' min='1' step='1' placeholder='e.g. 12'></div>
       </div>
+      <div style='margin-top:14px'><label>Session Type</label><div class='sessionTypeChoices'><label class='fieldInlineCheck'><span>Red Light Therapy</span><input id='babRlt' type='checkbox' onchange="babExclusiveSessionType('rlt')"></label><label class='fieldInlineCheck'><span>Hybrid</span><input id='babHybrid' type='checkbox' onchange="babExclusiveSessionType('hybrid')"></label></div></div>
       <div style='margin-top:14px'><label>Bed Type Preference</label><select id='babBedType'><option value='Any'>No Preference</option><option value='Stand Up'>Stand Up</option><option value='Lie Down'>Lie Down</option></select></div>
       <div class='muted' style='margin-top:10px' id='babTotalLine'></div>
       <div id='babError' class='loginError' style='margin-top:10px'></div>
@@ -953,6 +954,7 @@ body.loading .app{visibility:hidden}
       <button style='margin-top:16px' onclick="document.getElementById('bookABedStep1').style.display='block';document.getElementById('bookABedStep2').style.display='none'">← Change Date/Length</button>
     </div>
     <div id='bookABedStep3' style='display:none'>
+      <h2 style='text-align:center;margin-top:0'>Confirm Booking</h2>
       <div class='skinTypeWarningBox' style='background:rgba(24,215,232,.1);border-color:rgba(24,215,232,.4)'>
         <div class='skinTypeWarningText' style='color:#fff'>
           Confirming this booking will create your session and deduct <b id='babConfirmMinutes'></b> minutes from your account immediately.<br><br>
@@ -969,6 +971,17 @@ body.loading .app{visibility:hidden}
       <h2>Booking Confirmed</h2>
       <div class='muted' id='babConfirmationText'></div>
       <button class='primary' style='margin-top:20px;width:auto' onclick="document.getElementById('bookABedModal').classList.remove('show')">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class='modal' id='cancelBookingConfirmModal'>
+  <div class='modalbox skinTypeWarningBox' style='max-width:440px;background:rgba(255,49,49,.12);border-color:rgba(255,49,49,.4)'>
+    <div class='skinTypeWarningIcon'>⚠</div>
+    <div class='skinTypeWarningText' id='cancelBookingConfirmText' style='color:#fff'></div>
+    <div style='display:flex;gap:10px;justify-content:center;margin-top:14px'>
+      <button onclick="document.getElementById('cancelBookingConfirmModal').classList.remove('show')">Go Back</button>
+      <button class='skinTypeWarningBtn' onclick='proceedWithCancelBooking()'>Proceed</button>
     </div>
   </div>
 </div>
@@ -2089,6 +2102,13 @@ body.loading .app{visibility:hidden}
       <div><h1 id='sunbedConflictTitle'>Bed Unavailable</h1><div class='muted' id='sunbedConflictMessage'></div></div>
     </div>
     <div id='sunbedConflictActions' style='display:flex;justify-content:flex-end;gap:10px;margin-top:22px'></div>
+  </div>
+</div>
+
+<div class='modal' id='sunbedBookingDetailModal'>
+  <div class='modalbox' style='max-width:560px'>
+    <div class='top'><h1>Booking Details</h1><button onclick="document.getElementById('sunbedBookingDetailModal').classList.remove('show')">✕</button></div>
+    <div id='sunbedBookingDetailContent'></div>
   </div>
 </div>
 <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>

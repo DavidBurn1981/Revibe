@@ -1,3 +1,22 @@
+// Automatically brings any modal to the front the moment it opens, regardless of what
+// other modals are already open beneath it - fixes the whole class of "popup opens
+// behind another popup" bugs in one place, instead of hand-assigning z-index per modal.
+(function(){
+  let topZ=100;
+  function watchModal(modal){
+    let observer=new MutationObserver(()=>{
+      if(modal.classList.contains('show')){
+        topZ+=1;
+        modal.style.zIndex=topZ;
+      }
+    });
+    observer.observe(modal,{attributes:true,attributeFilter:['class']});
+  }
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.querySelectorAll('.modal').forEach(watchModal);
+  });
+})();
+
 function toggleMobileNav(){
   document.body.classList.toggle('mobileNavOpen');
 }
