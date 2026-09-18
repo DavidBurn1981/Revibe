@@ -90,15 +90,17 @@ async function loadPortalData(){
   currentCustomer={
     id:customer.id,firstName:customer.first_name,lastName:customer.last_name,
     address:customer.address||'',phone:customer.phone_number||'',email:customer.email||'',
-    skinType:customer.skin_type||null,minutesLeft:+customer.minutes_left||0
+    skinType:customer.skin_type||null,minutesLeft:+customer.minutes_left||0,
+    subscriptionStatus:customer.subscription_status||'No'
   };
 
-  let [sessionsRes,purchasesRes,bookingsRes,productsRes,bedsRes]=await Promise.all([
+  let [sessionsRes,purchasesRes,bookingsRes,productsRes,bedsRes,subConfigRes]=await Promise.all([
     sb.from('bed_sessions').select('*').eq('customer_id',currentCustomer.id).order('session_date',{ascending:false}).order('session_time',{ascending:false}),
     sb.from('customer_purchases').select('*').eq('customer_id',currentCustomer.id).order('created_at',{ascending:false}),
     sb.from('sunbed_bookings').select('*').eq('customer_id',currentCustomer.id).order('booking_date',{ascending:false}),
     sb.from('tanning_rlt_products').select('*').eq('product_type','Block Minutes').eq('active',true).order('minute_amount'),
-    sb.from('beds').select('*').eq('active',true)
+    sb.from('beds').select('*').eq('active',true),
+    sb.from('subscription_product_config').select('*').eq('active',true).single()
   ]);
 
   let beds=(bedsRes.data||[]).map(b=>({id:b.id,name:b.name,type:b.bed_type}));
@@ -112,7 +114,8 @@ async function loadPortalData(){
         bedName:bed?bed.name:'—',status:x.status};
     }),
     tanningProducts:(productsRes.data||[]).map(x=>({id:x.id,title:x.title,minutes:+x.minute_amount||0,price:+x.price||0})),
-    beds
+    beds,
+    subscriptionConfig:subConfigRes.data?{title:subConfigRes.data.title,pricePence:+subConfigRes.data.price_pence||0}:null
   };
 
   renderPortal();
@@ -126,6 +129,8 @@ function renderPortal(){
   document.getElementById('detName').textContent=`${currentCustomer.firstName} ${currentCustomer.lastName}`;
   document.getElementById('detSkinType').textContent=currentCustomer.skinType?`Type ${currentCustomer.skinType}`:'Not on file';
   document.getElementById('detAddress').textContent=currentCustomer.address||'Not on file';
+
+  renderMembershipSection();
 
   let now=Date.now();
   let withMeta=portalData.bookings.map(b=>({...b,startMs:new Date(`${b.date}T${b.time}:00`).getTime()}));
@@ -193,6 +198,57 @@ function openDatePicker(inputId){
   input.focus();
   input.click();
 }
+
+// ---------- Membership ----------
+function renderMembershipSection(){
+  let el=document.getElementById('membershipSection');
+  let status=currentCustomer.subscriptionStatus;
+  let priceLabel=portalData.subscriptionConfig?`£${(portalData.subscriptionConfig.pricePence/100).toFixed(2)}`:'£99.99';
+
+  if(status==='Subscriber'){
+    el.innerHTML=`<div class="membershipCard active"><div class="mTitle">You're a Member</div><div class="mPrice">Unlimited sessions, ${priceLabel}/month</div><div class="mDesc">Your membership is active and renews automatically.</div></div>`;
+  }else if(status==='Subscriber - Failed Payment'){
+    el.innerHTML=`<div class="membershipCard failedPayment"><div class="mTitle">Payment Issue</div><div class="mDesc">Your last membership payment didn't go through. Please update your payment details or speak to a member of staff to avoid losing access.</div></div>`;
+  }else{
+    el.innerHTML=`<div class="membershipCard">
+      <div class="mTitle">Go Unlimited</div>
+      <div class="mPrice">${priceLabel} / month</div>
+      <div class="mDesc">Unlimited sessions, max once a day. Cancel anytime.</div>
+      <button onclick="openSubscriptionModal()">Purchase Subscription Membership</button>
+    </div>`;
+  }
+}
+function openSubscriptionModal(){
+  document.getElementById('subscriptionError').style.display='none';
+  document.getElementById('subscriptionLoading').style.display='none';
+  document.getElementById('subscriptionModalContent').style.display='block';
+  let priceLabel=portalData.subscriptionConfig?`£${(portalData.subscriptionConfig.pricePence/100).toFixed(2)} / month`:'£99.99 / month';
+  document.getElementById('subModalPrice').textContent=priceLabel;
+  document.getElementById('subscriptionModal').classList.add('show');
+}
+async function startSubscriptionCheckout(){
+  let err=document.getElementById('subscriptionError');err.style.display='none';
+  document.getElementById('subscriptionModalContent').querySelector('.modalTop').style.display='none';
+  document.getElementById('subModalPrice').style.display='none';
+  document.querySelectorAll('#subscriptionModalContent .detailCard, #subscriptionModalContent .confirmBox').forEach(e=>e.style.display='none');
+  document.getElementById('subscribeBtn').style.display='none';
+  document.getElementById('subscriptionLoading').style.display='block';
+  try{
+    let {data:result,error}=await sb.functions.invoke('create-subscription-checkout',{body:{customer_id:currentCustomer.id}});
+    if(error)throw error;
+    if(!result?.url)throw new Error('No checkout URL was returned.');
+    window.location.href=result.url;
+  }catch(e){
+    document.getElementById('subscriptionLoading').style.display='none';
+    document.getElementById('subscriptionModalContent').querySelector('.modalTop').style.display='flex';
+    document.getElementById('subModalPrice').style.display='block';
+    document.querySelectorAll('#subscriptionModalContent .detailCard, #subscriptionModalContent .confirmBox').forEach(e=>e.style.display='block');
+    document.getElementById('subscribeBtn').style.display='block';
+    err.textContent=e.message||'Could not start checkout. Please try again.';
+    err.style.display='block';
+  }
+}
+
 
 // ---------- Edit details ----------
 function openEditDetails(){

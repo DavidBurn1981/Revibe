@@ -77,6 +77,16 @@ input,select,textarea{font-family:inherit;font-size:16px}
 
 .section{padding:30px 20px 0}
 .section h2{font-size:16px;font-weight:700;margin:0 0 14px;color:var(--text)}
+.membershipCard{border-radius:16px;padding:22px 20px;background:linear-gradient(135deg,rgba(255,179,71,.14),rgba(255,45,120,.1));border:1px solid rgba(255,179,71,.35)}
+.membershipCard .mTitle{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-bottom:4px}
+.membershipCard .mPrice{color:var(--amber);font-weight:700;font-size:15px;margin-bottom:10px}
+.membershipCard .mDesc{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:16px}
+.membershipCard button{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--amber),#ff8a3d);color:#1a1200;font-size:15px;font-weight:700}
+.membershipCard.active{background:rgba(43,213,118,.1);border-color:rgba(43,213,118,.35)}
+.membershipCard.active .mTitle{color:#7fe6a8}
+.membershipCard.active .mPrice{color:#7fe6a8}
+.membershipCard.failedPayment{background:rgba(255,45,45,.1);border-color:rgba(255,45,45,.35)}
+.membershipCard.failedPayment .mTitle{color:#ff9e9e}
 .historyButtons{display:flex;flex-direction:column;gap:10px;padding-bottom:10px}
 .historyBtn{width:100%;padding:16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:15px;font-weight:700;text-align:center}
 .detailCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
@@ -179,6 +189,8 @@ input,select,textarea{font-family:inherit;font-size:16px}
   </div>
   <button class="treatmentLink" onclick="openCustomerBookingPage()">Looking for a treatment instead?</button>
 
+  <div class="section" id="membershipSection"></div>
+
   <div class="section"><h2>Your Details</h2>
     <div class="detailCard">
       <div class="detailRow"><div class="k">Name</div><div class="v" id="detName">—</div></div>
@@ -203,6 +215,28 @@ input,select,textarea{font-family:inherit;font-size:16px}
     <div id="purchaseMinutesError" class="authError"></div>
     <div id="purchaseMinutesLoading" class="spinnerWrap" style="display:none"><div class="spin"></div><div style="color:var(--muted);font-size:13.5px">Loading secure checkout...</div></div>
     <div id="purchaseMinutesList"></div>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION MEMBERSHIP MODAL -->
+<div class="modal" id="subscriptionModal">
+  <div class="modalBox">
+    <div id="subscriptionModalContent">
+      <div class="modalTop"><h2>Unlimited Membership</h2><button class="modalClose" onclick="closeModal('subscriptionModal')">✕</button></div>
+      <p class="modalSub" id="subModalPrice">£99.99 / month</p>
+      <div class="detailCard" style="margin-bottom:16px">
+        <div class="detailRow"><div class="k">What's included</div><div class="v" style="text-align:left;font-weight:400">Unlimited sessions, max once per day</div></div>
+        <div class="detailRow"><div class="k">Billing</div><div class="v" style="text-align:left;font-weight:400">£99.99 charged today, then monthly</div></div>
+        <div class="detailRow"><div class="k">Cancel anytime</div><div class="v" style="text-align:left;font-weight:400">Keep access until your current period ends</div></div>
+      </div>
+      <div class="confirmBox" style="margin-bottom:16px">
+        <b>Terms &amp; Conditions</b><br><br>
+        [Placeholder - replace with your actual membership terms and conditions before this goes live.] Standard usage limits apply (maximum one session per day; sessions cannot be used on more than 4 consecutive days). Membership renews automatically each month until cancelled. Cancelling stops future renewals but does not refund the current period.
+      </div>
+      <div id="subscriptionError" class="authError"></div>
+      <div id="subscriptionLoading" class="spinnerWrap" style="display:none"><div class="spin"></div><div style="color:var(--muted);font-size:13.5px">Loading secure checkout...</div></div>
+      <button class="authBtn" id="subscribeBtn" onclick="startSubscriptionCheckout()">Subscribe - £99.99/month</button>
+    </div>
   </div>
 </div>
 
