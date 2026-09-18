@@ -50,6 +50,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   orders:'finance',
   businessplanner:'business_planner',
   customerpurchases:'customer_purchases',
+  customersegments:'customer_purchases',
   apartmentcleans:'apartment_cleans',
 };
 async function loadRolePermissions(){
