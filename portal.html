@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Account — REVIBE Glow Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0b0d10;
+  --panel:#15181d;
+  --panel2:#1c2027;
+  --line:#282d35;
+  --text:#f3f1ec;
+  --muted:#9aa0ab;
+  --pink:#ff2d78;
+  --amber:#ffb347;
+  --amber-dim:#8a5a22;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--ink);color:var(--text);font-family:'Manrope',sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+h1,h2,h3,.display{font-family:'Fraunces',serif}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+input,select,textarea{font-family:inherit;font-size:16px}
+
+/* ---------- Loading ---------- */
+#loadingScreen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:50}
+.loadGlow{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,var(--amber),transparent 70%);animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1.05)}}
+
+/* ---------- Auth screens ---------- */
+.authWrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;position:relative;overflow:hidden}
+.authWrap::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,71,.16),rgba(255,45,120,.08) 55%,transparent 72%);filter:blur(10px)}
+.authBox{width:100%;max-width:380px;position:relative;z-index:1}
+.brand{text-align:center;margin-bottom:36px}
+.brand .word{font-size:15px;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.brand .glow{font-family:'Fraunces',serif;font-size:32px;font-weight:600;background:linear-gradient(135deg,var(--amber),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.authBox h1{font-size:24px;font-weight:600;margin:0 0 6px;line-height:1.25}
+.authBox p.sub{color:var(--muted);font-size:14px;margin:0 0 24px;line-height:1.5}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;padding:13px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px}
+.field input:focus{outline:none;border-color:var(--amber)}
+.authBtn{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--pink),#ff5590);color:#fff;font-size:15px;font-weight:700;margin-top:6px}
+.authBtn:disabled{opacity:.6}
+.authError{background:rgba(255,45,45,.12);border:1px solid rgba(255,45,45,.35);color:#ff9e9e;padding:11px 13px;border-radius:8px;font-size:13.5px;margin-bottom:14px;display:none}
+.authHint{text-align:center;color:var(--muted);font-size:13px;margin-top:20px;line-height:1.5}
+
+/* ---------- Portal ---------- */
+#portalScreen{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top)) 20px 18px;border-bottom:1px solid var(--line)}
+.topbar .word{font-size:12px;letter-spacing:.03em;color:var(--muted)}
+.topbar .glowmini{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--amber)}
+.signOut{background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline}
+
+.hero{position:relative;padding:44px 20px 30px;text-align:center;overflow:hidden}
+.heroGlowBg{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,71,.35),rgba(255,45,120,.12) 55%,transparent 72%);filter:blur(8px);animation:heroPulse 4s ease-in-out infinite}
+@keyframes heroPulse{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
+.hero .greet{position:relative;font-size:14px;color:var(--muted);margin-bottom:10px}
+.hero .num{position:relative;font-family:'Fraunces',serif;font-weight:600;font-size:76px;line-height:1;background:linear-gradient(135deg,#fff,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lbl{position:relative;font-size:15px;color:var(--muted);margin-top:6px}
+
+.actions{padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.actionBig{padding:22px 14px;border-radius:16px;border:none;font-size:16px;font-weight:700;color:#fff;text-align:center;transition:transform .15s ease}
+.actionBig:active{transform:scale(.97)}
+.actionBig.bed{background:linear-gradient(135deg,var(--pink),#ff5590)}
+.actionBig.minutes{background:linear-gradient(135deg,var(--amber),#ff8a3d);color:#1a1200}
+.treatmentLink{display:block;width:calc(100% - 40px);margin:16px 20px 0;text-align:center;background:none;border:none;color:var(--muted);font-size:13.5px;text-decoration:underline;padding:6px}
+
+.section{padding:30px 20px 0}
+.section h2{font-size:15px;font-weight:700;margin:0 0 14px;color:var(--text)}
+.detailCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.detailRow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.detailRow:last-child{border-bottom:none}
+.detailRow .k{color:var(--muted)}
+.detailRow .v{text-align:right;font-weight:600}
+.editLink{background:none;border:none;color:var(--amber);font-size:12.5px;text-decoration:underline;padding:0}
+
+.listCard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.listRow{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line);font-size:14px}
+.listRow:last-child{border-bottom:none}
+.listRow .main{font-weight:600}
+.listRow .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.listRow .right{text-align:right;color:var(--muted);font-size:13px}
+.emptyState{padding:26px 18px;text-align:center;color:var(--muted);font-size:13.5px}
+.statusPill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;display:inline-block}
+.statusPill.booked{background:rgba(255,179,71,.15);color:var(--amber)}
+.statusPill.cancelled{background:rgba(255,45,45,.12);color:#ff9e9e}
+
+@media(min-width:640px){
+  .authWrap{padding:60px 20px}
+  #portalScreen{max-width:640px;margin:0 auto}
+}
+
+/* ---------- Modals ---------- */
+.modal{display:none;position:fixed;inset:0;background:rgba(5,6,8,.78);z-index:40;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modalBox{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:22px 20px calc(28px + env(safe-area-inset-bottom));animation:sheetUp .25s ease}
+@keyframes sheetUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(min-width:640px){.modal{align-items:center}.modalBox{border-radius:20px;animation:none}}
+.modalTop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.modalTop h2{font-size:20px;margin:0}
+.modalClose{background:var(--panel2);border:none;color:var(--muted);width:30px;height:30px;border-radius:50%;font-size:15px;line-height:1}
+.modalSub{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+.pkgRow{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+.pkgRow .pkgTitle{font-weight:700;font-size:15px}
+.pkgRow .pkgPrice{font-weight:700;color:var(--amber)}
+.slotGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.slotGrid button{padding:11px 4px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:13.5px}
+.slotGrid button:active{background:var(--amber);color:#1a1200}
+.confirmBox{background:rgba(255,179,71,.1);border:1px solid rgba(255,179,71,.3);border-radius:12px;padding:16px;font-size:14px;line-height:1.6}
+.modalActions{display:flex;gap:10px;margin-top:18px}
+.btnQuiet{flex:1;padding:13px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-weight:600;font-size:14px}
+.btnPrimary{flex:1;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--pink),#ff5590);color:#fff;font-weight:700;font-size:14px}
+.spinnerWrap{text-align:center;padding:40px 0}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--amber);margin:0 auto 14px;animation:spinAnim .8s linear infinite}
+@keyframes spinAnim{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen"><div class="loadGlow"></div></div>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen">
+  <div class="authWrap"><div class="authBox">
+    <div class="brand"><div class="word">REVIBE</div><div class="glow">Glow Studio</div></div>
+    <h1>Welcome back</h1>
+    <p class="sub">Log in to check your minutes, book a bed, and manage your account.</p>
+    <div id="loginError" class="authError"></div>
+    <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="authBtn" id="loginBtn" onclick="handleLogin()">Log In</button>
+    <div class="authHint">Don't have login details yet? Ask a member of staff in-store to set up your portal access.</div>
+  </div></div>
+</div>
+
+<!-- SET PASSWORD (from invite link) -->
+<div id="setPasswordScreen" class="screen">
+  <div class="authWrap"><div class="authBox">
+    <div class="brand"><div class="word">REVIBE</div><div class="glow">Glow Studio</div></div>
+    <h1>Set your password</h1>
+    <p class="sub">Welcome! Choose a password to finish setting up your account.</p>
+    <div id="setPasswordError" class="authError"></div>
+    <div class="field"><label>New password</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+    <div class="field"><label>Confirm password</label><input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter your password"></div>
+    <button class="authBtn" id="setPasswordBtn" onclick="handleSetPassword()">Set Password &amp; Continue</button>
+  </div></div>
+</div>
+
+<!-- PORTAL -->
+<div id="portalScreen" class="screen">
+  <div class="topbar"><div><span class="word">REVIBE&nbsp;</span><span class="glowmini">Glow Studio</span></div><button class="signOut" onclick="handleSignOut()">Sign out</button></div>
+
+  <div class="hero"><div class="heroGlowBg"></div>
+    <div class="greet" id="heroGreeting">Hi there</div>
+    <div class="num" id="heroMinutes">0</div>
+    <div class="lbl">minutes on your account</div>
+  </div>
+
+  <div class="actions">
+    <button class="actionBig bed" onclick="openBookABedFlow()">Book a Bed</button>
+    <button class="actionBig minutes" onclick="openPurchaseMinutesModal()">Purchase Minutes</button>
+  </div>
+  <button class="treatmentLink" onclick="openCustomerBookingPage()">Looking for a treatment instead?</button>
+
+  <div class="section"><h2>Your Details</h2>
+    <div class="detailCard">
+      <div class="detailRow"><div class="k">Name</div><div class="v" id="detName">—</div></div>
+      <div class="detailRow"><div class="k">Skin type</div><div class="v" id="detSkinType">—</div></div>
+      <div class="detailRow"><div class="k">Address</div><div class="v" id="detAddress">—</div></div>
+      <div class="detailRow"><div class="k"></div><div class="v"><button class="editLink" onclick="openEditDetails()">Edit your details</button></div></div>
+    </div>
+  </div>
+
+  <div class="section"><h2>Your Bed Bookings</h2><div class="listCard" id="bookingsList"></div></div>
+  <div class="section"><h2>Session History</h2><div class="listCard" id="sessionsList"></div></div>
+  <div class="section"><h2>Purchase History</h2><div class="listCard" id="purchasesList"></div></div>
+</div>
+
+<!-- PURCHASE MINUTES MODAL -->
+<div class="modal" id="purchaseMinutesModal">
+  <div class="modalBox">
+    <div class="modalTop"><h2>Purchase Minutes</h2><button class="modalClose" onclick="closeModal('purchaseMinutesModal')">✕</button></div>
+    <p class="modalSub">Choose how many minutes you'd like to add to your account.</p>
+    <div id="purchaseMinutesError" class="authError"></div>
+    <div id="purchaseMinutesLoading" class="spinnerWrap" style="display:none"><div class="spin"></div><div style="color:var(--muted);font-size:13.5px">Loading secure checkout...</div></div>
+    <div id="purchaseMinutesList"></div>
+  </div>
+</div>
+
+<!-- BOOK A BED MODAL -->
+<div class="modal" id="bookABedModal">
+  <div class="modalBox">
+    <div id="bookABedStep1">
+      <div class="modalTop"><h2>Book a Bed</h2><button class="modalClose" onclick="closeModal('bookABedModal')">✕</button></div>
+      <div class="field"><label>Date</label><input id="babDate" type="date"></div>
+      <div class="field"><label>Session length (minutes)</label><input id="babLength" type="number" min="1" step="1" placeholder="e.g. 12"></div>
+      <div class="field"><label>Session type</label>
+        <div style="display:flex;gap:10px">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:13.5px"><input id="babRlt" type="checkbox" onchange="babExclusiveSessionType('rlt')"> Red Light</label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-size:13.5px"><input id="babHybrid" type="checkbox" onchange="babExclusiveSessionType('hybrid')"> Hybrid</label>
+        </div>
+      </div>
+      <div class="field"><label>Bed type preference</label>
+        <select id="babBedType" style="width:100%;padding:13px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px">
+          <option value="Any">No preference</option><option value="Stand Up">Stand Up</option><option value="Lie Down">Lie Down</option>
+        </select>
+      </div>
+      <div class="modalSub" id="babTotalLine"></div>
+      <div id="babError" class="authError"></div>
+      <button id="babPurchaseMinutesBtn" class="btnPrimary" style="display:none;width:100%;margin-bottom:10px" onclick="openPurchaseMinutesModal()">Purchase Minutes</button>
+      <button class="authBtn" onclick="searchBedSlots()">Show Available Times</button>
+    </div>
+    <div id="bookABedStep2" style="display:none">
+      <div class="modalTop"><h2>Choose a Time</h2><button class="modalClose" onclick="closeModal('bookABedModal')">✕</button></div>
+      <p class="modalSub">Available times on <span id="babChosenDateLabel"></span> for a <span id="babChosenLengthLabel"></span>-minute session:</p>
+      <div class="slotGrid" id="babSlotGrid"></div>
+      <button class="btnQuiet" style="width:100%" onclick="document.getElementById('bookABedStep1').style.display='block';document.getElementById('bookABedStep2').style.display='none'">← Change date/length</button>
+    </div>
+    <div id="bookABedStep3" style="display:none">
+      <div class="modalTop"><h2>Confirm Booking</h2><button class="modalClose" onclick="closeModal('bookABedModal')">✕</button></div>
+      <div class="confirmBox">
+        Confirming this booking will create your session and deduct <b id="babConfirmMinutes"></b> minutes from your account immediately.<br><br>
+        Your bed will be held for 3 minutes after your <b id="babConfirmTime"></b> start time on <b id="babConfirmDate"></b>.
+      </div>
+      <div class="modalActions">
+        <button class="btnQuiet" onclick="document.getElementById('bookABedStep2').style.display='block';document.getElementById('bookABedStep3').style.display='none'">Back</button>
+        <button class="btnPrimary" onclick="confirmBedBooking()">Confirm</button>
+      </div>
+    </div>
+    <div id="bookABedStep4" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:38px">✓</div>
+      <h2>Booking Confirmed</h2>
+      <p class="modalSub" id="babConfirmationText"></p>
+      <button class="authBtn" onclick="closeModal('bookABedModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL BOOKING CONFIRM MODAL -->
+<div class="modal" id="cancelBookingConfirmModal">
+  <div class="modalBox">
+    <div class="modalTop"><h2>Cancel Booking?</h2><button class="modalClose" onclick="closeModal('cancelBookingConfirmModal')">✕</button></div>
+    <div class="confirmBox" id="cancelBookingConfirmText"></div>
+    <div class="modalActions">
+      <button class="btnQuiet" onclick="closeModal('cancelBookingConfirmModal')">Go Back</button>
+      <button class="btnPrimary" onclick="proceedWithCancelBooking()">Proceed</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT DETAILS MODAL -->
+<div class="modal" id="editDetailsModal">
+  <div class="modalBox">
+    <div class="modalTop"><h2>Edit Your Details</h2><button class="modalClose" onclick="closeModal('editDetailsModal')">✕</button></div>
+    <div class="field"><label>Address</label><textarea id="editAddress" rows="3" style="width:100%;padding:13px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit"></textarea></div>
+    <div class="field"><label>Phone</label><input id="editPhone"></div>
+    <div class="field"><label>Email</label><input id="editEmail" type="email"></div>
+    <div id="editDetailsError" class="authError"></div>
+    <div class="modalActions">
+      <button class="btnQuiet" onclick="closeModal('editDetailsModal')">Cancel</button>
+      <button class="btnPrimary" onclick="saveEditDetails()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/portal.js"></script>
+</body>
+</html>
