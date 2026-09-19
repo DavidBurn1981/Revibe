@@ -213,7 +213,12 @@ function renderMembershipSection(){
     el.innerHTML=`<div class="membershipCard">
       <div class="mTitle">Go Unlimited</div>
       <div class="mPrice">${priceLabel} / month</div>
-      <div class="mDesc">Unlimited sessions, max once a day. Cancel anytime.</div>
+      <ul class="mFeatureList">
+        <li>One monthly payment on the 1st, paid by subscription</li>
+        <li>Cancel anytime, must be at least 5 days before next payment</li>
+        <li>Max 15 minutes per day and within safe use legal limits &amp; advice</li>
+        <li>New booking system makes it super simple to book your sessions in advance</li>
+      </ul>
       <button onclick="openSubscriptionModal()">Purchase Subscription Membership</button>
     </div>`;
   }
@@ -332,7 +337,7 @@ function searchBedSlots(){
   let sessionType=document.getElementById('babRlt').checked?'Red Light Therapy':document.getElementById('babHybrid').checked?'Hybrid':null;
   if(!date){err.textContent='Please choose a date.';err.style.display='block';return}
   if(!sessionType){err.textContent='Please choose whether this is Red Light Therapy or Hybrid Tanning.';err.style.display='block';return}
-  if(!length||length<1){err.textContent='Please enter the session length.';err.style.display='block';return}
+  if(!length||length<5){err.textContent='Session length must be at least 5 minutes.';err.style.display='block';return}
   if(length>currentCustomer.minutesLeft){
     err.textContent=`You need ${length} minutes for this session but only have ${currentCustomer.minutesLeft} on your account.`;
     err.style.display='block';

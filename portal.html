@@ -81,6 +81,9 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .membershipCard .mTitle{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-bottom:4px}
 .membershipCard .mPrice{color:var(--amber);font-weight:700;font-size:15px;margin-bottom:10px}
 .membershipCard .mDesc{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:16px}
+.mFeatureList{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px}
+.mFeatureList li{position:relative;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.4}
+.mFeatureList li::before{content:'✓';position:absolute;left:0;top:0;color:var(--amber);font-weight:700}
 .membershipCard button{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--amber),#ff8a3d);color:#1a1200;font-size:15px;font-weight:700}
 .membershipCard.active{background:rgba(43,213,118,.1);border-color:rgba(43,213,118,.35)}
 .membershipCard.active .mTitle{color:#7fe6a8}
@@ -246,7 +249,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
     <div id="bookABedStep1">
       <div class="modalTop"><h2>Book a Bed</h2><button class="modalClose" onclick="closeModal('bookABedModal')">✕</button></div>
       <div class="field"><label>Date</label><div class="dateRow"><input id="babDate" type="date"><button type="button" class="calBtn" onclick="openDatePicker('babDate')" aria-label="Open calendar">📅</button></div></div>
-      <div class="field"><label>Session length (minutes)</label><input id="babLength" type="number" min="1" step="1" placeholder="e.g. 12"></div>
+      <div class="field"><label>Session length (minutes)</label><input id="babLength" type="number" min="5" step="1" placeholder="e.g. 12"></div>
       <div class="field"><label>Session type</label>
         <div class="sessionTypeRow">
           <label class="sessionTypeOption"><span>Red Light Therapy</span><input id="babRlt" type="checkbox" onchange="babExclusiveSessionType('rlt')"></label>
