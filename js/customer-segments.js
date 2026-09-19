@@ -99,6 +99,7 @@ function resetCustomerSegmentBuilder(){
   document.getElementById('segmentResultsTable').innerHTML='';
   document.getElementById('segmentResultsHeading').textContent='Results';
   document.getElementById('segmentExportBtn').style.display='none';
+  document.getElementById('segmentResultCountBadge').style.display='none';
 }
 
 function addSegmentRule(groupId){
@@ -293,6 +294,12 @@ function evaluateSegmentNode(node,customer){
 function runCustomerSegmentSearch(){
   let enriched=buildEnrichedSegmentCustomers();
   lastSegmentResults=enriched.filter(c=>evaluateSegmentNode(segmentTree,c));
+
+  let countBadge=document.getElementById('segmentResultCountBadge');
+  if(countBadge){
+    countBadge.textContent=`${lastSegmentResults.length} customer${lastSegmentResults.length===1?'':'s'} found`;
+    countBadge.style.display='block';
+  }
 
   let heading=document.getElementById('segmentResultsHeading');
   if(heading)heading.textContent=`Results (${lastSegmentResults.length} customer${lastSegmentResults.length===1?'':'s'})`;
