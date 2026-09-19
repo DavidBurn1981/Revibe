@@ -126,6 +126,9 @@ function renderPageForNavigation(pageId){
     case 'customerpurchases':
       renderCustomerPurchasesReport();
       break;
+    case 'customersegments':
+      renderSegmentBuilder();
+      break;
   }
 }
 function goToPage(pageId){
