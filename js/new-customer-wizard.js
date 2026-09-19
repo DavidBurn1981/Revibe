@@ -433,6 +433,19 @@ function wizUpdateSessionLengthTotal(){
   document.getElementById('wizSessionLength').value=cash+card+account+free+staff+rerun+subscriber+booked;
   document.getElementById('wizStaffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('wizRerunReasonRow').style.display=rerun>0?'block':'none';
+  let staffPriceEl=document.getElementById('wizStaffPriceHint');
+  if(staff>0){
+    let staffPricing=paygChargeDetails(0,staff);
+    if(staffPricing&&staffPricing.cardAmount!==null){
+      staffPriceEl.textContent=`Normal price £${staffPricing.cardAmount.toFixed(2)} — Staff price (50%): £${(staffPricing.cardAmount/2).toFixed(2)}`;
+      staffPriceEl.style.display='block';
+    }else{
+      staffPriceEl.textContent=`No price is configured for ${staff} minutes.`;
+      staffPriceEl.style.display='block';
+    }
+  }else{
+    staffPriceEl.style.display='none';
+  }
   let paygRow=document.getElementById('wizPaygChargeRow'),paygDetails=paygChargeDetails(cash,card);
   paygRow.style.display=paygDetails?'block':'none';
   if(paygDetails)paygRow.textContent=paygDetails.totalMessage;
