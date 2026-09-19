@@ -69,6 +69,7 @@ function openExistingCustomerWizard(){
   wizPurchaseSelection={treatments:[],glowStudio:[]};
   wizBoughtBlockMinutes=false;
   wizSessionBackTarget='purchaseAsk';
+  document.getElementById('wizAccountCreatedSub').textContent='';
   document.getElementById('wizSelectCustomerSearch').value='';
   document.getElementById('wizSelectCustomerSearch').style.display='block';
   document.getElementById('wizSelectedCustomerId').value='';
@@ -100,6 +101,7 @@ function wizGoTo(stepKey){
   Object.values(WIZ_STEP_IDS).forEach(id=>{document.getElementById(id).style.display='none'});
   document.getElementById(WIZ_STEP_IDS[stepKey]).style.display='block';
   wizRenderChevrons(stepKey);
+  if(stepKey==='purchaseAsk')document.getElementById('wizAccountCreatedBanner').style.display=wizMode==='new'?'block':'none';
   if(stepKey==='sessionType')wizSessionBackTarget=wizCustomerId&&wizPurchaseSelection.treatments.length+wizPurchaseSelection.glowStudio.length>0?'payment':'purchaseAsk';
   if(stepKey==='sessionMinutes')wizRenderSessionCustomerBalance();
 }

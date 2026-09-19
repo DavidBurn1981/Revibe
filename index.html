@@ -1547,8 +1547,8 @@ body.loading .app{visibility:hidden}
   </div>
 
   <div id='wizPurchaseAsk' class='wizardStep' style='display:none'>
-    <h3 id='wizAccountCreatedTitle'>Account Created</h3>
-    <p class='muted' id='wizAccountCreatedSub'></p>
+    <div id='wizAccountCreatedBanner'><h3 id='wizAccountCreatedTitle'>Account Created</h3>
+    <p class='muted' id='wizAccountCreatedSub'></p></div>
     <p style='margin-top:18px;font-size:16px;font-weight:700'>Does the customer wish to purchase anything today?</p>
     <div class='wizardNav'><span></span><div style='display:flex;gap:10px'><button class='dangerBtn' onclick='wizGoTo("sessionType")'>No — Skip to Session</button><button class='primary' onclick='wizGoTo("purchase")'>Yes — Take a Purchase</button></div></div>
   </div>
