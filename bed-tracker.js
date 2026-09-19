@@ -460,6 +460,7 @@ function openCustomerProfilingList(type){
   }
   rows=[...rows].sort((a,b)=>a.lastName.localeCompare(b.lastName)||a.firstName.localeCompare(b.firstName));
   let maps=customerStandardColumnMaps();
+  lastCustomerProfilingListExport={title,rows,extraCol,maps};
   document.getElementById('customerProfilingListTitle').textContent=title;
   let header=`<tr><th>Date Signed Up</th>${customerStandardColumnsHeader()}${extraCol?`<th>${extraCol.label}</th>`:''}</tr>`;
   document.getElementById('customerProfilingListTable').innerHTML=header+(rows.length?rows.map(c=>{
@@ -468,6 +469,32 @@ function openCustomerProfilingList(type){
     </tr>`;
   }).join(''):`<tr><td colspan='11' class='muted' style='text-align:center;padding:20px'>No customers match this.</td></tr>`);
   document.getElementById('customerProfilingListModal').classList.add('show');
+}
+let lastCustomerProfilingListExport=null;
+function exportCustomerProfilingListToExcel(){
+  if(!lastCustomerProfilingListExport||!lastCustomerProfilingListExport.rows.length){alert('No customers to export.');return}
+  let {title,rows,extraCol,maps}=lastCustomerProfilingListExport;
+  let sheetRows=rows.map(c=>{
+    let row={
+      'Date Signed Up':c.createdAt?formatSunbedDisplayDate(iso(new Date(c.createdAt))):'',
+      'Account':c.accountNumber||'',
+      'Name':`${c.firstName} ${c.lastName}`,
+      'Last Sunbed Session':maps.lastSessionByCustomer[c.id]?formatSunbedDisplayDate(maps.lastSessionByCustomer[c.id]):'',
+      'Last Purchase':maps.lastPurchaseByCustomer[c.id]?formatSunbedDisplayDate(maps.lastPurchaseByCustomer[c.id]):'',
+      'Sessions (Last 3 Wks)':maps.recentSessionCountByCustomer[c.id]||0,
+      'Purchases Spend (Last 4 Wks)':+((maps.recentSpendByCustomer[c.id]||0).toFixed(2)),
+      'Phone':c.phone||'',
+      'Minutes Left':c.minutesLeft,
+      'UV Allowed':c.uvAllowed?'Yes':'No',
+      'ID Checked':c.idChecked?'Yes':'No',
+    };
+    if(extraCol)row[extraCol.label]=extraCol.get(c);
+    return row;
+  });
+  let ws=XLSX.utils.json_to_sheet(sheetRows);
+  let wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Customers');
+  XLSX.writeFile(wb,`REVIBE ${title} ${localDateKey()}.xlsx`);
 }
 function openBonusPerformance(){
  let n=currentMonthIdentity(),s=getTargetStackFor(n.month,n.year);if(!s)return alert('No target stack exists for the current month.');
