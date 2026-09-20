@@ -1,3 +1,9 @@
+// The real customer portal now lives on its own separate domain/deployment.
+// This must be a real, hardcoded URL here - window.location.origin would be
+// wrong, since this code runs on the STAFF app's domain when staff click
+// "Send Login Details", not on the customer portal's own domain.
+const CUSTOMER_PORTAL_BASE_URL='https://revibeportal.com';
+
 function customerStandardColumnMaps(){
  let lastSessionByCustomer={},lastPurchaseByCustomer={},recentSessionCountByCustomer={},recentSpendByCustomer={};
  let sessionsCutoff=iso(new Date(new Date().getTime()-21*24*60*60*1000)),spendCutoff=iso(new Date(new Date().getTime()-28*24*60*60*1000));
@@ -95,8 +101,18 @@ function checkNewCustomerAgeWarnings(){
     alert('Challenge 25, ask for ID');
   }
 }
-function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';document.getElementById('portalAccountBtn').style.display='none';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
-function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;let portalBtn=document.getElementById('portalAccountBtn');portalBtn.style.display='inline-block';portalBtn.textContent=c.authUserId?'Open Portal View':'Create Portal Account';document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custPreferredBed').value=c.preferredBed||'Any Bed';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';document.getElementById('portalAccessStatus').innerHTML=`<div class='muted'>Save this customer first before setting up portal access.</div>`;document.getElementById('portalAccessNoAccount').style.display='none';document.getElementById('portalAccessHasAccount').style.display='none';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;renderPortalAccessTab(c);document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custPreferredBed').value=c.preferredBed||'Any Bed';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function renderPortalAccessTab(c){
+  let statusEl=document.getElementById('portalAccessStatus'),noAccount=document.getElementById('portalAccessNoAccount'),hasAccount=document.getElementById('portalAccessHasAccount');
+  if(c.authUserId){
+    statusEl.innerHTML=`<div style='font-weight:700;color:var(--green)'>Portal account active</div><div class='muted' style='margin-top:4px'>${escapeHtml(c.email||'No email on file')}</div>`;
+    noAccount.style.display='none';hasAccount.style.display='flex';
+  }else{
+    statusEl.innerHTML=`<div class='muted'>This customer does not have portal access yet.</div>`;
+    noAccount.style.display='block';hasAccount.style.display='none';
+  }
+}
 function onPortalAccountBtnClick(){
   let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
   if(c.authUserId){
@@ -110,6 +126,20 @@ function onPortalAccountBtnClick(){
     document.getElementById('createPortalAccountModal').classList.add('show');
   }
 }
+async function unwrapEdgeFunctionError(e,fallback){
+  // supabase-js's FunctionsHttpError only ever carries a generic message
+  // ("Edge Function returned a non-2xx status code") on e.message - the actual
+  // error body we returned from the function itself is on e.context, and needs
+  // to be read and parsed separately to get the real, useful message.
+  let message=e.message||fallback;
+  if(e.context&&typeof e.context.json==='function'){
+    try{
+      let body=await e.context.json();
+      if(body?.error)message=body.error;
+    }catch(parseErr){/* fall back to the generic message above */}
+  }
+  return message;
+}
 async function sendPortalInvite(){
   let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
   let err=document.getElementById('createPortalAccountError');err.style.display='none';
@@ -118,30 +148,77 @@ async function sendPortalInvite(){
   let btn=document.getElementById('sendPortalInviteBtn');btn.disabled=true;btn.textContent='Sending...';
   try{
     let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
-      body:{customer_id:c.id,email,portal_redirect_url:window.location.origin+'/portal.html'}
+      body:{customer_id:c.id,email,portal_redirect_url:CUSTOMER_PORTAL_BASE_URL}
     });
     if(error)throw error;
     if(result?.error)throw new Error(result.error);
     document.getElementById('createPortalAccountModal').classList.remove('show');
     await loadLiveData();
     let refreshed=data.customers.find(x=>x.id===c.id);
-    if(refreshed){document.getElementById('portalAccountBtn').textContent='Open Portal View'}
+    if(refreshed)renderPortalAccessTab(refreshed);
     alert(`Login details sent to ${email}.`);
   }catch(e){
-    // supabase-js's FunctionsHttpError only ever carries a generic message
-    // ("Edge Function returned a non-2xx status code") on e.message - the actual
-    // error body we returned from the function itself is on e.context, and needs
-    // to be read and parsed separately to get the real, useful message.
-    let message=e.message||'Could not send the invite.';
-    if(e.context&&typeof e.context.json==='function'){
-      try{
-        let body=await e.context.json();
-        if(body?.error)message=body.error;
-      }catch(parseErr){/* fall back to the generic message below */}
-    }
-    err.textContent=message;err.style.display='block';
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not send login details.');err.style.display='block';
   }finally{
     btn.disabled=false;btn.textContent='Send Login Details';
+  }
+}
+async function resendCustomerPortalAccess(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let btn=document.getElementById('resendPortalAccessBtn');btn.disabled=true;btn.textContent='Sending...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'resend',customer_id:c.id,portal_redirect_url:CUSTOMER_PORTAL_BASE_URL}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    alert(`Invite / password reset email sent to ${c.email}.`);
+  }catch(e){
+    alert(await unwrapEdgeFunctionError(e,'Could not send this email.'));
+  }finally{
+    btn.disabled=false;btn.textContent='Resend Invite / Send Password Reset Email';
+  }
+}
+function openCustomerSetPasswordModal(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  document.getElementById('customerSetPasswordLabel').textContent=`${c.firstName} ${c.lastName}`;
+  document.getElementById('customerSetPasswordValue').value='';
+  document.getElementById('customerSetPasswordValue').type='password';
+  document.getElementById('customerSetPasswordShowBtn').textContent='Show';
+  document.getElementById('customerSetPasswordError').style.display='none';
+  document.getElementById('customerSetPasswordModal').classList.add('show');
+}
+function closeCustomerSetPasswordModal(){document.getElementById('customerSetPasswordModal').classList.remove('show')}
+function toggleCustomerSetPasswordVisibility(){
+  let input=document.getElementById('customerSetPasswordValue'),btn=document.getElementById('customerSetPasswordShowBtn');
+  let showing=input.type==='text';
+  input.type=showing?'password':'text';btn.textContent=showing?'Show':'Hide';
+}
+function generateCustomerPassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pw='';for(let i=0;i<12;i++)pw+=chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('customerSetPasswordValue').value=pw;
+  document.getElementById('customerSetPasswordValue').type='text';
+  document.getElementById('customerSetPasswordShowBtn').textContent='Hide';
+}
+async function saveCustomerSetPassword(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let err=document.getElementById('customerSetPasswordError');err.style.display='none';
+  let password=document.getElementById('customerSetPasswordValue').value;
+  if(!password||password.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return}
+  let btn=document.getElementById('customerSetPasswordSaveBtn');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'set_password',customer_id:c.id,password}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    closeCustomerSetPasswordModal();
+    alert('Password set. Share it with the customer directly - REVIBE does not store it.');
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not set this password.');err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Set Password';
   }
 }
 function closeCustomerModal(){document.getElementById('customerModal').classList.remove('show')}

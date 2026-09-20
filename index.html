@@ -1411,7 +1411,7 @@ body.loading .app{visibility:hidden}
 
 <div class='modal' id='customerModal'><div class='modalbox' style='max-width:1400px;width:95vw;max-height:90vh;overflow-y:auto'>
 <div class='top'>
-  <div><h1 id='customerModalTitle'>New Customer</h1><div class='muted' id='customerAccountLabel'></div><button id='portalAccountBtn' type='button' style='margin-top:8px;display:none' onclick='onPortalAccountBtnClick()'></button></div>
+  <div><h1 id='customerModalTitle'>New Customer</h1><div class='muted' id='customerAccountLabel'></div></div>
   <div style='display:flex;align-items:center;gap:16px'>
     <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Waiver Signed and Present?</label><select id='custWaiverSigned' class='topFieldSelect'><option value='false'>No</option><option value='true'>Yes</option></select></div>
     <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Bed Use</label><select id='custBedUse' class='topFieldSelect'><option value='Hybrid'>Hybrid</option><option value='Red Light Therapy Only'>Red Light Therapy Only</option></select></div>
@@ -1425,6 +1425,7 @@ body.loading .app{visibility:hidden}
   <button type='button' class='customerTabBtn' data-tab='age' onclick="switchCustomerTab('age')">Age Compliance</button>
   <button type='button' class='customerTabBtn' data-tab='skin' onclick="switchCustomerTab('skin')">Skin Assessment</button>
   <button type='button' class='customerTabBtn' data-tab='usage' onclick="switchCustomerTab('usage')">Usage Information</button>
+  <button type='button' class='customerTabBtn' data-tab='portal' onclick="switchCustomerTab('portal')">Portal Access</button>
 </div>
 <div id='customerTabPersonal' class='customerTabContent active' data-tab='personal'>
   <div class='formgrid'>
@@ -1471,8 +1472,45 @@ body.loading .app{visibility:hidden}
   <div class='formgrid'><div><label>Minutes on Account</label><input id='custMinutes' readonly><button type='button' style='width:auto;margin-top:8px' onclick='openAddMinutesModal()'>ADD/REMOVE Minutes</button></div><div><label>Bed Demo Provided?</label><select id='custBedDemo'><option value='false'>No</option><option value='true'>Yes</option></select></div></div>
   <div id='customerPurchaseArea' style='display:none'><hr style='border-color:#30353d;margin:22px 0'><h3>Session History</h3><div style='max-height:260px;overflow:auto'><table class='table' id='customerSessionHistoryTable'></table></div><h3 style='margin-top:22px'>Payment / Minutes History</h3><div style='max-height:260px;overflow:auto'><table class='table' id='customerTransactionTable'></table></div><h3 style='margin-top:22px'>Customer Purchases</h3><div style='max-height:260px;overflow:auto'><table class='table' id='customerRecordPurchasesTable'></table></div></div>
 </div>
+<div id='customerTabPortal' class='customerTabContent' data-tab='portal'>
+  <div id='portalAccessStatus' class='card' style='margin-bottom:16px'></div>
+  <div id='portalAccessNoAccount' style='display:none'>
+    <button class='primary' type='button' onclick='onPortalAccountBtnClick()'>Create Portal Account</button>
+  </div>
+  <div id='portalAccessHasAccount' style='display:none;gap:10px;flex-wrap:wrap'>
+    <button class='primary' type='button' onclick='onPortalAccountBtnClick()'>Open Portal View</button>
+    <button type='button' onclick='resendCustomerPortalAccess()' id='resendPortalAccessBtn'>Resend Invite / Send Password Reset Email</button>
+    <button type='button' onclick='openCustomerSetPasswordModal()'>Set Password</button>
+  </div>
+</div>
 <div id='customerError' class='loginError' style='margin-top:12px'></div><div style='text-align:right;margin-top:16px'><button class='primary' onclick='saveCustomer()'>Save Customer</button></div>
 </div></div>
+
+<div class='modal' id='customerSetPasswordModal'>
+  <div class='modalbox' style='max-width:560px'>
+    <div class='top'>
+      <div>
+        <h1>Set Password</h1>
+        <div class='muted' id='customerSetPasswordLabel'></div>
+      </div>
+      <button onclick='closeCustomerSetPasswordModal()'>✕</button>
+    </div>
+    <div class='warningBig' style='margin-bottom:14px'>
+      This password will only be shown here. REVIBE does not store it. Share it with the customer directly.
+    </div>
+    <label>New Password</label>
+    <div style='display:flex;gap:8px'>
+      <input id='customerSetPasswordValue' type='password' style='flex:1' placeholder='At least 8 characters'>
+      <button type='button' id='customerSetPasswordShowBtn' onclick='toggleCustomerSetPasswordVisibility()'>Show</button>
+      <button type='button' onclick='generateCustomerPassword()'>Generate</button>
+    </div>
+    <div id='customerSetPasswordError' class='loginError' style='margin-top:12px'></div>
+    <div style='display:flex;justify-content:flex-end;gap:8px;margin-top:18px'>
+      <button onclick='closeCustomerSetPasswordModal()'>Cancel</button>
+      <button class='primary' id='customerSetPasswordSaveBtn' onclick='saveCustomerSetPassword()'>Set Password</button>
+    </div>
+  </div>
+</div>
 
 <div class='modal' id='duplicateCustomerModal'><div class='modalbox' style='max-width:460px;text-align:center'><div class='top'><div><h1>Customer Already Exists</h1></div><button onclick="document.getElementById('duplicateCustomerModal').classList.remove('show')">✕</button></div><div id='duplicateCustomerMessage' class='warningBig' style='margin-bottom:18px'></div><button class='primary' style='min-width:200px' onclick='viewDuplicateCustomer()'>View Existing Customer</button></div></div>
 
