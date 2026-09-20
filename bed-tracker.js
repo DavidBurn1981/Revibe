@@ -605,6 +605,13 @@ function renderDailySessionsPurchases(key){
   let totalEl=document.getElementById('dailySessionsPurchasesValue');
   if(totalEl)totalEl.textContent=`£${dayTotal.toFixed(2)}`;
 
+  let treatmentsTotal=rows.reduce((s,p)=>s+(p.treatmentsTotal||0),0);
+  let glowStudioTotal=rows.reduce((s,p)=>s+(p.glowStudioTotal||0),0);
+  let treatmentsTotalEl=document.getElementById('dailySessionsTreatmentsTotalValue');
+  if(treatmentsTotalEl)treatmentsTotalEl.textContent=`£${treatmentsTotal.toFixed(2)}`;
+  let glowStudioTotalEl=document.getElementById('dailySessionsGlowStudioTotalValue');
+  if(glowStudioTotalEl)glowStudioTotalEl.textContent=`£${glowStudioTotal.toFixed(2)}`;
+
   table.innerHTML='<tr><th>Time</th><th>Customer</th><th>Items</th><th>Cash</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
     (rows.length?rows.map(p=>{
       let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
