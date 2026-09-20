@@ -199,7 +199,7 @@ async function saveCustomer(){
 }
 function renderCustomerPurchases(c){
  let tx=(data.customerTransactions||[]).filter(x=>x.customerId===c.id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
- document.getElementById('customerTransactionTable').innerHTML="<tr><th>Date</th><th>Type</th><th>Details</th><th>Value</th><th>Minutes</th><th>Balance</th></tr>"+(tx.length?tx.map(x=>`<tr><td>${new Date(x.createdAt).toLocaleString('en-GB')}</td><td>${x.type}</td><td>${escapeHtml(x.product||'')}${x.notes?` — ${escapeHtml(x.notes)}`:''}</td><td>£${x.value.toFixed(2)}</td><td>${x.minutes>0?'+':''}${x.minutes}</td><td>${x.balance}</td></tr>`).join(''):"<tr><td colspan='6' class='muted'>No transactions yet.</td></tr>")
+ document.getElementById('customerTransactionTable').innerHTML="<tr><th>Date</th><th>Type</th><th>Details</th><th>Value</th><th>Minutes</th><th>Balance</th><th>Reason Category</th></tr>"+(tx.length?tx.map(x=>`<tr><td>${new Date(x.createdAt).toLocaleString('en-GB')}</td><td>${x.type}</td><td>${escapeHtml(x.product||'')}${x.notes?` — ${escapeHtml(x.notes)}`:''}</td><td>£${x.value.toFixed(2)}</td><td>${x.minutes>0?'+':''}${x.minutes}</td><td>${x.balance}</td><td>${escapeHtml(x.reasonCategory||'—')}</td></tr>`).join(''):"<tr><td colspan='7' class='muted'>No transactions yet.</td></tr>")
  let sessions=(data.bedSessions||[]).filter(s=>s.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));
  document.getElementById('customerSessionHistoryTable').innerHTML="<tr><th>Date</th><th>Time</th><th>Length</th><th>Minutes From Account</th><th>Session Type</th></tr>"+(sessions.length?sessions.map(s=>{
    let dateLabel=parseLocalDateKey(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
