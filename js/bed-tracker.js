@@ -506,14 +506,14 @@ function openManualAdjustmentsList(){
   document.getElementById('manualAdjustmentsListSubtitle').textContent=`${rows.length} manual adjustment${rows.length===1?'':'s'} on record`;
 
   let table=document.getElementById('manualAdjustmentsListTable');
-  table.innerHTML='<tr><th>Date</th><th>Account</th><th>Customer</th><th>Minutes</th><th>Balance After</th><th>Notes</th></tr>'+
+  table.innerHTML='<tr><th>Date</th><th>Account</th><th>Customer</th><th>Minutes</th><th>Balance After</th><th>Reason Category</th><th>Notes</th></tr>'+
     (rows.length?rows.map(t=>{
       let c=t.customerId?data.customers.find(x=>x.id===t.customerId):null;
       let customerLabel=c?`<a href='javascript:void(0)' onclick="event.stopPropagation();document.getElementById('manualAdjustmentsListModal').classList.remove('show');openCustomer('${c.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</a>`:'—';
       let minutesLabel=t.minutes>0?`+${t.minutes}`:t.minutes;
       let minutesColor=t.minutes>0?'var(--green)':'#ff3131';
-      return `<tr><td>${formatSunbedDisplayDate(iso(new Date(t.createdAt)))}</td><td>${escapeHtml(c?.accountNumber||'')}</td><td>${customerLabel}</td><td style='color:${minutesColor};font-weight:800'>${minutesLabel}</td><td>${t.balance}</td><td>${escapeHtml(t.notes)}</td></tr>`;
-    }).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:24px'>No manual minute adjustments on record.</td></tr>`);
+      return `<tr class='clinicRow' onclick="document.getElementById('manualAdjustmentsListModal').classList.remove('show');openCustomer('${t.customerId||''}')"><td>${formatSunbedDisplayDate(iso(new Date(t.createdAt)))}</td><td>${escapeHtml(c?.accountNumber||'')}</td><td>${customerLabel}</td><td style='color:${minutesColor};font-weight:800'>${minutesLabel}</td><td>${t.balance}</td><td>${escapeHtml(t.reasonCategory||'—')}</td><td>${escapeHtml(t.notes)}</td></tr>`;
+    }).join(''):`<tr><td colspan='7' class='muted' style='text-align:center;padding:24px'>No manual minute adjustments on record.</td></tr>`);
 
   document.getElementById('manualAdjustmentsListModal').classList.add('show');
 }
@@ -527,6 +527,7 @@ function exportManualAdjustmentsToExcel(){
       'Customer':c?`${c.firstName} ${c.lastName}`:'',
       'Minutes Change':t.minutes,
       'Balance After':t.balance,
+      'Reason Category':t.reasonCategory||'',
       'Notes':t.notes||'',
     };
   });

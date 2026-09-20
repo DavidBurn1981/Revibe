@@ -137,6 +137,7 @@ function closeCustomerModal(){document.getElementById('customerModal').classList
 function openAddMinutesModal(){
   if(!editingCustomerId)return;
   document.getElementById('addMinutesAmount').value='';
+  document.getElementById('addMinutesReasonCategory').value='';
   document.getElementById('addMinutesReason').value='';
   document.getElementById('addMinutesError').style.display='none';
   document.getElementById('addMinutesModal').classList.add('show');
@@ -144,13 +145,15 @@ function openAddMinutesModal(){
 async function confirmAddMinutesManually(){
   let err=document.getElementById('addMinutesError');err.style.display='none';
   let minutes=+document.getElementById('addMinutesAmount').value||0,
+      reasonCategory=document.getElementById('addMinutesReasonCategory').value,
       reason=document.getElementById('addMinutesReason').value.trim();
   if(!minutes){err.textContent='Please enter a number of minutes to add or remove.';err.style.display='block';return}
+  if(!reasonCategory){err.textContent='Please select a Reason Category.';err.style.display='block';return}
   if(!reason){err.textContent='Please enter a reason for this change.';err.style.display='block';return}
   try{
     let {error}=await sb.rpc('add_minutes_to_customer_account',{
       p_customer:editingCustomerId,p_minutes:minutes,p_transaction_type:'Adjustment',
-      p_title:'Manual Adjustment',p_notes:reason,p_total_value:0
+      p_title:'Manual Adjustment',p_notes:reason,p_total_value:0,p_reason_category:reasonCategory
     });
     if(error)throw error;
     document.getElementById('addMinutesModal').classList.remove('show');
