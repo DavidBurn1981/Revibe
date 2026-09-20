@@ -128,7 +128,18 @@ async function sendPortalInvite(){
     if(refreshed){document.getElementById('portalAccountBtn').textContent='Open Portal View'}
     alert(`Login details sent to ${email}.`);
   }catch(e){
-    err.textContent=e.message||'Could not send the invite.';err.style.display='block';
+    // supabase-js's FunctionsHttpError only ever carries a generic message
+    // ("Edge Function returned a non-2xx status code") on e.message - the actual
+    // error body we returned from the function itself is on e.context, and needs
+    // to be read and parsed separately to get the real, useful message.
+    let message=e.message||'Could not send the invite.';
+    if(e.context&&typeof e.context.json==='function'){
+      try{
+        let body=await e.context.json();
+        if(body?.error)message=body.error;
+      }catch(parseErr){/* fall back to the generic message below */}
+    }
+    err.textContent=message;err.style.display='block';
   }finally{
     btn.disabled=false;btn.textContent='Send Login Details';
   }
