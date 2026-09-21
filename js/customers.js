@@ -127,7 +127,19 @@ function onPortalAccountBtnClick(){
     document.getElementById('linkExistingAccountArea').style.display='none';
     pendingLinkExistingUserId=null;
     document.getElementById('createPortalAccountModal').classList.add('show');
+    if(c.email)checkForExistingLogin(c.email);
   }
+}
+async function checkForExistingLogin(email){
+  try{
+    let {data:result}=await sb.functions.invoke('invite-customer-portal-access',{body:{action:'check_email',email}});
+    if(result?.exists&&!result?.already_linked_to_a_customer&&result?.existing_user_id){
+      pendingLinkExistingUserId=result.existing_user_id;
+      let label=result.existing_user_name?`(${result.existing_user_name}${result.existing_user_role?`, ${result.existing_user_role}`:''})`:'';
+      document.getElementById('linkExistingAccountLabel').textContent=label;
+      document.getElementById('linkExistingAccountArea').style.display='block';
+    }
+  }catch(e){/* silent - this is just a convenience check, the normal Send flow still catches this either way */}
 }
 function closeCreatePortalAccountModal(){
   document.getElementById('createPortalAccountModal').classList.remove('show');
