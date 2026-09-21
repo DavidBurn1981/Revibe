@@ -214,20 +214,36 @@ async function linkExistingPortalAccount(){
     linkBtn.disabled=false;linkBtn.textContent='Yes, link this customer to that login';
   }
 }
-async function resendCustomerPortalAccess(){
+async function resendPortalInvite(){
   let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
-  let btn=document.getElementById('resendPortalAccessBtn');btn.disabled=true;btn.textContent='Sending...';
+  let btn=document.getElementById('resendPortalInviteBtn');btn.disabled=true;btn.textContent='Sending...';
   try{
     let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
-      body:{action:'resend',customer_id:c.id,portal_redirect_url:CUSTOMER_PORTAL_BASE_URL}
+      body:{action:'resend_invite',customer_id:c.id,portal_redirect_url:CUSTOMER_PORTAL_BASE_URL}
     });
     if(error)throw error;
     if(result?.error)throw new Error(result.error);
-    alert(`Invite / password reset email sent to ${c.email}.`);
+    alert(`Portal invite resent to ${c.email}.`);
+  }catch(e){
+    alert(await unwrapEdgeFunctionError(e,'Could not resend this invite.'));
+  }finally{
+    btn.disabled=false;btn.textContent='Resend Portal Invite';
+  }
+}
+async function sendPortalPasswordReset(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let btn=document.getElementById('sendPortalPasswordResetBtn');btn.disabled=true;btn.textContent='Sending...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'password_reset',customer_id:c.id,portal_redirect_url:CUSTOMER_PORTAL_BASE_URL}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    alert(`Password reset email sent to ${c.email}.`);
   }catch(e){
     alert(await unwrapEdgeFunctionError(e,'Could not send this email.'));
   }finally{
-    btn.disabled=false;btn.textContent='Resend Invite / Send Password Reset Email';
+    btn.disabled=false;btn.textContent='Send Password Reset Email';
   }
 }
 function openCustomerSetPasswordModal(){

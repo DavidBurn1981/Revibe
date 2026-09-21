@@ -1483,7 +1483,8 @@ body.loading .app{visibility:hidden}
   </div>
   <div id='portalAccessHasAccount' style='display:none;gap:10px;flex-wrap:wrap'>
     <button class='primary' type='button' onclick='onPortalAccountBtnClick()'>Open Portal View</button>
-    <button type='button' onclick='resendCustomerPortalAccess()' id='resendPortalAccessBtn'>Resend Invite / Send Password Reset Email</button>
+    <button type='button' onclick='resendPortalInvite()' id='resendPortalInviteBtn'>Resend Portal Invite</button>
+    <button type='button' onclick='sendPortalPasswordReset()' id='sendPortalPasswordResetBtn'>Send Password Reset Email</button>
     <button type='button' onclick='openCustomerSetPasswordModal()'>Set Password</button>
   </div>
 </div>
