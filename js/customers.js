@@ -3,6 +3,7 @@
 // wrong, since this code runs on the STAFF app's domain when staff click
 // "Send Login Details", not on the customer portal's own domain.
 const CUSTOMER_PORTAL_BASE_URL='https://revibeportal.com';
+let pendingLinkExistingUserId=null;
 
 function customerStandardColumnMaps(){
  let lastSessionByCustomer={},lastPurchaseByCustomer={},recentSessionCountByCustomer={},recentSpendByCustomer={};
@@ -123,8 +124,15 @@ function onPortalAccountBtnClick(){
     document.getElementById('createPortalAccountName').textContent=`${c.firstName} ${c.lastName}`;
     document.getElementById('createPortalAccountEmail').value=c.email||'';
     document.getElementById('createPortalAccountError').style.display='none';
+    document.getElementById('linkExistingAccountArea').style.display='none';
+    pendingLinkExistingUserId=null;
     document.getElementById('createPortalAccountModal').classList.add('show');
   }
+}
+function closeCreatePortalAccountModal(){
+  document.getElementById('createPortalAccountModal').classList.remove('show');
+  document.getElementById('linkExistingAccountArea').style.display='none';
+  pendingLinkExistingUserId=null;
 }
 async function unwrapEdgeFunctionError(e,fallback){
   // supabase-js's FunctionsHttpError only ever carries a generic message
@@ -143,6 +151,8 @@ async function unwrapEdgeFunctionError(e,fallback){
 async function sendPortalInvite(){
   let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
   let err=document.getElementById('createPortalAccountError');err.style.display='none';
+  document.getElementById('linkExistingAccountArea').style.display='none';
+  pendingLinkExistingUserId=null;
   let email=document.getElementById('createPortalAccountEmail').value.trim();
   if(!email||!email.includes('@')){err.textContent='Please enter a valid email address.';err.style.display='block';return}
   let btn=document.getElementById('sendPortalInviteBtn');btn.disabled=true;btn.textContent='Sending...';
@@ -151,6 +161,14 @@ async function sendPortalInvite(){
       body:{customer_id:c.id,email,portal_redirect_url:CUSTOMER_PORTAL_BASE_URL}
     });
     if(error)throw error;
+    if(result?.code==='email_exists'&&result?.existing_user_id){
+      pendingLinkExistingUserId=result.existing_user_id;
+      let label=result.existing_user_name?`(${result.existing_user_name}${result.existing_user_role?`, ${result.existing_user_role}`:''})`:'';
+      document.getElementById('linkExistingAccountLabel').textContent=label;
+      document.getElementById('linkExistingAccountArea').style.display='block';
+      err.textContent=result.error;err.style.display='block';
+      return;
+    }
     if(result?.error)throw new Error(result.error);
     document.getElementById('createPortalAccountModal').classList.remove('show');
     await loadLiveData();
@@ -161,6 +179,27 @@ async function sendPortalInvite(){
     err.textContent=await unwrapEdgeFunctionError(e,'Could not send login details.');err.style.display='block';
   }finally{
     btn.disabled=false;btn.textContent='Send Login Details';
+  }
+}
+async function linkExistingPortalAccount(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c||!pendingLinkExistingUserId)return;
+  let err=document.getElementById('createPortalAccountError');err.style.display='none';
+  let linkBtn=document.querySelector('#linkExistingAccountArea button');linkBtn.disabled=true;linkBtn.textContent='Linking...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'link_existing',customer_id:c.id,existing_user_id:pendingLinkExistingUserId}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    closeCreatePortalAccountModal();
+    await loadLiveData();
+    let refreshed=data.customers.find(x=>x.id===c.id);
+    if(refreshed)renderPortalAccessTab(refreshed);
+    alert('This customer is now linked to their existing login. They can use the same email and password to access both the portal and their staff account.');
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not link this account.');err.style.display='block';
+  }finally{
+    linkBtn.disabled=false;linkBtn.textContent='Yes, link this customer to that login';
   }
 }
 async function resendCustomerPortalAccess(){
