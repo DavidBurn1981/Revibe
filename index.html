@@ -1417,6 +1417,7 @@ body.loading .app{visibility:hidden}
 <div class='top'>
   <div><h1 id='customerModalTitle'>New Customer</h1><div class='muted' id='customerAccountLabel'></div></div>
   <div style='display:flex;align-items:center;gap:16px'>
+    <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Unlimited Member</label><input id='custUnlimitedMember' readonly class='topFieldSelect' style='cursor:not-allowed'></div>
     <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Waiver Signed and Present?</label><select id='custWaiverSigned' class='topFieldSelect'><option value='false'>No</option><option value='true'>Yes</option></select></div>
     <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Bed Use</label><select id='custBedUse' class='topFieldSelect'><option value='Hybrid'>Hybrid</option><option value='Red Light Therapy Only'>Red Light Therapy Only</option></select></div>
     <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Preferred Bed</label><select id='custPreferredBed' class='topFieldSelect'><option value='Any Bed'>Any Bed</option><option value='Any Lie Down'>Any Lie Down</option><option value='Any Stand Up'>Any Stand Up</option><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option></select></div>
@@ -1473,7 +1474,7 @@ body.loading .app{visibility:hidden}
   <textarea id='custHealthNotes' rows='5' style='width:100%;background:#111318;border:1px solid #363b44;color:#fff;padding:10px;border-radius:6px;font-family:inherit;margin-top:6px'></textarea>
 </div>
 <div id='customerTabUsage' class='customerTabContent' data-tab='usage'>
-  <div class='formgrid'><div><label>Minutes on Account</label><input id='custMinutes' readonly><button type='button' style='width:auto;margin-top:8px' onclick='openAddMinutesModal()'>ADD/REMOVE Minutes</button></div><div><label>Bed Demo Provided?</label><select id='custBedDemo'><option value='false'>No</option><option value='true'>Yes</option></select></div><div><label>Unlimited Member</label><input id='custUnlimitedMember' readonly></div></div>
+  <div class='formgrid'><div><label>Minutes on Account</label><input id='custMinutes' readonly><button type='button' style='width:auto;margin-top:8px' onclick='openAddMinutesModal()'>ADD/REMOVE Minutes</button></div><div><label>Bed Demo Provided?</label><select id='custBedDemo'><option value='false'>No</option><option value='true'>Yes</option></select></div></div>
   <div id='customerPurchaseArea' style='display:none'><hr style='border-color:#30353d;margin:22px 0'><h3>Session History</h3><div style='max-height:260px;overflow:auto'><table class='table' id='customerSessionHistoryTable'></table></div><h3 style='margin-top:22px'>Payment / Minutes History</h3><div style='max-height:260px;overflow:auto'><table class='table' id='customerTransactionTable'></table></div><h3 style='margin-top:22px'>Customer Purchases</h3><div style='max-height:260px;overflow:auto'><table class='table' id='customerRecordPurchasesTable'></table></div></div>
 </div>
 <div id='customerTabPortal' class='customerTabContent' data-tab='portal'>
