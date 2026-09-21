@@ -943,11 +943,15 @@ body.loading .app{visibility:hidden}
 
 <div class='modal' id='createPortalAccountModal'>
   <div class='modalbox' style='max-width:480px'>
-    <div class='top'><h1>Create Portal Account</h1><button onclick="document.getElementById('createPortalAccountModal').classList.remove('show')">✕</button></div>
+    <div class='top'><h1>Create Portal Account</h1><button onclick="closeCreatePortalAccountModal()">✕</button></div>
     <div class='muted' style='margin-bottom:14px'>Confirm this customer's email address with them before sending their login details.</div>
     <label>Customer</label><div id='createPortalAccountName' style='font-weight:700;margin-bottom:12px'></div>
     <label>Email Address</label><input id='createPortalAccountEmail' type='email' placeholder='customer@example.com'>
     <div id='createPortalAccountError' class='loginError' style='margin-top:10px'></div>
+    <div id='linkExistingAccountArea' style='display:none;margin-top:14px;padding:14px;background:#20242b;border:1px solid #3a414b;border-radius:8px'>
+      <div style='margin-bottom:10px'>This is the same person's existing login <span id='linkExistingAccountLabel' style='font-weight:700'></span> - not a different customer trying to reuse their email?</div>
+      <button class='primary' type='button' onclick='linkExistingPortalAccount()'>Yes, link this customer to that login</button>
+    </div>
     <button class='primary' id='sendPortalInviteBtn' style='margin-top:16px' onclick='sendPortalInvite()'>Send Login Details</button>
   </div>
 </div>
