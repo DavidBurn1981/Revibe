@@ -141,6 +141,7 @@ function wizPickSelectCustomer(id){
   selectedDiv.style.display='flex';
   wizRenderCustomerBalanceInto('wizSelectCustomerBalance');
   document.getElementById('wizSelectCustomerError').style.display='none';
+  if(!c.waiverSignedPresent)alert('Customer does not have a waiver in place yet. Please ask them to do it before continuing');
   checkExistingCustomerUsageWarning(id);
   applyTodaysBookingAutofill(id,'wizSession');
 }
@@ -411,7 +412,7 @@ function wizExclusiveSessionType(which){
   if(which==='hybrid'&&h.checked){
     r.checked=false;
     let c=data.customers.find(x=>x.id===wizCustomerId);
-    if(c&&!c.uvAllowed)alert('This Customer can not use UV. Please check their Customer record to see why.');
+    if(c&&!c.uvAllowed)alert('Customer UV Allowed set to No on Customer Account');
   }
 }
 function wizSessionTypeNext(){
@@ -493,7 +494,7 @@ async function wizRecordSession(){
   let age=ageFromDob(c.dob);
   if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');
   if(hybrid&&age<25&&!c.idChecked)alert('Customer has not had ID checked and is under 25. This is not a blocker, just a note to user. Close to continue');
-  if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');
+  if(hybrid&&!c.uvAllowed)return alert('Customer UV Allowed set to No on Customer Account');
   if(accountMin>c.minutesLeft){err.textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;err.style.display='block';return}
   try{
     let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
