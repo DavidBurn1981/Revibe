@@ -434,7 +434,6 @@ function wizUpdateSessionLengthTotal(){
       subscriber=+document.getElementById('wizSessionSubscriberMinutes').value||0,
       booked=+document.getElementById('wizSessionBookedMinutes').value||0;
   document.getElementById('wizSessionLength').value=cash+card+account+free+staff+rerun+subscriber+booked;
-  document.getElementById('wizStaffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('wizRerunReasonRow').style.display=rerun>0?'block':'none';
   let staffPriceEl=document.getElementById('wizStaffPriceHint');
   if(staff>0){
@@ -463,7 +462,7 @@ function wizUpdateSessionLengthTotal(){
   let showInsufficient=c&&account>c.minutesLeft;
   insufficientLine.style.display=showInsufficient?'block':'none';
   if(showInsufficient)insufficientLine.textContent='Customer does not have enough mins on account, either purchase more or enter additional mins into Cash or Card pay as you go fields.';
-  checkSkinTypeSessionWarning(wizCustomerId,cash+card+account+free+staff+rerun+subscriber+booked);
+  if(document.getElementById('wizSessionHybrid').checked)checkSkinTypeSessionWarning(wizCustomerId,cash+card+account+free+staff+rerun+subscriber+booked);
 }
 async function wizRecordSession(){
   let c=data.customers.find(x=>x.id===wizCustomerId);
@@ -473,7 +472,6 @@ async function wizRecordSession(){
       accountMin=+document.getElementById('wizSessionAccountMinutes').value||0,
       freeMin=+document.getElementById('wizSessionFreeMinutes').value||0,
       staffMin=+document.getElementById('wizSessionStaffMinutes').value||0,
-      staffMemberName=document.getElementById('wizSessionStaffMemberName').value.trim(),
       rerunMin=+document.getElementById('wizSessionRerunMinutes').value||0,
       rerunReason=document.getElementById('wizSessionRerunReason').value,
       subscriberMin=+document.getElementById('wizSessionSubscriberMinutes').value||0,
@@ -485,7 +483,6 @@ async function wizRecordSession(){
   err.style.display='none';
   if(!Number.isInteger(length)||length<1){err.textContent='Please enter minutes for at least one payment type.';err.style.display='block';return}
   if(!rlt&&!hybrid){err.textContent='Please select Red Light Therapy or Hybrid.';err.style.display='block';return}
-  if(staffMin>0&&!staffMemberName){err.textContent='Please enter the Staff Member Name.';err.style.display='block';return}
   if(rerunMin>0&&!rerunReason){err.textContent='Please select a Rerun Reason.';err.style.display='block';return}
   let sessionTypeValue=rlt?'Red Light Therapy':'Hybrid';
   if(findRecentDuplicateSession(wizCustomerId,date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,wizMode==='new',wizBoughtBlockMinutes)){
@@ -497,7 +494,7 @@ async function wizRecordSession(){
   if(hybrid&&!c.uvAllowed)return alert('Customer UV Allowed set to No on Customer Account');
   if(accountMin>c.minutesLeft){err.textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;err.style.display='block';return}
   try{
-    let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
+    let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?`${c.firstName} ${c.lastName}`:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
     if(error)throw error;
     await loadLiveData();renderAll();
     wizGoTo('complete');
