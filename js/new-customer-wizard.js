@@ -8,12 +8,15 @@ let wizCurrentPurchaseCategory=null;
 let wizSessionBackTarget='purchaseAsk';
 
 let wizMode='new';
+let wizNoSessionMode=false;
 function wizGetStepOrder(){
+  if(wizMode==='new'&&wizNoSessionMode)return ['personal','id','skin'];
   return wizMode==='existing'
     ? ['selectCustomer','purchaseAsk','purchase','payment','sessionType','sessionMinutes']
     : ['personal','id','skin','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
 }
 function wizGetChevronGroups(){
+  if(wizMode==='new'&&wizNoSessionMode)return [{label:'Setup Customer',keys:['personal','id','skin']}];
   return wizMode==='existing'
     ? [{label:'Select Customer',keys:['selectCustomer']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}]
     : [{label:'Setup Customer',keys:['personal','id','skin']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}];
@@ -31,6 +34,7 @@ function wizRenderChevrons(currentKey){
 
 function openNewCustomerWizard(){
   wizMode='new';
+  wizNoSessionMode=false;
   document.getElementById('wizModalTitle').textContent='Process New Customer';
   wizCustomerId=null;
   wizUvAllowedManuallySet=false;
@@ -61,6 +65,12 @@ function openNewCustomerWizard(){
   wizRenderPurchaseLists();
   wizGoTo('personal');
   document.getElementById('newCustomerWizardModal').classList.add('show');
+}
+function openNewCustomerWizardNoSession(){
+  openNewCustomerWizard();
+  wizNoSessionMode=true;
+  document.getElementById('wizModalTitle').textContent='Create New Customer';
+  wizGoTo('personal');
 }
 function openExistingCustomerWizard(){
   wizMode='existing';
@@ -266,6 +276,11 @@ async function wizCreateAccount(){
     }
     wizCustomerId=row.id;
     await loadLiveData();renderCustomers();
+    if(wizNoSessionMode){
+      alert(`${first} ${last}'s account has been created successfully (Account ${row.account_number||''}). No session or purchase has been recorded.`);
+      document.getElementById('newCustomerWizardModal').classList.remove('show');
+      return;
+    }
     document.getElementById('wizAccountCreatedSub').textContent=`${first} ${last}'s account has been created successfully (Account ${row.account_number||''}).`;
     wizGoTo('purchaseAsk');
   }catch(e){err.textContent=e.message||'Could not create this account.';err.style.display='block'}
