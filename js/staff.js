@@ -3,13 +3,23 @@ function renderStaffRotaList(){
   let table=document.getElementById('staffRotaListTable');if(!table)return;
   let rows=[...(data.staffRotas||[])].sort((a,b)=>b.weekStart.localeCompare(a.weekStart));
   let canDelete=hasRolePermission('staff_rota','delete');
-  table.innerHTML=`<tr><th>Week</th><th>Shifts Scheduled</th>${canDelete?'<th></th>':''}</tr>`+
+  // Named columns for these three specific staff members, as requested - if who's
+  // being tracked here ever changes, these ids are the one place to update.
+  const NAMED_STAFF=[{label:'Kayleigh',id:'3c24b9f7-299b-4853-abd5-34fa75ac4ce7'},{label:'Vicky',id:'4bda87fb-a5fd-4a5c-95e1-72eec81979d6'},{label:'Ellie',id:'fa0c3a44-ba3d-45d1-8332-b962d322ae07'}];
+  table.innerHTML=`<tr><th>Week</th><th>Shifts Scheduled</th><th>Double Staffed Hours</th>${NAMED_STAFF.map(n=>`<th>${n.label}</th>`).join('')}${canDelete?'<th></th>':''}</tr>`+
     (rows.length?rows.map(r=>{
       let start=parseLocalDateKey(r.weekStart),end=new Date(start);end.setDate(end.getDate()+6);
       let label=`${nice(start)} – ${nice(end)}`;
-      let shiftCount=(data.staffShifts||[]).filter(s=>s.date>=r.weekStart&&s.date<=iso(end)).length;
-      return `<tr class='clinicRow' onclick="openStaffRota('${r.weekStart}')"><td><b>${label}</b></td><td>${shiftCount}</td>${canDelete?`<td onclick='event.stopPropagation()'><button onclick="deleteStaffRota('${r.id}','${escapeHtml(label)}')">Delete</button></td>`:''}</tr>`;
-    }).join(''):`<tr><td colspan='${canDelete?3:2}' class='muted'>No rotas have been created yet.</td></tr>`);
+      let weekKeys=[];for(let i=0;i<7;i++){let d=new Date(start);d.setDate(d.getDate()+i);weekKeys.push(iso(d))}
+      let weekShifts=(data.staffShifts||[]).filter(s=>weekKeys.includes(s.date));
+      let shiftCount=weekShifts.length;
+      let doubleHours=calculateDoubleCoverageMinutes(weekKeys)/60;
+      let namedCells=NAMED_STAFF.map(n=>{
+        let hours=weekShifts.filter(s=>s.staffId===n.id).reduce((sum,s)=>sum+(+s.hours||0),0);
+        return `<td>${hours.toFixed(2)}</td>`;
+      }).join('');
+      return `<tr class='clinicRow' onclick="openStaffRota('${r.weekStart}')"><td><b>${label}</b></td><td>${shiftCount}</td><td>${doubleHours.toFixed(2)}</td>${namedCells}${canDelete?`<td onclick='event.stopPropagation()'><button onclick="deleteStaffRota('${r.id}','${escapeHtml(label)}')">Delete</button></td>`:''}</tr>`;
+    }).join(''):`<tr><td colspan='${4+NAMED_STAFF.length+(canDelete?1:0)}' class='muted'>No rotas have been created yet.</td></tr>`);
 }
 function openStaffRota(weekStartKey){
   staffRotaWeekStart=parseLocalDateKey(weekStartKey);
