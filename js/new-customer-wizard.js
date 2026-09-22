@@ -343,6 +343,10 @@ function wizGoToPayment(){
   document.getElementById('wizPpGlowStudioCheck').textContent='';
   document.getElementById('wizPpTreatmentsCheck').textContent='';
   document.getElementById('wizAmountBeingPaid').textContent='£0.00';
+  document.getElementById('wizChangeCalculator').style.display='none';
+  document.getElementById('wizChangeCashGiven').value='';
+  document.getElementById('wizChangeDue').textContent='£0.00';
+  document.getElementById('wizChangeDue').style.color='';
   document.getElementById('wizPaymentError').style.display='none';
   wizGoTo('payment');
 }
@@ -363,6 +367,27 @@ function wizUpdatePaymentSplitStatus(){
   treatCheck.className='processPurchasesCheck '+(treatEntered===treatDue?'ok':'bad');
   treatCheck.textContent=treatEntered===treatDue?'✓ Matches amount due':`Card + Cash must equal the amount due — ${treatEntered<treatDue?`Another £${((treatDue-treatEntered)/100).toFixed(2)} needed`:`£${((treatEntered-treatDue)/100).toFixed(2)} too much`}`;
   document.getElementById('wizAmountBeingPaid').textContent=`£${(glowCard+glowCash+treatCard+treatCash).toFixed(2)}`;
+  let totalCashDue=glowCash+treatCash;
+  let calcEl=document.getElementById('wizChangeCalculator');
+  calcEl.style.display=totalCashDue>0?'block':'none';
+  document.getElementById('wizChangeCashDue').textContent=`£${totalCashDue.toFixed(2)}`;
+  if(totalCashDue<=0)document.getElementById('wizChangeCashGiven').value='';
+  wizUpdateChangeCalculator();
+}
+function wizUpdateChangeCalculator(){
+  let glowCash=+document.getElementById('wizPpGlowStudioCash').value||0,treatCash=+document.getElementById('wizPpTreatmentsCash').value||0,
+      totalCashDue=glowCash+treatCash,
+      cashGiven=+document.getElementById('wizChangeCashGiven').value||0,
+      changeEl=document.getElementById('wizChangeDue');
+  if(cashGiven<=0){changeEl.textContent='£0.00';changeEl.style.color='';return}
+  let change=pence(cashGiven)-pence(totalCashDue);
+  if(change<0){
+    changeEl.textContent=`Not enough cash given — needs another £${(-change/100).toFixed(2)}`;
+    changeEl.style.color='#ff6b6b';
+  }else{
+    changeEl.textContent=`£${(change/100).toFixed(2)}`;
+    changeEl.style.color='';
+  }
 }
 async function wizConfirmPurchases(){
   let confirmBtn=document.querySelector('.wizConfirmPurchaseBtn');
