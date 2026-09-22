@@ -120,9 +120,32 @@ function renderStaffRota(){
   let totals={};
   scheduled.forEach(s=>{totals[s.staffId]=(totals[s.staffId]||0)+(+s.hours||0)});
   let rows=Object.entries(totals).map(([staffId,hours])=>({staff:data.staffMembers.find(m=>m.id===staffId),hours})).filter(x=>x.staff);
-  document.getElementById('staffRotaSummary').innerHTML=rows.length
+  let doubleCoverageHours=calculateDoubleCoverageMinutes(weekKeys)/60;
+  document.getElementById('staffRotaSummary').innerHTML=(rows.length
     ?`<h3 style='margin-top:0'>${staffRotaDays===14?'Fortnight':'Weekly'} Scheduled Hours</h3><table class='table'><tr><th>Staff Member</th><th>Total Scheduled Hours</th></tr>${rows.sort((a,b)=>a.staff.name.localeCompare(b.staff.name)).map(x=>`<tr><td><span class='staffColourDot' style='background:${x.staff.colour}'></span><b>${x.staff.name}</b></td><td>${x.hours.toFixed(2)} hours</td></tr>`).join('')}</table>`
-    :`<h3 style='margin-top:0'>${staffRotaDays===14?'Fortnight':'Weekly'} Scheduled Hours</h3><div class='muted'>No staff scheduled this week.</div>`;
+    :`<h3 style='margin-top:0'>${staffRotaDays===14?'Fortnight':'Weekly'} Scheduled Hours</h3><div class='muted'>No staff scheduled this week.</div>`)
+    +`<div class='staffWeekTotal'><div class='muted'>Hours Covered By Two Or More People</div><div class='big'>${doubleCoverageHours.toFixed(2)} hours</div></div>`;
+}
+// Sums, across the given days, every stretch of time where two or more staff
+// shifts genuinely overlap - not just scheduled at the same time, but actually
+// running concurrently.
+function calculateDoubleCoverageMinutes(weekKeys){
+  let totalDoubleMinutes=0;
+  weekKeys.forEach(key=>{
+    let intervals=[],points=new Set();
+    data.staffShifts.filter(s=>s.date===key).forEach(s=>{
+      let sMin=minutesFromTime(s.start),eMin=minutesFromTime(s.end);
+      if(eMin>sMin){intervals.push([sMin,eMin]);points.add(sMin);points.add(eMin)}
+    });
+    if(intervals.length<2)return;
+    let sortedPoints=[...points].sort((a,b)=>a-b);
+    for(let i=0;i<sortedPoints.length-1;i++){
+      let segStart=sortedPoints[i],segEnd=sortedPoints[i+1];
+      let coverage=intervals.filter(([s,e])=>s<=segStart&&e>=segEnd).length;
+      if(coverage>=2)totalDoubleMinutes+=(segEnd-segStart);
+    }
+  });
+  return totalDoubleMinutes;
 }function openStaffMemberCreate(){
   editingStaffId=null;let today=localDateKey();
   document.getElementById('staffMemberModalTitle').textContent='Add Staff Member';document.getElementById('staffMemberModalSubtitle').textContent='Create a staff record';
