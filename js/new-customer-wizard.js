@@ -303,8 +303,10 @@ function wizOpenPurchaseCategory(type){
 function wizAddProductToPurchase(id){
   let p=(data.tanningProducts||[]).find(x=>x.id===id);if(!p)return;
   let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0};
-  if(entry.cardMachine==='Treatment Card')wizPurchaseSelection.treatments.push(entry);
-  else wizPurchaseSelection.glowStudio.push(entry);
+  let targetList=entry.cardMachine==='Treatment Card'?wizPurchaseSelection.treatments:wizPurchaseSelection.glowStudio;
+  let alreadyInCart=targetList.some(item=>item.productId===entry.productId);
+  if(alreadyInCart&&!confirm(`"${p.title}" is already in the cart. Add it again?`))return;
+  targetList.push(entry);
   wizRenderPurchaseLists();
   closePurchaseProductModal();
 }
