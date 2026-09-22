@@ -170,4 +170,8 @@ async function bootRevibe(){
   let dailyPicker=document.getElementById('dailySessionsDatePicker');
   if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
   applyPermissionBasedNavigation();applyPermissionBasedActions();
+  // Keep the app quietly up to date in the background - staff otherwise have no
+  // way of knowing about things that happened elsewhere, like a customer booking
+  // a bed through the portal on their own phone, without manually refreshing.
+  setInterval(async()=>{try{await loadLiveData();renderAll()}catch(e){console.error('Background refresh failed:',e)}},3*60*1000);
 }

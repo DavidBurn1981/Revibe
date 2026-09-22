@@ -137,7 +137,7 @@ function renderBedNextBooked(){
       .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
     if(upcoming){
       let dateLabel=upcoming.date===nowKey?'Today':formatSunbedDisplayDate(upcoming.date);
-      el.textContent=`Next Booked: ${dateLabel} at ${upcoming.time}`;
+      el.textContent=`Next Booked: ${dateLabel} at ${upcoming.time} — ${upcoming.name||'Unknown Customer'}`;
     }else{
       el.textContent='Next Booked: None';
     }
