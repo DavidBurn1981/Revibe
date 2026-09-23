@@ -52,7 +52,7 @@ function renderSunbedCalendar(){
     for(let b of SUNBEDS){
       let key=b.name+'|'+m;
       if(covered[key])continue;
-      let booking=dayBookings.find(x=>normalizeBookedBed(x)===b.name&&minutesFromTime(x.time)===m);
+      let booking=dayBookings.find(x=>normalizeBookedBed(x)===b.name&&Math.floor(minutesFromTime(x.time)/15)*15===m);
       if(booking){
         let span=Math.max(1,Math.ceil((booking.length+turnaround)/15));
         for(let s=1;s<span;s++)covered[b.name+'|'+(m+s*15)]=true;
