@@ -644,6 +644,8 @@ function renderDailySessionsPurchases(key){
     .sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
 
   let dayTotal=rows.reduce((s,p)=>s+p.grandTotal,0);
+  let paygForPurchasesTotal=paygSessionTotalsForDay(key);
+  dayTotal+=paygForPurchasesTotal.cash+paygForPurchasesTotal.card;
   let totalEl=document.getElementById('dailySessionsPurchasesValue');
   if(totalEl)totalEl.textContent=`£${dayTotal.toFixed(2)}`;
 
