@@ -146,15 +146,17 @@ function wizGoTo(stepKey){
   if(stepKey==='sessionMinutes')wizRenderSessionCustomerBalance();
 }
 function wizRenderSessionCustomerBalance(){
-  wizRenderCustomerBalanceInto('wizSessionCustomerBalance');
+  wizRenderCustomerBalanceInto('wizSessionCustomerBalance',wizMode==='new'||wizMode==='existing-booking');
 }
-function wizRenderCustomerBalanceInto(elId){
+function wizRenderCustomerBalanceInto(elId,reduced){
   let c=data.customers.find(x=>x.id===wizCustomerId),el=document.getElementById(elId);
   if(!c){el.innerHTML='';return}
   let uvAllowed=!!c.uvAllowed;
   let uvHtml=uvAllowed?`<span style='color:var(--green);font-weight:800'>UV Allowed: Yes</span>`:`<span style='color:#ff3131;font-weight:800'>UV Allowed: No</span>`;
   let warningHtml=uvAllowed?'':`<div style='color:#ff3131;font-weight:900;margin-top:4px'>UV IS SET TO NOT ALLOWED FOR THIS CUSTOMER</div>`;
-  el.innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}${subscriberStatusBadgeHtml(c)}`;
+  el.innerHTML=reduced
+    ? `<div>${c.minutesLeft} minutes left on account.</div>${warningHtml}${subscriberStatusBadgeHtml(c)}`
+    : `<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}${subscriberStatusBadgeHtml(c)}`;
 }
 function wizHideSelectCustomerResultsDelayed(){
   setTimeout(()=>{document.getElementById('wizSelectCustomerResults').style.display='none'},150);
