@@ -1070,6 +1070,17 @@ function subscriberStatusBadgeHtml(c){
 }
 function applyTodaysBookingAutofill(customerId,prefix){
   prefix=prefix||'session';
+  // Walk In sessions are, by definition, never tied to a booking - even if
+  // this customer happens to also have one sitting on the system for later
+  // today, Walk In should completely ignore it rather than auto-detect it.
+  if(prefix==='wizSession'&&wizMode==='existing'){
+    document.getElementById(prefix+'FulfillsBookingId').value='';
+    document.getElementById(prefix+'BookedMinutes').readOnly=false;
+    let bookedRowWalkIn=document.getElementById(prefix+'BookedRow');
+    if(bookedRowWalkIn)bookedRowWalkIn.style.display='none';
+    document.getElementById(prefix+'BookedHint').style.display='none';
+    return;
+  }
   let today=localDateKey();
   let booking=(data.sunbedBookings||[]).find(b=>b.customerId===customerId&&b.date===today&&b.status==='Booked'&&!b.fulfilledBySessionId);
   let hint=document.getElementById(prefix+'BookedHint');
