@@ -1491,6 +1491,7 @@ body.loading .app{visibility:hidden}
   <div id='portalAccessStatus' class='card' style='margin-bottom:16px'></div>
   <div id='portalAccessNoAccount' style='display:none'>
     <button class='primary' type='button' onclick='onPortalAccountBtnClick()'>Create Portal Account</button>
+    <button type='button' onclick='openManualCreatePortalAccountModal()'>Manually Create Portal Account</button>
   </div>
   <div id='portalAccessHasAccount' style='display:none;gap:10px;flex-wrap:wrap'>
     <button class='primary' type='button' onclick='onPortalAccountBtnClick()'>Open Portal View</button>
@@ -1524,6 +1525,38 @@ body.loading .app{visibility:hidden}
     <div style='display:flex;justify-content:flex-end;gap:8px;margin-top:18px'>
       <button onclick='closeCustomerSetPasswordModal()'>Cancel</button>
       <button class='primary' id='customerSetPasswordSaveBtn' onclick='saveCustomerSetPassword()'>Set Password</button>
+    </div>
+  </div>
+</div>
+
+<div class='modal' id='manualCreatePortalAccountModal'>
+  <div class='modalbox' style='max-width:560px'>
+    <div class='top'>
+      <div>
+        <h1>Manually Create Portal Account</h1>
+        <div class='muted' id='manualCreatePortalAccountLabel'></div>
+      </div>
+      <button onclick='closeManualCreatePortalAccountModal()'>✕</button>
+    </div>
+    <div class='warningBig' style='margin-bottom:14px'>
+      This creates and activates the account immediately - no email is sent at all. Give the customer their email and this password directly. This password will only be shown here; REVIBE does not store it.
+    </div>
+    <label>Email Address</label>
+    <input id='manualCreatePortalAccountEmail' type='email' placeholder='customer@example.com' onblur="if(this.value.trim())checkForExistingLoginManual(this.value.trim())">
+    <label style='margin-top:12px;display:block'>Password</label>
+    <div style='display:flex;gap:8px'>
+      <input id='manualCreatePortalAccountPassword' type='password' style='flex:1' placeholder='At least 8 characters'>
+      <button type='button' id='manualCreatePortalAccountShowBtn' onclick='toggleManualCreatePortalAccountVisibility()'>Show</button>
+      <button type='button' onclick='generateManualCreatePortalAccountPassword()'>Generate</button>
+    </div>
+    <div id='manualCreatePortalAccountError' class='loginError' style='margin-top:12px'></div>
+    <div id='linkExistingManualAccountArea' style='display:none;margin-top:14px;padding:14px;background:#20242b;border:1px solid #3a414b;border-radius:8px'>
+      <div style='margin-bottom:10px'>This is the same person's existing login <span id='linkExistingManualAccountLabel' style='font-weight:700'></span> - not a different customer trying to reuse their email?</div>
+      <button class='primary' type='button' onclick='linkExistingManualPortalAccount()'>Yes, link this customer to that login</button>
+    </div>
+    <div style='display:flex;justify-content:flex-end;gap:8px;margin-top:18px'>
+      <button onclick='closeManualCreatePortalAccountModal()'>Cancel</button>
+      <button class='primary' id='manualCreatePortalAccountSaveBtn' onclick='saveManualCreatePortalAccount()'>Create Account</button>
     </div>
   </div>
 </div>
