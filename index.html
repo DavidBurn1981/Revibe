@@ -225,6 +225,9 @@ body.loading .app{visibility:hidden}
 .verifiedByGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
 .customerSearchResults{position:absolute;top:100%;left:0;right:0;z-index:50;background:#20242b;border:1px solid var(--line);border-radius:8px;margin-top:4px;max-height:220px;overflow-y:auto}
 .customerSearchResultRow{padding:10px 14px;cursor:pointer;font-size:13px}
+.selectedCustomerChip{display:flex;align-items:center;justify-content:space-between;background:#20242b;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700}
+.selectedCustomerChip button{width:auto;padding:2px 10px;background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
+.formError{color:#ff3131;font-weight:700;font-size:13.5px;margin-top:10px}
 .customerSearchResultRow:hover{background:#2b303a}
 .customerSearchResultRow .sub{color:var(--muted);font-size:11px}
 .customerSearchSelected{display:flex;align-items:center;justify-content:space-between;background:#20242b;border:1px solid var(--green);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700}
@@ -2193,22 +2196,28 @@ body.loading .app{visibility:hidden}
 
 <div class='modal' id='sunbedBookingModal'>
   <div class='modalbox'>
-    <div class='top'><div><h1>Book Sunbed</h1><div class='muted'>A 4-minute turnaround is added automatically to the session.</div></div><button onclick='closeSunbedBooking()'>✕</button></div>
-    <div class='bookingApproxWarning'>REMIND CUSTOMER THAT BOOKINGS ARE APPROXIMATE, AS WE CAN NOT GUARANTEE PREVIOUS SESSIONS WILL NOT OVERRUN.</div><div class='formgrid'>
-      <div><label>Name</label><input id='sunbedName' placeholder='Customer name'></div>
-      <div><label>Phone Number</label><input id='sunbedPhone' type='tel' placeholder='e.g. 07...'></div>
+    <div class='top'><div><h1>Book Sunbed</h1><div class='muted'>A 2-minute turnaround is added automatically to the session.</div></div><button onclick='closeSunbedBooking()'>✕</button></div>
+    <div class='bookingApproxWarning'>REMIND CUSTOMER THAT BOOKINGS ARE APPROXIMATE, AS WE CAN NOT GUARANTEE PREVIOUS SESSIONS WILL NOT OVERRUN.</div>
+    <div style='margin-bottom:14px'>
+      <label>Customer</label>
+      <input id='sunbedCustomerSearch' placeholder='Search customer by name...' autocomplete='off' oninput='sunbedSearchCustomer()' onblur='sunbedHideCustomerResultsDelayed()'>
+      <div id='sunbedCustomerResults' class='customerSearchResults' style='display:none'></div>
+      <div id='sunbedCustomerSelected' class='selectedCustomerChip' style='display:none'></div>
+      <div id='sunbedCustomerBalance' class='muted' style='margin-top:6px'></div>
+    </div>
+    <div class='formgrid'>
       <div><label>Date</label><div style='display:flex;gap:8px'><input id='sunbedDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openSunbedCalendarPicker()'><button type='button' onclick='openSunbedCalendarPicker()' style='padding:0 14px'>📅</button></div><input id='sunbedDate' type='hidden'></div>
       <div><label>Start Time</label><select id='sunbedTime'></select></div>
-      <div><label>Session Length</label><input id='sunbedLength' type='number' min='1' step='1' placeholder='Minutes'></div>
-      <div><label>Bed Type</label><select id='sunbedBedType' onchange='updatePreferredBedOptions()'><option value='Any'>No Preference</option><option value='Stand Up'>Stand Up</option><option value='Lie Down'>Lie Down</option></select></div>
-      <div><label>Preferred Bed</label><select id='sunbedBed'></select></div>
-      <div><label>Total Diary Time</label><input id='sunbedTotalTime' readonly placeholder='Session + 4 mins'></div>
+      <div><label>Session Type</label><div class='sunbedSessionChoices' style='grid-template-columns:repeat(2,1fr)'>
+        <button type='button' id='sunTypeRlt' class='sunbedSessionChoice active' onclick="chooseSunbedSessionType('Red Light Therapy')">Red Light Therapy</button>
+        <button type='button' id='sunTypeHybrid' class='sunbedSessionChoice' onclick="chooseSunbedSessionType('Hybrid')">Hybrid</button>
+      </div></div>
+      <div><label>Session Length</label><input id='sunbedLength' type='number' min='1' step='1' placeholder='Minutes' oninput='sunbedUpdateTotal();sunbedCheckSkinTypeWarning()'><div id='sunbedSkinTypeWarning' style='display:none;color:var(--amber);font-size:13px;font-weight:700;margin-top:6px'>⚠️ Safe use advice: This amount of minutes is not advised for this customer's skin type</div></div>
+      <div><label>Bed Type Preference</label><select id='sunbedBedType'><option value='Any'>No Preference</option><option value='Stand Up'>Stand Up</option><option value='Lie Down'>Lie Down</option></select></div>
+      <div><label>Total Diary Time</label><input id='sunbedTotalTime' readonly placeholder='Session + 2 mins'></div>
     </div>
-    <div style='margin-top:16px'><label>Session Type</label><div class='sunbedSessionChoices' style='grid-template-columns:repeat(2,1fr)'>
-      <button type='button' id='sunTypeRlt' class='sunbedSessionChoice active' onclick="chooseSunbedSessionType('Red Light Therapy')">Red Light Therapy</button>
-      <button type='button' id='sunTypeHybrid' class='sunbedSessionChoice' onclick="chooseSunbedSessionType('Hybrid')">Hybrid</button>
-    </div></div>
-    <div style='text-align:right;margin-top:18px'><button onclick='closeSunbedBooking()'>Cancel</button> <button class='primary' onclick='saveSunbedBooking()'>Book Sunbed</button></div>
+    <div id='sunbedBookingError' class='formError' style='display:none'></div>
+    <div style='text-align:right;margin-top:18px'><button onclick='closeSunbedBooking()'>Cancel</button> <button class='primary' id='sunbedSaveBtn' onclick='saveSunbedBooking()'>Book Sunbed</button></div>
   </div>
 </div>
 
