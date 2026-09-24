@@ -146,7 +146,7 @@ function wizGoTo(stepKey){
   if(stepKey==='sessionMinutes')wizRenderSessionCustomerBalance();
 }
 function wizRenderSessionCustomerBalance(){
-  wizRenderCustomerBalanceInto('wizSessionCustomerBalance',wizMode==='new'||wizMode==='existing-booking');
+  wizRenderCustomerBalanceInto('wizSessionCustomerBalance',wizMode==='new'||wizMode==='existing-booking'||wizMode==='existing');
 }
 function wizRenderCustomerBalanceInto(elId,reduced){
   let c=data.customers.find(x=>x.id===wizCustomerId),el=document.getElementById(elId);
