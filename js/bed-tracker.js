@@ -21,7 +21,7 @@ function editExclusiveSessionType(which){
 }
 function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
 function perfMinutes(x){return (+x.length||0)-(+x.rerunMinutes||0)-(+x.staffMinutes||0)}
-function paidMinutes(x){return (+x.cashMinutes||0)+(+x.cardMinutes||0)+(+x.accountMinutes||0)}
+function paidMinutes(x){return (+x.cashMinutes||0)+(+x.cardMinutes||0)+(+x.accountMinutes||0)+(+x.bookedMinutes||0)}
 function isPerformanceSession(x){let p=String(x?.payment||'').trim().toLowerCase();return p!=='free session'&&p!=='free'}
 function performanceSessions(rows){return (rows||[]).filter(isPerformanceSession)}
 function isLastDayOfCurrentMonth(){
@@ -1066,15 +1066,31 @@ function applyTodaysBookingAutofill(customerId,prefix){
   let today=localDateKey();
   let booking=(data.sunbedBookings||[]).find(b=>b.customerId===customerId&&b.date===today&&b.status==='Booked'&&!b.fulfilledBySessionId);
   let hint=document.getElementById(prefix+'BookedHint');
+  let bookedRow=document.getElementById(prefix+'BookedRow');
+  let c=(data.customers||[]).find(x=>x.id===customerId);
+  let isSubscriber=c&&c.subscriptionStatus==='Subscriber';
   if(booking){
     document.getElementById(prefix+'FulfillsBookingId').value=booking.id;
-    document.getElementById(prefix+'BookedMinutes').value=booking.length;
+    if(isSubscriber){
+      // Nothing was deducted from their balance at booking time (their
+      // membership covers it), so this counts as subscriber minutes, not
+      // booked/pre-paid minutes - and there's nothing to protect from
+      // double-entry here, so the Booked field/row stays hidden.
+      document.getElementById(prefix+'SubscriberMinutes').value=booking.length;
+      if(bookedRow)bookedRow.style.display='none';
+    }else{
+      document.getElementById(prefix+'BookedMinutes').value=booking.length;
+      document.getElementById(prefix+'BookedMinutes').readOnly=true;
+      if(bookedRow)bookedRow.style.display='';
+    }
     hint.textContent=`Auto-filled from their ${booking.time} online booking (${booking.bed}).`;
     hint.style.display='block';
     if(booking.sessionType==='Red Light Therapy'){document.getElementById(prefix+'Rlt').checked=true;document.getElementById(prefix+'Hybrid').checked=false}
     else if(booking.sessionType){document.getElementById(prefix+'Hybrid').checked=true;document.getElementById(prefix+'Rlt').checked=false}
   }else{
     document.getElementById(prefix+'FulfillsBookingId').value='';
+    document.getElementById(prefix+'BookedMinutes').readOnly=false;
+    if(bookedRow)bookedRow.style.display='none';
     hint.style.display='none';
   }
 }
@@ -1102,6 +1118,8 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
   document.getElementById('sessionFulfillsBookingId').value='';
   document.getElementById('sessionBookedHint').style.display='none';
+  document.getElementById('sessionBookedRow').style.display='none';
+  document.getElementById('sessionBookedMinutes').readOnly=false;
   updateSessionLengthTotal();
 }
 function paygSessionTotalsForDay(key){

@@ -164,6 +164,8 @@ function wizClearSelectCustomer(){
   document.getElementById('wizSelectCustomerBalance').innerHTML='Select a customer to see their account details.';
   document.getElementById('wizSessionFulfillsBookingId').value='';
   document.getElementById('wizSessionBookedHint').style.display='none';
+  document.getElementById('wizSessionBookedRow').style.display='none';
+  document.getElementById('wizSessionBookedMinutes').readOnly=false;
 }
 function wizSelectCustomerNext(){
   let err=document.getElementById('wizSelectCustomerError');err.style.display='none';
