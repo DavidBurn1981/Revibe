@@ -228,6 +228,7 @@ body.loading .app{visibility:hidden}
 .selectedCustomerChip{display:flex;align-items:center;justify-content:space-between;background:#20242b;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:14px;font-weight:700}
 .selectedCustomerChip button{width:auto;padding:2px 10px;background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted)}
 .formError{color:#ff3131;font-weight:700;font-size:13.5px;margin-top:10px}
+.danger{background:#ff3131;border-color:#ff3131;color:#fff}
 .customerSearchResultRow:hover{background:#2b303a}
 .customerSearchResultRow .sub{color:var(--muted);font-size:11px}
 .customerSearchSelected{display:flex;align-items:center;justify-content:space-between;background:#20242b;border:1px solid var(--green);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700}
@@ -2246,6 +2247,8 @@ body.loading .app{visibility:hidden}
   <div class='modalbox' style='max-width:560px'>
     <div class='top'><h1>Booking Details</h1><button onclick="document.getElementById('sunbedBookingDetailModal').classList.remove('show')">✕</button></div>
     <div id='sunbedBookingDetailContent'></div>
+    <div id='sunbedBookingDetailError' class='formError' style='display:none'></div>
+    <div id='sunbedBookingDetailActions' style='text-align:right;margin-top:18px'></div>
   </div>
 </div>
 <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
