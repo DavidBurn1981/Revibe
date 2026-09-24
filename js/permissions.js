@@ -84,7 +84,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openCustomerPurchaseDetail:['customer_purchases','view'], deleteCustomerPurchase:['customer_purchases','delete'],
   openDailySessionEdit:['daily_session_tracker','edit'], saveDailySessionEdit:['daily_session_tracker','edit'],
   saveDailyTakings:['daily_session_tracker','edit'],
-  openSunbedBooking:['sunbed_bookings','edit'], saveSunbedBooking:['sunbed_bookings','edit'], completeSunbedBooking:['sunbed_bookings','edit'],
+  openSunbedBooking:['sunbed_bookings','edit'], saveSunbedBooking:['sunbed_bookings','edit'], sunbedCancelBookingFromDetail:['sunbed_bookings','edit'],
   openTanningProduct:['sunbed_settings','edit'], saveTanningProduct:['sunbed_settings','edit'], deleteTanningProduct:['sunbed_settings','edit'],
   openMonthlyTargetCreate:['sunbed_settings','edit'], openMonthlyTargetEdit:['sunbed_settings','edit'], saveMonthlyTarget:['sunbed_settings','edit'], deleteMonthlyTargetStack:['sunbed_settings','delete'], saveOpeningHours:['sunbed_settings','edit'],
   openBooking:['treatment_room_diary','edit'], saveBooking:['treatment_room_diary','edit'],

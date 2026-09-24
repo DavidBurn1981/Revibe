@@ -6,8 +6,10 @@ const SUNBEDS=[
 ];
 let sunbedViewDate=localDateKey();
 function normalizeBookedBed(x){return SUNBEDS.some(b=>b.name===x.bed)?x.bed:'Unassigned'}
+let sunbedDetailBookingId=null;
 function openSunbedBookingDetail(id){
   let b=(data.sunbedBookings||[]).find(x=>x.id===id);if(!b)return;
+  sunbedDetailBookingId=id;
   let phone=b.phone;
   if(b.customerId){
     let c=(data.customers||[]).find(x=>x.id===b.customerId);
@@ -27,7 +29,29 @@ function openSunbedBookingDetail(id){
       <div><label>Booking Made</label><div>${madeAt}</div></div>
       <div><label>Source</label><div>${b.customerId?'Online Booking':'Booked In Shop'}</div></div>
     </div>`;
+  document.getElementById('sunbedBookingDetailError').style.display='none';
+  let actions=document.getElementById('sunbedBookingDetailActions');
+  actions.innerHTML=(b.status!=='Cancelled'&&b.customerId)
+    ?`<button class='danger' id='sunbedCancelBtn' onclick='sunbedCancelBookingFromDetail()'>Cancel Booking</button>`
+    :'';
   document.getElementById('sunbedBookingDetailModal').classList.add('show');
+}
+async function sunbedCancelBookingFromDetail(){
+  if(!sunbedDetailBookingId)return;
+  if(!confirm('Cancel this booking? If the session is more than 1 hour away, minutes will be refunded automatically.'))return;
+  let err=document.getElementById('sunbedBookingDetailError');err.style.display='none';
+  let btn=document.getElementById('sunbedCancelBtn');btn.disabled=true;btn.textContent='Cancelling...';
+  try{
+    let {data:result,error}=await sb.rpc('cancel_bed_booking',{p_booking_id:sunbedDetailBookingId});
+    if(error)throw error;
+    let row=Array.isArray(result)?result[0]:result;
+    document.getElementById('sunbedBookingDetailModal').classList.remove('show');
+    await loadLiveData();renderSunbedCalendar();renderCustomers();
+    alert(row.refunded?`Booking cancelled. Minutes refunded — customer now has ${row.minutes_left} minutes.`:'Booking cancelled. This was within 1 hour of the session, so minutes were not refunded.');
+  }catch(e){
+    err.textContent=e.message||'Could not cancel this booking.';err.style.display='block';
+    btn.disabled=false;btn.textContent='Cancel Booking';
+  }
 }
 function renderSunbedCalendar(){
   let cal=document.getElementById('sunbedCalendar');if(!cal)return;
