@@ -2236,7 +2236,7 @@ body.loading .app{visibility:hidden}
   <div class='modalbox'>
     <div class='top'><div><h1>Book Sunbed</h1><div class='muted'>A 2-minute turnaround is added automatically to the session.</div></div><button onclick='closeSunbedBooking()'>✕</button></div>
     <div class='bookingApproxWarning'>REMIND CUSTOMER THAT BOOKINGS ARE APPROXIMATE, AS WE CAN NOT GUARANTEE PREVIOUS SESSIONS WILL NOT OVERRUN.</div>
-    <div style='margin-bottom:14px'>
+    <div style='margin-bottom:14px;position:relative'>
       <label>Customer</label>
       <input id='sunbedCustomerSearch' placeholder='Search customer by name...' autocomplete='off' oninput='sunbedSearchCustomer()' onblur='sunbedHideCustomerResultsDelayed()'>
       <div id='sunbedCustomerResults' class='customerSearchResults' style='display:none'></div>
