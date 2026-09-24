@@ -1100,6 +1100,11 @@ function applyTodaysBookingAutofill(customerId,prefix){
     if(bookedRow)bookedRow.style.display='none';
     hint.style.display='none';
   }
+  // Setting these fields' values directly above never fires their oninput
+  // handlers, so the Total field would otherwise stay stuck at whatever it
+  // showed before the autofill - this recalculates it explicitly instead.
+  if(prefix==='wizSession')wizUpdateSessionLengthTotal();
+  else updateSessionLengthTotal();
 }
 function selectSessionCustomer(id){
   let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
