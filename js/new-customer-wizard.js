@@ -9,15 +9,16 @@ let wizSessionBackTarget='purchaseAsk';
 
 let wizMode='new';
 let wizNoSessionMode=false;
+function wizIsExistingFlow(){return wizMode==='existing'||wizMode==='existing-booking'}
 function wizGetStepOrder(){
   if(wizMode==='new'&&wizNoSessionMode)return ['personal','id','skin'];
-  return wizMode==='existing'
+  return wizIsExistingFlow()
     ? ['selectCustomer','purchaseAsk','purchase','payment','sessionType','sessionMinutes']
     : ['personal','id','skin','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
 }
 function wizGetChevronGroups(){
   if(wizMode==='new'&&wizNoSessionMode)return [{label:'Setup Customer',keys:['personal','id','skin']}];
-  return wizMode==='existing'
+  return wizIsExistingFlow()
     ? [{label:'Select Customer',keys:['selectCustomer']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}]
     : [{label:'Setup Customer',keys:['personal','id','skin']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}];
 }
@@ -74,7 +75,36 @@ function openNewCustomerWizardNoSession(){
 }
 function openExistingCustomerWizard(){
   wizMode='existing';
-  document.getElementById('wizModalTitle').textContent='Process Existing Customer';
+  document.getElementById('wizModalTitle').textContent='Process Existing Customer (Walk In)';
+  wizCustomerId=null;
+  wizPurchaseSelection={treatments:[],glowStudio:[]};
+  wizBoughtBlockMinutes=false;
+  wizSessionBackTarget='purchaseAsk';
+  document.getElementById('wizAccountCreatedSub').textContent='';
+  document.getElementById('wizSelectCustomerSearch').value='';
+  document.getElementById('wizSelectCustomerSearch').style.display='block';
+  document.getElementById('wizSelectedCustomerId').value='';
+  document.getElementById('wizSelectCustomerSelected').style.display='none';
+  document.getElementById('wizSelectCustomerBalance').innerHTML='Select a customer to see their account details.';
+  document.getElementById('wizSelectCustomerError').style.display='none';
+  document.getElementById('wizPurchaseError').style.display='none';
+  document.getElementById('wizPaymentError').style.display='none';
+  document.getElementById('wizSessionError').style.display='none';
+  document.getElementById('wizSessionTypeError').style.display='none';
+  document.getElementById('wizSessionRlt').checked=false;
+  document.getElementById('wizSessionHybrid').checked=false;
+  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName'].forEach(id=>document.getElementById(id).value='');
+  wizRenderPurchaseLists();
+  wizGoTo('selectCustomer');
+  document.getElementById('newCustomerWizardModal').classList.add('show');
+}
+// Exact copy of the Walk In flow above, as a separate entry point ready for
+// the booking-specific differences to be layered on afterwards. wizMode is
+// set to 'existing-booking' (not 'existing') so those future changes can
+// target this flow specifically without touching Walk In at all.
+function openExistingCustomerWizardBooking(){
+  wizMode='existing-booking';
+  document.getElementById('wizModalTitle').textContent='Process Existing Customer (Booking)';
   wizCustomerId=null;
   wizPurchaseSelection={treatments:[],glowStudio:[]};
   wizBoughtBlockMinutes=false;
