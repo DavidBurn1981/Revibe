@@ -166,7 +166,7 @@ async function bootRevibe(){
   try{await loadLiveData();await loadRolePermissions();if(['admin','shop_manager'].includes(profile.role))await loadRevibeUsers()}catch(e){return alert('Could not load Revibe data: '+e.message)}
   document.getElementById('loginGate').style.display='none';document.querySelector('.app').style.display='grid';document.body.classList.remove('loading');
   let ub=document.getElementById('userBar');ub.style.display='block';ub.innerHTML=`${escapeHtml(profile.full_name||currentUser.email)} · ${escapeHtml(profile.role)} &nbsp; <button onclick='logoutRevibe()'>Sign out</button>`;
-  updatePreferredBedOptions();installPermissionGuards();renderAll();
+  installPermissionGuards();renderAll();
   let dailyPicker=document.getElementById('dailySessionsDatePicker');
   if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
   applyPermissionBasedNavigation();applyPermissionBasedActions();
