@@ -183,7 +183,52 @@ function wizPickSelectCustomer(id){
   document.getElementById('wizSelectCustomerError').style.display='none';
   if(!c.waiverSignedPresent)alert('Customer does not have a waiver in place yet. Please ask them to do it before continuing');
   checkExistingCustomerUsageWarning(id);
-  applyTodaysBookingAutofill(id,'wizSession');
+  if(wizMode==='existing-booking')wizCheckBookingForCustomer(id);
+  else applyTodaysBookingAutofill(id,'wizSession');
+}
+let wizPendingBookingConfirm=null;
+function wizCheckBookingForCustomer(customerId){
+  let today=localDateKey();
+  let booking=(data.sunbedBookings||[]).find(b=>b.customerId===customerId&&b.date===today&&b.status==='Booked'&&!b.fulfilledBySessionId);
+  document.getElementById('wizSessionFulfillsBookingId').value='';
+  document.getElementById('wizSessionBookedMinutes').readOnly=false;
+  document.getElementById('wizSessionBookedRow').style.display='none';
+  document.getElementById('wizSessionBookedHint').style.display='none';
+  if(!booking){
+    wizPendingBookingConfirm=null;
+    alert('Customer has no booking for today, use walk in flow');
+    return;
+  }
+  wizPendingBookingConfirm=booking;
+  document.getElementById('wizConfirmBookingText').textContent=`This customer has a booking today at ${booking.time} on ${booking.bed} (${booking.sessionType}, ${booking.length} minutes). Is this the booking you're processing?`;
+  document.getElementById('wizConfirmBookingModal').classList.add('show');
+}
+function wizConfirmBookingYes(){
+  let booking=wizPendingBookingConfirm;if(!booking)return;
+  document.getElementById('wizConfirmBookingModal').classList.remove('show');
+  let c=(data.customers||[]).find(x=>x.id===wizCustomerId);
+  let isSubscriber=c&&c.subscriptionStatus==='Subscriber';
+  document.getElementById('wizSessionFulfillsBookingId').value=booking.id;
+  let bookedRow=document.getElementById('wizSessionBookedRow');
+  if(isSubscriber){
+    document.getElementById('wizSessionSubscriberMinutes').value=booking.length;
+    if(bookedRow)bookedRow.style.display='none';
+  }else{
+    document.getElementById('wizSessionBookedMinutes').value=booking.length;
+    document.getElementById('wizSessionBookedMinutes').readOnly=true;
+    if(bookedRow)bookedRow.style.display='';
+  }
+  let hint=document.getElementById('wizSessionBookedHint');
+  hint.textContent=`Auto-filled from their ${booking.time} online booking (${booking.bed}).`;
+  hint.style.display='block';
+  if(booking.sessionType==='Red Light Therapy'){document.getElementById('wizSessionRlt').checked=true;document.getElementById('wizSessionHybrid').checked=false}
+  else if(booking.sessionType){document.getElementById('wizSessionHybrid').checked=true;document.getElementById('wizSessionRlt').checked=false}
+  wizUpdateSessionLengthTotal();
+  wizPendingBookingConfirm=null;
+}
+function wizConfirmBookingNo(){
+  document.getElementById('wizConfirmBookingModal').classList.remove('show');
+  wizPendingBookingConfirm=null;
 }
 function wizClearSelectCustomer(){
   wizCustomerId=null;
