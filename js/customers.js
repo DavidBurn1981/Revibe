@@ -222,6 +222,103 @@ async function linkExistingPortalAccount(){
     linkBtn.disabled=false;linkBtn.textContent='Yes, link this customer to that login';
   }
 }
+let pendingLinkExistingUserIdManual=null;
+async function checkForExistingLoginManual(email){
+  try{
+    let {data:result}=await sb.functions.invoke('invite-customer-portal-access',{body:{action:'check_email',email}});
+    if(result?.exists&&!result?.already_linked_to_a_customer&&result?.existing_user_id){
+      pendingLinkExistingUserIdManual=result.existing_user_id;
+      let label=result.existing_user_name?`(${result.existing_user_name}${result.existing_user_role?`, ${result.existing_user_role}`:''})`:'';
+      document.getElementById('linkExistingManualAccountLabel').textContent=label;
+      document.getElementById('linkExistingManualAccountArea').style.display='block';
+    }
+  }catch(e){/* silent - convenience check only */}
+}
+function openManualCreatePortalAccountModal(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  document.getElementById('manualCreatePortalAccountLabel').textContent=`${c.firstName} ${c.lastName}`;
+  document.getElementById('manualCreatePortalAccountEmail').value=c.email||'';
+  document.getElementById('manualCreatePortalAccountPassword').value='';
+  document.getElementById('manualCreatePortalAccountPassword').type='password';
+  document.getElementById('manualCreatePortalAccountShowBtn').textContent='Show';
+  document.getElementById('manualCreatePortalAccountError').style.display='none';
+  document.getElementById('linkExistingManualAccountArea').style.display='none';
+  pendingLinkExistingUserIdManual=null;
+  document.getElementById('manualCreatePortalAccountModal').classList.add('show');
+}
+function closeManualCreatePortalAccountModal(){
+  document.getElementById('manualCreatePortalAccountModal').classList.remove('show');
+  document.getElementById('linkExistingManualAccountArea').style.display='none';
+  pendingLinkExistingUserIdManual=null;
+}
+function toggleManualCreatePortalAccountVisibility(){
+  let input=document.getElementById('manualCreatePortalAccountPassword'),btn=document.getElementById('manualCreatePortalAccountShowBtn');
+  let showing=input.type==='text';
+  input.type=showing?'password':'text';btn.textContent=showing?'Show':'Hide';
+}
+function generateManualCreatePortalAccountPassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pw='';for(let i=0;i<12;i++)pw+=chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('manualCreatePortalAccountPassword').value=pw;
+  document.getElementById('manualCreatePortalAccountPassword').type='text';
+  document.getElementById('manualCreatePortalAccountShowBtn').textContent='Hide';
+}
+async function saveManualCreatePortalAccount(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let err=document.getElementById('manualCreatePortalAccountError');err.style.display='none';
+  document.getElementById('linkExistingManualAccountArea').style.display='none';
+  pendingLinkExistingUserIdManual=null;
+  let email=document.getElementById('manualCreatePortalAccountEmail').value.trim();
+  let password=document.getElementById('manualCreatePortalAccountPassword').value;
+  if(!email||!email.includes('@')){err.textContent='Please enter a valid email address.';err.style.display='block';return}
+  if(!password||password.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return}
+  let btn=document.getElementById('manualCreatePortalAccountSaveBtn');btn.disabled=true;btn.textContent='Creating...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'create_without_email',customer_id:c.id,email,password}
+    });
+    if(error)throw error;
+    if(result?.code==='email_exists'&&result?.existing_user_id){
+      pendingLinkExistingUserIdManual=result.existing_user_id;
+      let label=result.existing_user_name?`(${result.existing_user_name}${result.existing_user_role?`, ${result.existing_user_role}`:''})`:'';
+      document.getElementById('linkExistingManualAccountLabel').textContent=label;
+      document.getElementById('linkExistingManualAccountArea').style.display='block';
+      err.textContent=result.error;err.style.display='block';
+      return;
+    }
+    if(result?.error)throw new Error(result.error);
+    closeManualCreatePortalAccountModal();
+    await loadLiveData();
+    let refreshed=data.customers.find(x=>x.id===c.id);
+    if(refreshed)renderPortalAccessTab(refreshed);
+    alert(`Account created and active immediately. Give the customer their email (${email}) and the password you set - REVIBE does not store it.`);
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not create this account.');err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Create Account';
+  }
+}
+async function linkExistingManualPortalAccount(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c||!pendingLinkExistingUserIdManual)return;
+  let err=document.getElementById('manualCreatePortalAccountError');err.style.display='none';
+  let linkBtn=document.querySelector('#linkExistingManualAccountArea button');linkBtn.disabled=true;linkBtn.textContent='Linking...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'link_existing',customer_id:c.id,existing_user_id:pendingLinkExistingUserIdManual}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    closeManualCreatePortalAccountModal();
+    await loadLiveData();
+    let refreshed=data.customers.find(x=>x.id===c.id);
+    if(refreshed)renderPortalAccessTab(refreshed);
+    alert('This customer is now linked to their existing login. They can use the same email and password to access both the portal and their staff account.');
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not link this account.');err.style.display='block';
+  }finally{
+    linkBtn.disabled=false;linkBtn.textContent='Yes, link this customer to that login';
+  }
+}
 async function resendPortalInvite(){
   let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
   let btn=document.getElementById('resendPortalInviteBtn');btn.disabled=true;btn.textContent='Sending...';
