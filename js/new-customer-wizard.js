@@ -62,7 +62,11 @@ function openNewCustomerWizard(){
   document.getElementById('wizSessionTypeError').style.display='none';
   document.getElementById('wizSessionRlt').checked=false;
   document.getElementById('wizSessionHybrid').checked=false;
-  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName'].forEach(id=>document.getElementById(id).value='');
+  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName','wizSessionSubscriberMinutes','wizSessionBookedMinutes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('wizSessionBookedMinutes').readOnly=false;
+  document.getElementById('wizSessionBookedRow').style.display='none';
+  document.getElementById('wizSessionBookedHint').style.display='none';
+  document.getElementById('wizSessionFulfillsBookingId').value='';
   wizRenderPurchaseLists();
   wizGoTo('personal');
   document.getElementById('newCustomerWizardModal').classList.add('show');
@@ -93,7 +97,11 @@ function openExistingCustomerWizard(){
   document.getElementById('wizSessionTypeError').style.display='none';
   document.getElementById('wizSessionRlt').checked=false;
   document.getElementById('wizSessionHybrid').checked=false;
-  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName'].forEach(id=>document.getElementById(id).value='');
+  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName','wizSessionSubscriberMinutes','wizSessionBookedMinutes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('wizSessionBookedMinutes').readOnly=false;
+  document.getElementById('wizSessionBookedRow').style.display='none';
+  document.getElementById('wizSessionBookedHint').style.display='none';
+  document.getElementById('wizSessionFulfillsBookingId').value='';
   wizRenderPurchaseLists();
   wizGoTo('selectCustomer');
   document.getElementById('newCustomerWizardModal').classList.add('show');
@@ -122,7 +130,11 @@ function openExistingCustomerWizardBooking(){
   document.getElementById('wizSessionTypeError').style.display='none';
   document.getElementById('wizSessionRlt').checked=false;
   document.getElementById('wizSessionHybrid').checked=false;
-  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName'].forEach(id=>document.getElementById(id).value='');
+  ['wizSessionCashMinutes','wizSessionCardMinutes','wizSessionAccountMinutes','wizSessionFreeMinutes','wizSessionStaffMinutes','wizSessionRerunMinutes','wizSessionStaffMemberName','wizSessionSubscriberMinutes','wizSessionBookedMinutes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('wizSessionBookedMinutes').readOnly=false;
+  document.getElementById('wizSessionBookedRow').style.display='none';
+  document.getElementById('wizSessionBookedHint').style.display='none';
+  document.getElementById('wizSessionFulfillsBookingId').value='';
   wizRenderPurchaseLists();
   wizGoTo('selectCustomer');
   document.getElementById('newCustomerWizardModal').classList.add('show');
