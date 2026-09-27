@@ -1718,7 +1718,7 @@ body.loading .app{visibility:hidden}
     <div id='wizPaygChargeRow' class='paygChargeRow' style='display:none'></div>
     <div class='minutesSectionDivider'></div>
     <div class='minutesSectionTitle'>Account/Subscriber Minutes</div>
-    <div class='sessionMinutesGrid'><div><label>MINUTES FROM ACCOUNT</label><input id='wizSessionAccountMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionAccountInsufficientLine' class='sessionAccountWarningLine' style='display:none'></div></div><div><label>SUBSCRIBER MINS USED</label><input id='wizSessionSubscriberMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'></div></div>
+    <div class='sessionMinutesGrid'><div><label>MINUTES FROM ACCOUNT</label><input id='wizSessionAccountMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionAccountInsufficientLine' class='sessionAccountWarningLine' style='display:none'></div></div><div><label>SUBSCRIBER MINS USED</label><input id='wizSessionSubscriberMinutes' type='number' min='0' max='15' step='1' placeholder='0' oninput='wizClampSubscriberMinutes()'></div></div>
     <div class='sessionMinutesGrid' id='wizSessionBookedRow' style='display:none;margin-top:10px'><div><label>BOOKED</label><input id='wizSessionBookedMinutes' type='number' min='0' step='1' placeholder='0' oninput='wizUpdateSessionLengthTotal()'><div id='wizSessionBookedHint' class='paygAmountLine' style='display:none'></div></div></div>
     <div class='minutesSectionDivider'></div>
     <div class='minutesSectionTitle'>Other Minutes</div>
