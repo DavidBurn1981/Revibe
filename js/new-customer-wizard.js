@@ -393,6 +393,11 @@ function wizOpenPurchaseCategory(type){
 }
 function wizAddProductToPurchase(id){
   let p=(data.tanningProducts||[]).find(x=>x.id===id);if(!p)return;
+  let targetListPreCheck=p.cardMachine==='Treatment Card'?wizPurchaseSelection.treatments:wizPurchaseSelection.glowStudio;
+  if(p.grantsUnlimitedPass&&targetListPreCheck.some(item=>item.productId===p.id)){
+    alert('Only one 1 Week Pass can be purchased at a time.');
+    return;
+  }
   if(p.grantsUnlimitedPass){
     let c=(data.customers||[]).find(x=>x.id===wizCustomerId);
     if(c&&c.subscriptionStatus==='Subscriber'){
