@@ -115,10 +115,13 @@ if(c.subscriptionStatus==='Subscriber'){
 function renderPortalAccessTab(c){
   let statusEl=document.getElementById('portalAccessStatus'),noAccount=document.getElementById('portalAccessNoAccount'),hasAccount=document.getElementById('portalAccessHasAccount');
   if(c.authUserId){
-    statusEl.innerHTML=`<div style='font-weight:700;color:var(--green)'>Portal account active</div><div class='muted' style='margin-top:4px'>${escapeHtml(c.email||'No email on file')}</div>`;
+    let lastLoginLine=c.portalLastLogin
+      ?`Last used: ${new Date(c.portalLastLogin).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}`
+      :`Never logged in yet`;
+    statusEl.innerHTML=`<div style='font-weight:700;color:var(--green)'>Portal Set Up: Yes</div><div class='muted' style='margin-top:4px'>${escapeHtml(c.email||'No email on file')}</div><div class='muted' style='margin-top:4px'>${lastLoginLine}</div>`;
     noAccount.style.display='none';hasAccount.style.display='flex';
   }else{
-    statusEl.innerHTML=`<div class='muted'>This customer does not have portal access yet.</div>`;
+    statusEl.innerHTML=`<div style='font-weight:700;color:#ff3131'>Portal Set Up: No</div><div class='muted' style='margin-top:4px'>This customer does not have portal access yet.</div>`;
     noAccount.style.display='block';hasAccount.style.display='none';
   }
 }
