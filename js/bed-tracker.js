@@ -685,6 +685,7 @@ function renderDailySessionsPage(key){
   let totalStaff=rows.reduce((sum,x)=>sum+(+x.staffMinutes||0),0);
   let totalRerun=rows.reduce((sum,x)=>sum+(+x.rerunMinutes||0),0);
   let totalSubscriber=rows.reduce((sum,x)=>sum+(+x.subscriberMinutes||0),0);
+  let totalBooked=rows.reduce((sum,x)=>sum+(+x.bookedMinutes||0),0);
   let subscriberEl=document.getElementById('dailySessionsSubscriberValue');
   if(subscriberEl)subscriberEl.textContent=totalSubscriber;
   let totalSignUps=rows.filter(x=>x.newSignup==='Yes').length;
@@ -718,9 +719,9 @@ function renderDailySessionsPage(key){
 
   let head=document.getElementById('dailySessionsHead');
   if(head)head.innerHTML=
-    `<tr><th>Time</th><th>Customer</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th class='totalMinsCol'>Total Mins</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
+    `<tr><th>Time</th><th>Customer</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Subscriber</th><th>Booked</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th class='totalMinsCol'>Total Mins</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
 
-  let cols=canDelete?14:13;
+  let cols=canDelete?16:15;
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
     ? rows.map(x=>{
@@ -732,6 +733,8 @@ function renderDailySessionsPage(key){
         <td>${x.cashMinutes} min</td>
         <td>${x.cardMinutes} min</td>
         <td>${x.accountMinutes} min</td>
+        <td>${x.subscriberMinutes} min</td>
+        <td>${x.bookedMinutes} min</td>
         <td>${x.freeMinutes} min</td>
         <td>${x.staffMinutes} min</td>
         <td>${x.rerunMinutes} min</td>
@@ -753,6 +756,8 @@ function renderDailySessionsPage(key){
         <td>${totalCash} min</td>
         <td>${totalCard} min</td>
         <td>${totalAccount} min</td>
+        <td>${totalSubscriber} min</td>
+        <td>${totalBooked} min</td>
         <td>${totalFree} min</td>
         <td>${totalStaff} min</td>
         <td>${totalRerun} min</td>
