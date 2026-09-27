@@ -393,7 +393,15 @@ function wizOpenPurchaseCategory(type){
 }
 function wizAddProductToPurchase(id){
   let p=(data.tanningProducts||[]).find(x=>x.id===id);if(!p)return;
-  let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0};
+  if(p.grantsUnlimitedPass){
+    let c=(data.customers||[]).find(x=>x.id===wizCustomerId);
+    if(c&&c.subscriptionStatus==='Subscriber'){
+      alert('This product can not be purchased until your current 7 day pass has expired');
+      return;
+    }
+    alert(`Please ensure the customer understands that they can:\n\n- Only use the beds once in a 24 hour period\n- Book a maximum of 15 minutes per session for the duration of the pass\n\nYou can continue processing the purchase once they understand this.`);
+  }
+  let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0,grantsUnlimitedPass:!!p.grantsUnlimitedPass,unlimitedPassDays:p.unlimitedPassDays||null};
   let targetList=entry.cardMachine==='Treatment Card'?wizPurchaseSelection.treatments:wizPurchaseSelection.glowStudio;
   let alreadyInCart=targetList.some(item=>item.productId===entry.productId);
   if(alreadyInCart&&!confirm(`"${p.title}" is already in the cart. Add it again?`))return;
@@ -529,6 +537,14 @@ async function wizConfirmPurchases(){
     if(takingsError)throw takingsError;
     wizPurchaseSelection={treatments:[],glowStudio:[]};
     wizRenderPurchaseLists();
+    let passItems=allItems.filter(item=>item.grantsUnlimitedPass);
+    for(let item of passItems){
+      let {data:passResult,error:passError}=await sb.rpc('grant_weekly_pass',{p_customer:wizCustomerId,p_days:item.unlimitedPassDays||7});
+      if(passError)throw passError;
+      let expiresAt=new Date((Array.isArray(passResult)?passResult[0]:passResult).expires_at);
+      let expiresLabel=expiresAt.toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      alert(`${item.title} activated. Pass will expire on ${expiresLabel}.`);
+    }
     await loadLiveData();renderAll();renderDailyTakings();
     wizGoTo('sessionType');
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}
@@ -557,6 +573,14 @@ function wizSessionTypeNext(){
 }
 
 // --- Session Minutes ---
+function wizClampSubscriberMinutes(){
+  let input=document.getElementById('wizSessionSubscriberMinutes');
+  if(+input.value>15){
+    input.value=15;
+    alert('Subscriber sessions are capped at a maximum of 15 minutes.');
+  }
+  wizUpdateSessionLengthTotal();
+}
 function wizUpdateSessionLengthTotal(){
   let cash=+document.getElementById('wizSessionCashMinutes').value||0,
       card=+document.getElementById('wizSessionCardMinutes').value||0,
