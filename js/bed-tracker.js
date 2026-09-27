@@ -188,7 +188,7 @@ function renderBedTracker(){
   let headerBedCardEl=document.getElementById('headerBedCardValue');
   if(headerBedCardEl)headerBedCardEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygToday.card).toFixed(2)}`;
   let headerPurchasesEl=document.getElementById('headerPurchasesValue');
-  if(headerPurchasesEl)headerPurchasesEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.grandTotal,0).toFixed(2)}`;
+  if(headerPurchasesEl)headerPurchasesEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.grandTotal,0)+paygToday.cash+paygToday.card).toFixed(2)}`;
   document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
     ?`${paidTotal} paid-for minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
     :'Cash, Card and Account minutes only — Free and Staff minutes excluded.';
