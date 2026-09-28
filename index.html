@@ -210,9 +210,6 @@ body.loading .app{visibility:hidden}
 .permissionDisabled{opacity:.55}
 .permissionNote{font-size:10px;color:#8d949e;margin-top:4px}
 
-#clinicCopyModal{z-index:80!important}
-#universalDatePickerModal{z-index:100!important}
-#holidayDatePickerModal,#shiftCalendarPickerModal,#staffJoinCalendarPickerModal{z-index:100!important}
 
 .dailyTakingsPanel{background:rgba(207,118,35,.22)!important;border-color:rgba(232,145,61,.40)!important}
 .grandTotalPayableRow{margin-top:14px;font-size:14px;font-weight:700;color:#f5f5f7}
@@ -1428,7 +1425,7 @@ body.loading .app{visibility:hidden}
 <div class='top'>
   <div><h1 id='customerModalTitle'>New Customer</h1><div class='muted' id='customerAccountLabel'></div></div>
   <div style='display:flex;align-items:center;gap:16px'>
-    <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Unlimited Member</label><input id='custUnlimitedMember' readonly class='topFieldSelect' style='cursor:not-allowed'></div>
+    <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Subscribed Customer?</label><input id='custUnlimitedMember' readonly class='topFieldSelect' style='cursor:not-allowed'></div>
     <div id='custNoShowsRow' style='display:none'><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>No Shows (Late Cancellations)</label><input id='custNoShows' readonly class='topFieldSelect' style='cursor:not-allowed'></div>
     <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Waiver Signed and Present?</label><select id='custWaiverSigned' class='topFieldSelect'><option value='false'>No</option><option value='true'>Yes</option></select></div>
     <div><label style='display:block;font-size:11px;color:#bbb;margin-bottom:4px'>Bed Use</label><select id='custBedUse' class='topFieldSelect'><option value='Hybrid'>Hybrid</option><option value='Red Light Therapy Only'>Red Light Therapy Only</option></select></div>
