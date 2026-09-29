@@ -102,7 +102,12 @@ function renderDailyTakings(){
     // till-reconciliation correction staff made at the time) rather than recalculating over it.
     cashValue=+row?.cash||0;treatmentsCardValue=+row?.treatmentsCard||0;bedCardValue=+row?.bedCard||0;
   }
-  document.getElementById('dailyCashTaken').value=cashValue.toFixed(2);document.getElementById('dailyTreatmentsCardTaken').value=treatmentsCardValue.toFixed(2);document.getElementById('dailyBedCardTaken').value=bedCardValue.toFixed(2);document.getElementById('dailyFridgeReading').value=row?.fridgeReading===''||row?.fridgeReading===undefined||row?.fridgeReading===null?'':row.fridgeReading;document.getElementById('dailyGoogleReviews').value=row?.googleReviews===''||row?.googleReviews===undefined||row?.googleReviews===null?'':row.googleReviews;document.getElementById('dailyFacebookReviews').value=row?.facebookReviews===''||row?.facebookReviews===undefined||row?.facebookReviews===null?'':row.facebookReviews;document.getElementById('dailyEndOfDayNotes').value=row?.endOfDayNotes||'';updateDailyTakingsTotal();
+  document.getElementById('dailyCashTaken').value=cashValue.toFixed(2);document.getElementById('dailyTreatmentsCardTaken').value=treatmentsCardValue.toFixed(2);document.getElementById('dailyBedCardTaken').value=bedCardValue.toFixed(2);
+  // Online sales revenue is always recalculated live from the actual online transaction/subscription
+  // records for the given date, whatever day is being viewed - there's nothing to "finalise" or save here.
+  let onlineTakenEl=document.getElementById('dailyOnlineSalesTaken');
+  if(onlineTakenEl)onlineTakenEl.value=onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0).toFixed(2);
+  document.getElementById('dailyFridgeReading').value=row?.fridgeReading===''||row?.fridgeReading===undefined||row?.fridgeReading===null?'':row.fridgeReading;document.getElementById('dailyGoogleReviews').value=row?.googleReviews===''||row?.googleReviews===undefined||row?.googleReviews===null?'':row.googleReviews;document.getElementById('dailyFacebookReviews').value=row?.facebookReviews===''||row?.facebookReviews===undefined||row?.facebookReviews===null?'':row.facebookReviews;document.getElementById('dailyEndOfDayNotes').value=row?.endOfDayNotes||'';updateDailyTakingsTotal();
   let canEdit=hasRolePermission('daily_session_tracker','edit');['dailyCashTaken','dailyTreatmentsCardTaken','dailyBedCardTaken','dailyFridgeReading','dailyGoogleReviews','dailyFacebookReviews','dailyEndOfDayNotes'].forEach(id=>document.getElementById(id).readOnly=!canEdit);document.getElementById('saveDailyTakingsBtn').style.display=canEdit?'inline-block':'none';
 }
 async function saveDailyTakings(){if(!requireRolePermission('daily_session_tracker','edit'))return;let key=document.getElementById('dailyTakingsDate').value||localDateKey(),cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,fridgeRaw=document.getElementById('dailyFridgeReading').value,fridge=fridgeRaw===''?null:+fridgeRaw,googleRaw=document.getElementById('dailyGoogleReviews').value,facebookRaw=document.getElementById('dailyFacebookReviews').value,endOfDayNotes=document.getElementById('dailyEndOfDayNotes').value.trim(),err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');err.style.display='none';let missingFields=[];if(googleRaw==='')missingFields.push('Google Reviews');if(facebookRaw==='')missingFields.push('Facebook Reviews');if(missingFields.length){alert(`You have not entered data into ${missingFields.join(', ')}. Please do this before being able to save`);return}let googleReviews=+googleRaw,facebookReviews=+facebookRaw;if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}if(fridge!==null&&!Number.isFinite(fridge)){err.textContent='Please enter a valid Fridge Reading.';err.style.display='block';return}if(!Number.isFinite(googleReviews)||googleReviews<0){err.textContent='Please enter a valid number of Google Reviews.';err.style.display='block';return}if(!Number.isFinite(facebookReviews)||facebookReviews<0){err.textContent='Please enter a valid number of Facebook Reviews.';err.style.display='block';return}btn.disabled=true;btn.textContent='Saving...';try{let {error}=await sb.from('daily_takings').upsert({takings_date:key,cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,fridge_reading:fridge,google_reviews:googleReviews,facebook_reviews:facebookReviews,end_of_day_notes:endOfDayNotes||null,updated_at:new Date().toISOString()},{onConflict:'takings_date'});if(error)throw error;await loadLiveData();renderDailyTakings();renderPerformanceReporting()}catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Save Daily Takings'}}
@@ -110,8 +115,9 @@ function periodRevenue(keys){
   let rows=(data.dailyTakings||[]).filter(x=>keys.includes(x.date)),
       cash=rows.reduce((s,x)=>s+(+x.cash||0),0),
       treatments=rows.reduce((s,x)=>s+(+x.treatmentsCard||0),0),
-      beds=rows.reduce((s,x)=>s+(+x.bedCard||0),0);
-  return {cash,treatments,beds,total:cash+treatments+beds};
+      beds=rows.reduce((s,x)=>s+(+x.bedCard||0),0),
+      online=keys.reduce((s,k)=>s+onlineSalesForDate(k).reduce((ss,o)=>ss+o.amount,0),0);
+  return {cash,treatments,beds,online,total:cash+treatments+beds};
 }
 const DAILY_AVERAGE_COMPARISON_ENABLED=false; // temporarily disabled while historic session data is added - see renderDailyAverageComparison()
 function renderDailyAverageComparison(){
@@ -187,8 +193,14 @@ function renderBedTracker(){
   if(headerTreatmentsCardEl)headerTreatmentsCardEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.treatmentsCardAmount,0).toFixed(2)}`;
   let headerBedCardEl=document.getElementById('headerBedCardValue');
   if(headerBedCardEl)headerBedCardEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygToday.card).toFixed(2)}`;
+  // Online sales (weekly passes, memberships bought through the portal) get their
+  // own figure here, and are also folded into Total Purchases below - but they
+  // stay out of Total Sunbed Card, which is till/card takings only.
+  let onlineTotalToday=onlineSalesForDate(todayKey).reduce((s,o)=>s+o.amount,0);
+  let headerOnlineSalesEl=document.getElementById('headerOnlineSalesValue');
+  if(headerOnlineSalesEl)headerOnlineSalesEl.textContent=`£${onlineTotalToday.toFixed(2)}`;
   let headerPurchasesEl=document.getElementById('headerPurchasesValue');
-  if(headerPurchasesEl)headerPurchasesEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.grandTotal,0)+paygToday.cash+paygToday.card).toFixed(2)}`;
+  if(headerPurchasesEl)headerPurchasesEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.grandTotal,0)+paygToday.cash+paygToday.card+onlineTotalToday).toFixed(2)}`;
   let headerWeeklyPassesEl=document.getElementById('headerWeeklyPassesValue');
   if(headerWeeklyPassesEl)headerWeeklyPassesEl.textContent=weeklyPassesSoldOnDate(todayKey);
   let headerMonthlyUnlimitedEl=document.getElementById('headerMonthlyUnlimitedValue');
@@ -280,24 +292,25 @@ function renderPeriodPerformance(mode,refDate){
 
   let daily=keys.map(k=>{
     let r=rows.filter(x=>x.date===k),m=aggregateSessions(r),t=getDailyTakings(k);
-    return {key:k,...m,kpi:dayKpi(k,m.minutes),paidKpi:dayKpi(k,m.paidMinutes),takings:t,weeklyPasses:weeklyPassesSoldOnDate(k),monthlyUnlimited:monthlyUnlimitedSoldOnDate(k)};
+    return {key:k,...m,kpi:dayKpi(k,m.minutes),paidKpi:dayKpi(k,m.paidMinutes),takings:t,weeklyPasses:weeklyPassesSoldOnDate(k),monthlyUnlimited:monthlyUnlimitedSoldOnDate(k),onlineSales:onlineSalesForDate(k).reduce((s,o)=>s+o.amount,0)};
   });
 
   let revenueSummary=`<div class='periodRevenueSummary'>
     <div class='periodRevenueCard'><div class='label'>Total Cash</div><div class='value'>£${revenue.cash.toFixed(2)}</div></div>
     <div class='periodRevenueCard'><div class='label'>Total Bed Card</div><div class='value'>£${revenue.beds.toFixed(2)}</div></div>
     <div class='periodRevenueCard'><div class='label'>Total Treatment Card</div><div class='value'>£${revenue.treatments.toFixed(2)}</div></div>
+    <div class='periodRevenueCard'><div class='label'>Total Online Sales</div><div class='value'>£${revenue.online.toFixed(2)}</div></div>
   </div>`;
 
   document.getElementById('perfContent').innerHTML=
     revenueSummary+
     summaryMetricsHtml(a,kpi,paidKpi,mode==='month',mode==='week')+
     `<div class='card perfTableWrap'><table class='table'>
-      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI (All)</th><th>KPI (Paid)</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Total Revenue</th><th>Weekly Passes Sold</th><th>Monthly Unlimited Sold</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
+      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI (All)</th><th>KPI (Paid)</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Online Sales</th><th>Total Revenue</th><th>Weekly Passes Sold</th><th>Monthly Unlimited Sold</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
       ${daily.map(d=>`<tr>
         <td><b>${parseLocalDateKey(d.key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td>
         <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td><td>${d.kpi.toFixed(1)}</td><td>${d.paidKpi.toFixed(1)}</td>
-        <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${takingsTotal(d.takings).toFixed(2)}</td>
+        <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${d.onlineSales.toFixed(2)}</td><td>£${takingsTotal(d.takings).toFixed(2)}</td>
         <td>${d.weeklyPasses}</td><td>${d.monthlyUnlimited}</td>
         <td>${d.takings?.googleReviews===''||d.takings?.googleReviews==null?'—':d.takings.googleReviews}</td><td>${d.takings?.facebookReviews===''||d.takings?.facebookReviews==null?'—':d.takings.facebookReviews}</td>
       </tr>`).join('')}
@@ -744,6 +757,7 @@ function renderDailySessionsPage(key){
 
   let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
   let paygForDay=paygSessionTotalsForDay(key);
+  let onlineForDay=onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0);
   let cashFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+paygForDay.cash;
   let treatmentsCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0);
   let bedCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygForDay.card;
@@ -753,6 +767,8 @@ function renderDailySessionsPage(key){
   if(treatmentsCardEl)treatmentsCardEl.textContent=`£${treatmentsCardFromPurchases.toFixed(2)}`;
   let bedCardEl=document.getElementById('dailySessionsBedCardValue');
   if(bedCardEl)bedCardEl.textContent=`£${bedCardFromPurchases.toFixed(2)}`;
+  let onlineSalesEl=document.getElementById('dailySessionsOnlineSalesValue');
+  if(onlineSalesEl)onlineSalesEl.textContent=`£${onlineForDay.toFixed(2)}`;
 
   let picker=document.getElementById('dailySessionsDatePicker');
   if(picker&&picker.value!==key)picker.value=key;
