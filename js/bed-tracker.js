@@ -657,10 +657,14 @@ function onlineSalesForDate(dateKey){
   let passRows=(data.customerTransactions||[])
     .filter(t=>t.product==='1 Week Pass (Online Purchase)'&&t.createdAt&&localDateKey(new Date(t.createdAt))===dateKey)
     .map(t=>({createdAt:t.createdAt,customerId:t.customerId,item:'1 Week Pass (Online Purchase)',amount:+t.value||0}));
-  let membershipPrice=((data.subscriptionProductConfig||[]).find(x=>x.active)?.pricePence||0)/100;
+  // The real amount Stripe actually charged at signup, straight from the
+  // checkout session - not the product's list price, which a coupon or
+  // proration could make wrong. Only falls back to today's list price for
+  // an older event recorded before this was captured.
+  let fallbackMembershipPrice=((data.subscriptionProductConfig||[]).find(x=>x.active)?.pricePence||0)/100;
   let membershipRows=(data.subscriptionEvents||[])
     .filter(e=>e.eventType==='subscription_started'&&e.occurredAt&&localDateKey(new Date(e.occurredAt))===dateKey)
-    .map(e=>({createdAt:e.occurredAt,customerId:e.customerId,item:'Monthly Unlimited Membership (Online Purchase)',amount:membershipPrice}));
+    .map(e=>({createdAt:e.occurredAt,customerId:e.customerId,item:'Monthly Unlimited Membership (Online Purchase)',amount:e.details?.amount_paid_pence!=null?e.details.amount_paid_pence/100:fallbackMembershipPrice}));
   return [...passRows,...membershipRows];
 }
 function renderDailySessionsPurchases(key){
