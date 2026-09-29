@@ -31,9 +31,12 @@ function openSunbedBookingDetail(id){
     </div>`;
   document.getElementById('sunbedBookingDetailError').style.display='none';
   let actions=document.getElementById('sunbedBookingDetailActions');
-  actions.innerHTML=(b.status!=='Cancelled'&&b.customerId)
-    ?`<button class='danger' id='sunbedCancelBtn' onclick='sunbedCancelBookingFromDetail()'>Cancel Booking</button>`
-    :'';
+  let actionButtons='';
+  if(b.status!=='Cancelled'&&b.status!=='No Show'&&b.customerId){
+    actionButtons+=`<button class='danger' id='sunbedCancelBtn' onclick='sunbedCancelBookingFromDetail()'>Cancel Booking</button>`;
+    actionButtons+=`<button class='danger' id='sunbedNoShowBtn' style='margin-left:8px' onclick='sunbedMarkNoShowFromDetail()'>No Show</button>`;
+  }
+  actions.innerHTML=actionButtons;
   document.getElementById('sunbedBookingDetailModal').classList.add('show');
 }
 async function sunbedCancelBookingFromDetail(){
@@ -51,6 +54,22 @@ async function sunbedCancelBookingFromDetail(){
   }catch(e){
     err.textContent=e.message||'Could not cancel this booking.';err.style.display='block';
     btn.disabled=false;btn.textContent='Cancel Booking';
+  }
+}
+async function sunbedMarkNoShowFromDetail(){
+  if(!sunbedDetailBookingId)return;
+  if(!confirm('Mark this booking as a No Show? Any minutes already deducted will not be refunded, and if the customer is a subscriber this will count against their No Shows total.'))return;
+  let err=document.getElementById('sunbedBookingDetailError');err.style.display='none';
+  let btn=document.getElementById('sunbedNoShowBtn');btn.disabled=true;btn.textContent='Marking...';
+  try{
+    let {error}=await sb.rpc('mark_bed_booking_no_show',{p_booking_id:sunbedDetailBookingId});
+    if(error)throw error;
+    document.getElementById('sunbedBookingDetailModal').classList.remove('show');
+    await loadLiveData();renderSunbedCalendar();renderCustomers();
+    alert('Booking marked as No Show.');
+  }catch(e){
+    err.textContent=e.message||'Could not mark this booking as a No Show.';err.style.display='block';
+    btn.disabled=false;btn.textContent='No Show';
   }
 }
 function renderSunbedCalendar(){
