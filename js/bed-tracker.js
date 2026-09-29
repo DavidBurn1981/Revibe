@@ -1132,21 +1132,27 @@ function subscriberStatusBadgeHtml(c){
 }
 function applyTodaysBookingAutofill(customerId,prefix){
   prefix=prefix||'session';
+  // Always start from a clean slate before anything below runs - otherwise a
+  // previous customer's auto-filled (or manually entered) Subscriber Mins
+  // Used/Booked minutes can silently survive a customer switch and get
+  // counted into this customer's session without anyone seeing it happen.
+  document.getElementById(prefix+'SubscriberMinutes').value='';
+  document.getElementById(prefix+'BookedMinutes').value='';
+  document.getElementById(prefix+'BookedMinutes').readOnly=false;
+  document.getElementById(prefix+'FulfillsBookingId').value='';
+  let bookedRow=document.getElementById(prefix+'BookedRow');
+  if(bookedRow)bookedRow.style.display='none';
+  document.getElementById(prefix+'BookedHint').style.display='none';
   // Walk In sessions are, by definition, never tied to a booking - even if
   // this customer happens to also have one sitting on the system for later
   // today, Walk In should completely ignore it rather than auto-detect it.
   if(prefix==='wizSession'&&wizMode==='existing'){
-    document.getElementById(prefix+'FulfillsBookingId').value='';
-    document.getElementById(prefix+'BookedMinutes').readOnly=false;
-    let bookedRowWalkIn=document.getElementById(prefix+'BookedRow');
-    if(bookedRowWalkIn)bookedRowWalkIn.style.display='none';
-    document.getElementById(prefix+'BookedHint').style.display='none';
+    wizUpdateSessionLengthTotal();
     return;
   }
   let today=localDateKey();
   let booking=(data.sunbedBookings||[]).find(b=>b.customerId===customerId&&b.date===today&&b.status==='Booked'&&!b.fulfilledBySessionId);
   let hint=document.getElementById(prefix+'BookedHint');
-  let bookedRow=document.getElementById(prefix+'BookedRow');
   let c=(data.customers||[]).find(x=>x.id===customerId);
   let isSubscriber=c&&c.subscriptionStatus==='Subscriber';
   if(booking){
@@ -1167,12 +1173,9 @@ function applyTodaysBookingAutofill(customerId,prefix){
     hint.style.display='block';
     if(booking.sessionType==='Red Light Therapy'){document.getElementById(prefix+'Rlt').checked=true;document.getElementById(prefix+'Hybrid').checked=false}
     else if(booking.sessionType){document.getElementById(prefix+'Hybrid').checked=true;document.getElementById(prefix+'Rlt').checked=false}
-  }else{
-    document.getElementById(prefix+'FulfillsBookingId').value='';
-    document.getElementById(prefix+'BookedMinutes').readOnly=false;
-    if(bookedRow)bookedRow.style.display='none';
-    hint.style.display='none';
   }
+  // No booking found: the clean-slate reset at the top of this function
+  // already leaves everything blank/hidden, so there's nothing more to do.
   // Setting these fields' values directly above never fires their oninput
   // handlers, so the Total field would otherwise stay stuck at whatever it
   // showed before the autofill - this recalculates it explicitly instead.
@@ -1205,6 +1208,10 @@ function clearSessionCustomer(){
   document.getElementById('sessionBookedHint').style.display='none';
   document.getElementById('sessionBookedRow').style.display='none';
   document.getElementById('sessionBookedMinutes').readOnly=false;
+  // Clear any value auto-filled or typed in for the previous customer - it
+  // must never silently carry over and get counted into this next one.
+  document.getElementById('sessionBookedMinutes').value='';
+  document.getElementById('sessionSubscriberMinutes').value='';
   updateSessionLengthTotal();
 }
 function paygSessionTotalsForDay(key){

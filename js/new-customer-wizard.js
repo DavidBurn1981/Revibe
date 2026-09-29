@@ -263,6 +263,10 @@ function wizClearSelectCustomer(){
   document.getElementById('wizSessionBookedHint').style.display='none';
   document.getElementById('wizSessionBookedRow').style.display='none';
   document.getElementById('wizSessionBookedMinutes').readOnly=false;
+  // Clear any value auto-filled or typed in for the previous customer - it
+  // must never silently carry over and get counted into this next one.
+  document.getElementById('wizSessionBookedMinutes').value='';
+  document.getElementById('wizSessionSubscriberMinutes').value='';
 }
 function wizSelectCustomerNext(){
   let err=document.getElementById('wizSelectCustomerError');err.style.display='none';
