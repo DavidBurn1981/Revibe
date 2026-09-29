@@ -6,8 +6,10 @@ const SUNBEDS=[
 ];
 let sunbedViewDate=localDateKey();
 function normalizeBookedBed(x){return SUNBEDS.some(b=>b.name===x.bed)?x.bed:'Unassigned'}
+let sunbedDetailBookingId=null;
 function openSunbedBookingDetail(id){
   let b=(data.sunbedBookings||[]).find(x=>x.id===id);if(!b)return;
+  sunbedDetailBookingId=id;
   let phone=b.phone;
   if(b.customerId){
     let c=(data.customers||[]).find(x=>x.id===b.customerId);
@@ -27,7 +29,49 @@ function openSunbedBookingDetail(id){
       <div><label>Booking Made</label><div>${madeAt}</div></div>
       <div><label>Source</label><div>${b.customerId?'Online Booking':'Booked In Shop'}</div></div>
     </div>`;
+  document.getElementById('sunbedBookingDetailError').style.display='none';
+  let actions=document.getElementById('sunbedBookingDetailActions');
+  let actionButtons='';
+  let alreadyCancelledOrNoShow=['Cancelled','Cancelled Good','Cancelled Within Hour','No Show'].includes(b.status);
+  if(!alreadyCancelledOrNoShow&&b.customerId){
+    actionButtons+=`<button class='danger' id='sunbedCancelBtn' onclick='sunbedCancelBookingFromDetail()'>Cancel Booking</button>`;
+    actionButtons+=`<button class='danger' id='sunbedNoShowBtn' style='margin-left:8px' onclick='sunbedMarkNoShowFromDetail()'>No Show</button>`;
+  }
+  actions.innerHTML=actionButtons;
   document.getElementById('sunbedBookingDetailModal').classList.add('show');
+}
+async function sunbedCancelBookingFromDetail(){
+  if(!sunbedDetailBookingId)return;
+  if(!confirm('Cancel this booking? If the session is more than 1 hour away, minutes will be refunded automatically.'))return;
+  let err=document.getElementById('sunbedBookingDetailError');err.style.display='none';
+  let btn=document.getElementById('sunbedCancelBtn');btn.disabled=true;btn.textContent='Cancelling...';
+  try{
+    let {data:result,error}=await sb.rpc('cancel_bed_booking',{p_booking_id:sunbedDetailBookingId});
+    if(error)throw error;
+    let row=Array.isArray(result)?result[0]:result;
+    document.getElementById('sunbedBookingDetailModal').classList.remove('show');
+    await loadLiveData();renderSunbedCalendar();renderCustomers();
+    alert(row.refunded?`Booking cancelled. Minutes refunded — customer now has ${row.minutes_left} minutes.`:'Booking cancelled. This was within 1 hour of the session, so minutes were not refunded.');
+  }catch(e){
+    err.textContent=e.message||'Could not cancel this booking.';err.style.display='block';
+    btn.disabled=false;btn.textContent='Cancel Booking';
+  }
+}
+async function sunbedMarkNoShowFromDetail(){
+  if(!sunbedDetailBookingId)return;
+  if(!confirm('Mark this booking as a No Show? Any minutes already deducted will not be refunded, and if the customer is a subscriber this will count against their No Shows total.'))return;
+  let err=document.getElementById('sunbedBookingDetailError');err.style.display='none';
+  let btn=document.getElementById('sunbedNoShowBtn');btn.disabled=true;btn.textContent='Marking...';
+  try{
+    let {error}=await sb.rpc('mark_bed_booking_no_show',{p_booking_id:sunbedDetailBookingId});
+    if(error)throw error;
+    document.getElementById('sunbedBookingDetailModal').classList.remove('show');
+    await loadLiveData();renderSunbedCalendar();renderCustomers();
+    alert('Booking marked as No Show.');
+  }catch(e){
+    err.textContent=e.message||'Could not mark this booking as a No Show.';err.style.display='block';
+    btn.disabled=false;btn.textContent='No Show';
+  }
 }
 function renderSunbedCalendar(){
   let cal=document.getElementById('sunbedCalendar');if(!cal)return;
@@ -38,7 +82,7 @@ function renderSunbedCalendar(){
 
   let hours=effectiveHoursForDate(viewDate);
   let openMin=minutesFromTime(hours.open),closeMin=minutesFromTime(hours.close);
-  let dayBookings=(data.sunbedBookings||[]).filter(x=>x.date===viewDate&&x.status!=='Cancelled');
+  let dayBookings=(data.sunbedBookings||[]).filter(x=>x.date===viewDate&&!['Cancelled','Cancelled Good','Cancelled Within Hour'].includes(x.status));
   let turnaround=4; // matches the existing "4 min turnaround" shown on each booking card
 
   let html=`<div class='sunbedDayGrid' style='grid-template-columns:90px repeat(${SUNBEDS.length},minmax(200px,1fr))'>
@@ -52,7 +96,7 @@ function renderSunbedCalendar(){
     for(let b of SUNBEDS){
       let key=b.name+'|'+m;
       if(covered[key])continue;
-      let booking=dayBookings.find(x=>normalizeBookedBed(x)===b.name&&minutesFromTime(x.time)===m);
+      let booking=dayBookings.find(x=>normalizeBookedBed(x)===b.name&&Math.floor(minutesFromTime(x.time)/15)*15===m);
       if(booking){
         let span=Math.max(1,Math.ceil((booking.length+turnaround)/15));
         for(let s=1;s<span;s++)covered[b.name+'|'+(m+s*15)]=true;
@@ -68,11 +112,7 @@ function renderSunbedCalendar(){
 function chooseSunbedSessionType(type){
   sunbedSessionType=type;
   [['Red Light Therapy','sunTypeRlt'],['Hybrid','sunTypeHybrid']].forEach(([t,id])=>document.getElementById(id)?.classList.toggle('active',t===type));
-}
-function updatePreferredBedOptions(){
-  let type=document.getElementById('sunbedBedType').value,select=document.getElementById('sunbedBed');
-  let beds=type==='Any'?SUNBEDS:SUNBEDS.filter(b=>b.type===type);
-  select.innerHTML=`<option value='Any'>No Preference / Auto Assign</option>`+beds.map(b=>`<option value='${b.name}'>${b.name} — ${b.type}</option>`).join('');
+  sunbedCheckSkinTypeWarning();
 }
 function formatSunbedDisplayDate(key){
   if(!key)return '';
@@ -116,111 +156,99 @@ function populateSunbedTimeOptions(selectedTime){
   }
   if(selectedTime&&[...select.options].some(o=>o.value===selectedTime))select.value=selectedTime;
 }
+let sunbedSelectedCustomerId=null;
 function openSunbedBooking(date,time){
   document.getElementById('sunbedBookingModal').classList.add('show');
-  document.getElementById('sunbedName').value='';
-  document.getElementById('sunbedPhone').value='';
+  sunbedSelectedCustomerId=null;
+  document.getElementById('sunbedCustomerSearch').value='';
+  document.getElementById('sunbedCustomerSearch').style.display='block';
+  document.getElementById('sunbedCustomerResults').style.display='none';
+  document.getElementById('sunbedCustomerSelected').style.display='none';
+  document.getElementById('sunbedCustomerBalance').textContent='';
+  document.getElementById('sunbedSkinTypeWarning').style.display='none';
+  document.getElementById('sunbedBookingError').style.display='none';
   document.getElementById('sunbedDate').value=date||localDateKey();
   document.getElementById('sunbedDateDisplay').value=formatSunbedDisplayDate(document.getElementById('sunbedDate').value);
   populateSunbedTimeOptions(time);
   document.getElementById('sunbedLength').value='';
   document.getElementById('sunbedBedType').value='Any';
-  updatePreferredBedOptions();
-  document.getElementById('sunbedBed').value='Any';
   document.getElementById('sunbedTotalTime').value='';
   chooseSunbedSessionType('Red Light Therapy');
 }
+function sunbedSearchCustomer(){
+  let q=document.getElementById('sunbedCustomerSearch').value.trim().toLowerCase();
+  let results=document.getElementById('sunbedCustomerResults');
+  if(!q){results.style.display='none';results.innerHTML='';return}
+  let matches=(data.customers||[]).filter(c=>c.active!==false&&`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)).slice(0,8);
+  results.innerHTML=matches.length
+    ? matches.map(c=>`<div class='customerSearchResultRow' onmousedown="event.preventDefault();sunbedPickCustomer('${c.id}')"><b>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</b><div class='sub muted'>${escapeHtml(c.accountNumber)}</div></div>`).join('')
+    : `<div class='customerSearchResultRow muted'>No matching customers.</div>`;
+  results.style.display='block';
+}
+function sunbedHideCustomerResultsDelayed(){
+  setTimeout(()=>{document.getElementById('sunbedCustomerResults').style.display='none'},150);
+}
+function sunbedPickCustomer(id){
+  let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
+  sunbedSelectedCustomerId=id;
+  document.getElementById('sunbedCustomerSearch').style.display='none';
+  document.getElementById('sunbedCustomerResults').style.display='none';
+  document.getElementById('sunbedCustomerResults').innerHTML='';
+  let chip=document.getElementById('sunbedCustomerSelected');
+  chip.innerHTML=`<span>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</span><button type='button' onclick='sunbedClearCustomer()'>✕</button>`;
+  chip.style.display='flex';
+  document.getElementById('sunbedCustomerBalance').textContent=`${c.minutesLeft} minutes on account. Skin type: ${c.skinType||'Not on file'}.`;
+  document.getElementById('sunbedBookingError').style.display='none';
+  sunbedCheckSkinTypeWarning();
+}
+function sunbedClearCustomer(){
+  sunbedSelectedCustomerId=null;
+  document.getElementById('sunbedCustomerSearch').value='';
+  document.getElementById('sunbedCustomerSearch').style.display='block';
+  document.getElementById('sunbedCustomerSelected').style.display='none';
+  document.getElementById('sunbedCustomerBalance').textContent='';
+  document.getElementById('sunbedSkinTypeWarning').style.display='none';
+}
+function sunbedCheckSkinTypeWarning(){
+  let c=(data.customers||[]).find(x=>x.id===sunbedSelectedCustomerId);
+  let length=+document.getElementById('sunbedLength').value||0,
+      isHybrid=document.getElementById('sunTypeHybrid').classList.contains('active'),
+      threshold=c&&c.skinType===1?6:c&&c.skinType===2?8:c&&c.skinType===3?10:null,
+      warningEl=document.getElementById('sunbedSkinTypeWarning');
+  warningEl.style.display=(isHybrid&&threshold!==null&&length>threshold)?'block':'none';
+}
 function closeSunbedBooking(){document.getElementById('sunbedBookingModal').classList.remove('show')}
-function updateSunbedTotal(){let n=+document.getElementById('sunbedLength').value||0;document.getElementById('sunbedTotalTime').value=n?`${n+4} minutes`:''}
+function updateSunbedTotal(){let n=+document.getElementById('sunbedLength').value||0;document.getElementById('sunbedTotalTime').value=n?`${n+2} minutes`:''}
+function sunbedUpdateTotal(){updateSunbedTotal()}
 function minutesFromTime(t){let [h,m]=t.split(':').map(Number);return h*60+m}
-function sunbedIsFree(bed,date,start,end){
-  return !(data.sunbedBookings||[]).some(x=>{
-    if(x.date!==date||normalizeBookedBed(x)!==bed)return false;
-    let xs=minutesFromTime(x.time),xe=xs+(+x.totalMinutes||(+x.length+4));
-    return start<xe&&end>xs;
-  });
-}
-function chooseAutomaticBed(date,start,end,bedType){
-  let candidates=bedType==='Any'?SUNBEDS:SUNBEDS.filter(b=>b.type===bedType);
-  return candidates.find(b=>sunbedIsFree(b.name,date,start,end))?.name||null;
-}
-function closeSunbedConflict(){
-  document.getElementById('sunbedConflictModal').classList.remove('show');
-  pendingSunbedBooking=null;
-}
-function showSunbedConflictAlternative(message,alternativeBed){
-  document.getElementById('sunbedConflictTitle').textContent='Preferred Bed Unavailable';
-  document.getElementById('sunbedConflictMessage').textContent=message;
-  document.getElementById('sunbedConflictActions').innerHTML=`<button onclick='closeSunbedConflict()'>No</button><button class='primary' onclick="confirmAlternativeSunbed('${alternativeBed}')">Yes — use ${alternativeBed}</button>`;
-  document.getElementById('sunbedConflictModal').classList.add('show');
-}
-function showSunbedUnavailable(message){
-  document.getElementById('sunbedConflictTitle').textContent='No Suitable Bed Available';
-  document.getElementById('sunbedConflictMessage').textContent=message;
-  document.getElementById('sunbedConflictActions').innerHTML=`<button class='primary' onclick='closeSunbedConflict()'>OK</button>`;
-  document.getElementById('sunbedConflictModal').classList.add('show');
-}
-async function completeSunbedBooking(payload){
-  let bedMeta=data.beds?.find(b=>b.name===payload.bed);
-  if(!bedMeta)return alert('Bed configuration could not be found.');
-  let {error}=await sb.from('sunbed_bookings').insert({
-    customer_name:payload.name,customer_phone:payload.phone||null,booking_date:payload.date,start_time:payload.time,
-    session_length_minutes:+payload.length,turnaround_minutes:4,bed_id:bedMeta.id,session_type:payload.sessionType,status:'Booked'
-  });
-  if(error)return showSunbedUnavailable(error.message);
-  pendingSunbedBooking=null;document.getElementById('sunbedConflictModal').classList.remove('show');closeSunbedBooking();
-  await loadLiveData();renderSunbedCalendar();
-}
-async function confirmAlternativeSunbed(alternativeBed){
-  if(!pendingSunbedBooking)return closeSunbedConflict();
-  let meta=SUNBEDS.find(b=>b.name===alternativeBed);
-  pendingSunbedBooking.bed=alternativeBed;
-  pendingSunbedBooking.bedType=meta?.type||pendingSunbedBooking.bedType;
-  await completeSunbedBooking(pendingSunbedBooking);
-}
 async function saveSunbedBooking(){
-  let name=document.getElementById('sunbedName').value.trim(),
-      phone=document.getElementById('sunbedPhone').value.trim(),
-      date=document.getElementById('sunbedDate').value,
+  let err=document.getElementById('sunbedBookingError');err.style.display='none';
+  if(!sunbedSelectedCustomerId)return alert('Please search for and select a customer.');
+  let date=document.getElementById('sunbedDate').value,
       time=document.getElementById('sunbedTime').value,
       length=+document.getElementById('sunbedLength').value,
-      bedType=document.getElementById('sunbedBedType').value,
-      requestedBed=document.getElementById('sunbedBed').value;
-  if(!name)return alert('Please enter a name.');
+      bedType=document.getElementById('sunbedBedType').value;
   if(!date||!time)return alert('Please select a date and start time.');
   if(!length||length<1)return alert('Please enter the session length.');
 
-  let totalMinutes=length+4,start=minutesFromTime(time),end=start+totalMinutes,bed=requestedBed;
-
-  if(requestedBed==='Any'){
-    bed=chooseAutomaticBed(date,start,end,bedType);
-    if(!bed){
-      let msg=bedType==='Any'
-        ? `All four beds are unavailable for ${time} on ${date}.`
-        : `Both ${bedType.toLowerCase()} beds are unavailable for ${time} on ${date}.`;
-      return showSunbedUnavailable(msg);
-    }
-  } else if(!sunbedIsFree(requestedBed,date,start,end)){
-    let requestedMeta=SUNBEDS.find(b=>b.name===requestedBed);
-    let sameTypeBeds=SUNBEDS.filter(b=>b.type===requestedMeta?.type&&b.name!==requestedBed);
-    let alternative=sameTypeBeds.find(b=>sunbedIsFree(b.name,date,start,end));
-
-    if(alternative){
-      pendingSunbedBooking={
-        id:Date.now(),name,phone,date,time,length,totalMinutes,bed:requestedBed,
-        bedType:requestedMeta?.type||bedType,sessionType:sunbedSessionType
-      };
-      return showSunbedConflictAlternative(
-        `${requestedBed} is already booked for ${time} on ${date}. ${alternative.name} (${alternative.type}) is available for the full ${totalMinutes}-minute booking window. Would you like to proceed with ${alternative.name}?`,
-        alternative.name
-      );
-    } else {
-      return showSunbedUnavailable(
-        `Both ${requestedMeta?.type||'requested type'} beds are unavailable for ${time} on ${date}.`
-      );
-    }
+  let btn=document.getElementById('sunbedSaveBtn');btn.disabled=true;btn.textContent='Booking...';
+  try{
+    let {data:result,error}=await sb.rpc('create_bed_booking',{
+      p_customer:sunbedSelectedCustomerId,p_booking_date:date,p_start_time:time,
+      p_session_length_minutes:length,p_session_type:sunbedSessionType,p_preferred_bed_type:bedType
+    });
+    if(error)throw error;
+    let row=Array.isArray(result)?result[0]:result;
+    closeSunbedBooking();
+    await loadLiveData();renderSunbedCalendar();renderCustomers();
+    alert(`Booked on ${row.bed_name} for ${date} at ${time}. Customer now has ${row.minutes_left} minutes left.`);
+  }catch(e){
+    let msg=e.message||'Could not create this booking.';
+    if(msg.includes('INSUFFICIENT_MINUTES'))msg='This customer does not have enough minutes for this session.';
+    else if(msg.includes('UNLIMITED_DAILY_LIMIT'))msg='This customer is an Unlimited Member and can only have one session per 24 hours.';
+    else if(msg.includes('NO_BED_AVAILABLE'))msg='No suitable bed is available for that time - please try a different time or bed type.';
+    err.textContent=msg;err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Book Sunbed';
   }
-
-  let actualType=SUNBEDS.find(b=>b.name===bed)?.type||bedType;
-  await completeSunbedBooking({name,phone,date,time,length,totalMinutes,bed,bedType:actualType,sessionType:sunbedSessionType});
 }

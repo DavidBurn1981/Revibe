@@ -102,15 +102,26 @@ function checkNewCustomerAgeWarnings(){
     alert('Challenge 25, ask for ID');
   }
 }
-function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';document.getElementById('portalAccessStatus').innerHTML=`<div class='muted'>Save this customer first before setting up portal access.</div>`;document.getElementById('portalAccessNoAccount').style.display='none';document.getElementById('portalAccessHasAccount').style.display='none';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
-function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;renderPortalAccessTab(c);document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custPreferredBed').value=c.preferredBed||'Any Bed';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';document.getElementById('portalAccessStatus').innerHTML=`<div class='muted'>Save this customer first before setting up portal access.</div>`;document.getElementById('portalAccessNoAccount').style.display='none';document.getElementById('portalAccessHasAccount').style.display='none';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';document.getElementById('custUnlimitedMember').value='No';document.getElementById('custNoShowsRow').style.display='none';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;renderPortalAccessTab(c);document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custPreferredBed').value=c.preferredBed||'Any Bed';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);document.getElementById('custUnlimitedMember').value=c.subscriptionStatus==='Subscriber'?(c.subscriptionType==='7_Day_Pass'?'Yes (1 Week Pass)':c.subscriptionType==='Monthly'?'Yes (Monthly)':'Yes'):c.subscriptionStatus==='Subscriber - Failed Payment'?'Yes (Payment Issue)':'No';
+let noShowsRow=document.getElementById('custNoShowsRow');
+if(c.subscriptionStatus==='Subscriber'){
+  let noShowCount=(data.sunbedBookings||[]).filter(b=>b.customerId===c.id&&(b.status==='No Show'||b.status==='Cancelled Within Hour'||(b.status==='Cancelled'&&!b.minutesRefunded))).length;
+  document.getElementById('custNoShows').value=noShowCount;
+  noShowsRow.style.display='block';
+}else{
+  noShowsRow.style.display='none';
+}updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function renderPortalAccessTab(c){
   let statusEl=document.getElementById('portalAccessStatus'),noAccount=document.getElementById('portalAccessNoAccount'),hasAccount=document.getElementById('portalAccessHasAccount');
   if(c.authUserId){
-    statusEl.innerHTML=`<div style='font-weight:700;color:var(--green)'>Portal account active</div><div class='muted' style='margin-top:4px'>${escapeHtml(c.email||'No email on file')}</div>`;
+    let lastLoginLine=c.portalLastLogin
+      ?`Last used: ${new Date(c.portalLastLogin).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}`
+      :`Never logged in yet`;
+    statusEl.innerHTML=`<div style='font-weight:700;color:var(--green)'>Portal Set Up: Yes</div><div class='muted' style='margin-top:4px'>${escapeHtml(c.email||'No email on file')}</div><div class='muted' style='margin-top:4px'>${lastLoginLine}</div>`;
     noAccount.style.display='none';hasAccount.style.display='flex';
   }else{
-    statusEl.innerHTML=`<div class='muted'>This customer does not have portal access yet.</div>`;
+    statusEl.innerHTML=`<div style='font-weight:700;color:#ff3131'>Portal Set Up: No</div><div class='muted' style='margin-top:4px'>This customer does not have portal access yet.</div>`;
     noAccount.style.display='block';hasAccount.style.display='none';
   }
 }
@@ -214,6 +225,103 @@ async function linkExistingPortalAccount(){
     linkBtn.disabled=false;linkBtn.textContent='Yes, link this customer to that login';
   }
 }
+let pendingLinkExistingUserIdManual=null;
+async function checkForExistingLoginManual(email){
+  try{
+    let {data:result}=await sb.functions.invoke('invite-customer-portal-access',{body:{action:'check_email',email}});
+    if(result?.exists&&!result?.already_linked_to_a_customer&&result?.existing_user_id){
+      pendingLinkExistingUserIdManual=result.existing_user_id;
+      let label=result.existing_user_name?`(${result.existing_user_name}${result.existing_user_role?`, ${result.existing_user_role}`:''})`:'';
+      document.getElementById('linkExistingManualAccountLabel').textContent=label;
+      document.getElementById('linkExistingManualAccountArea').style.display='block';
+    }
+  }catch(e){/* silent - convenience check only */}
+}
+function openManualCreatePortalAccountModal(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  document.getElementById('manualCreatePortalAccountLabel').textContent=`${c.firstName} ${c.lastName}`;
+  document.getElementById('manualCreatePortalAccountEmail').value=c.email||'';
+  document.getElementById('manualCreatePortalAccountPassword').value='';
+  document.getElementById('manualCreatePortalAccountPassword').type='password';
+  document.getElementById('manualCreatePortalAccountShowBtn').textContent='Show';
+  document.getElementById('manualCreatePortalAccountError').style.display='none';
+  document.getElementById('linkExistingManualAccountArea').style.display='none';
+  pendingLinkExistingUserIdManual=null;
+  document.getElementById('manualCreatePortalAccountModal').classList.add('show');
+}
+function closeManualCreatePortalAccountModal(){
+  document.getElementById('manualCreatePortalAccountModal').classList.remove('show');
+  document.getElementById('linkExistingManualAccountArea').style.display='none';
+  pendingLinkExistingUserIdManual=null;
+}
+function toggleManualCreatePortalAccountVisibility(){
+  let input=document.getElementById('manualCreatePortalAccountPassword'),btn=document.getElementById('manualCreatePortalAccountShowBtn');
+  let showing=input.type==='text';
+  input.type=showing?'password':'text';btn.textContent=showing?'Show':'Hide';
+}
+function generateManualCreatePortalAccountPassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pw='';for(let i=0;i<12;i++)pw+=chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('manualCreatePortalAccountPassword').value=pw;
+  document.getElementById('manualCreatePortalAccountPassword').type='text';
+  document.getElementById('manualCreatePortalAccountShowBtn').textContent='Hide';
+}
+async function saveManualCreatePortalAccount(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let err=document.getElementById('manualCreatePortalAccountError');err.style.display='none';
+  document.getElementById('linkExistingManualAccountArea').style.display='none';
+  pendingLinkExistingUserIdManual=null;
+  let email=document.getElementById('manualCreatePortalAccountEmail').value.trim();
+  let password=document.getElementById('manualCreatePortalAccountPassword').value;
+  if(!email||!email.includes('@')){err.textContent='Please enter a valid email address.';err.style.display='block';return}
+  if(!password||password.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return}
+  let btn=document.getElementById('manualCreatePortalAccountSaveBtn');btn.disabled=true;btn.textContent='Creating...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'create_without_email',customer_id:c.id,email,password}
+    });
+    if(error)throw error;
+    if(result?.code==='email_exists'&&result?.existing_user_id){
+      pendingLinkExistingUserIdManual=result.existing_user_id;
+      let label=result.existing_user_name?`(${result.existing_user_name}${result.existing_user_role?`, ${result.existing_user_role}`:''})`:'';
+      document.getElementById('linkExistingManualAccountLabel').textContent=label;
+      document.getElementById('linkExistingManualAccountArea').style.display='block';
+      err.textContent=result.error;err.style.display='block';
+      return;
+    }
+    if(result?.error)throw new Error(result.error);
+    closeManualCreatePortalAccountModal();
+    await loadLiveData();
+    let refreshed=data.customers.find(x=>x.id===c.id);
+    if(refreshed)renderPortalAccessTab(refreshed);
+    alert(`Account created and active immediately. Give the customer their email (${email}) and the password you set - REVIBE does not store it.`);
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not create this account.');err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Create Account';
+  }
+}
+async function linkExistingManualPortalAccount(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c||!pendingLinkExistingUserIdManual)return;
+  let err=document.getElementById('manualCreatePortalAccountError');err.style.display='none';
+  let linkBtn=document.querySelector('#linkExistingManualAccountArea button');linkBtn.disabled=true;linkBtn.textContent='Linking...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'link_existing',customer_id:c.id,existing_user_id:pendingLinkExistingUserIdManual}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    closeManualCreatePortalAccountModal();
+    await loadLiveData();
+    let refreshed=data.customers.find(x=>x.id===c.id);
+    if(refreshed)renderPortalAccessTab(refreshed);
+    alert('This customer is now linked to their existing login. They can use the same email and password to access both the portal and their staff account.');
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not link this account.');err.style.display='block';
+  }finally{
+    linkBtn.disabled=false;linkBtn.textContent='Yes, link this customer to that login';
+  }
+}
 async function resendPortalInvite(){
   let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
   let btn=document.getElementById('resendPortalInviteBtn');btn.disabled=true;btn.textContent='Sending...';
@@ -286,6 +394,37 @@ async function saveCustomerSetPassword(){
     err.textContent=await unwrapEdgeFunctionError(e,'Could not set this password.');err.style.display='block';
   }finally{
     btn.disabled=false;btn.textContent='Set Password';
+  }
+}
+function openCustomerChangeEmailModal(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  document.getElementById('customerChangeEmailLabel').textContent=`${c.firstName} ${c.lastName}`;
+  document.getElementById('customerChangeEmailValue').value=c.email||'';
+  document.getElementById('customerChangeEmailError').style.display='none';
+  document.getElementById('customerChangeEmailModal').classList.add('show');
+}
+function closeCustomerChangeEmailModal(){document.getElementById('customerChangeEmailModal').classList.remove('show')}
+async function saveCustomerChangeEmail(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let err=document.getElementById('customerChangeEmailError');err.style.display='none';
+  let email=document.getElementById('customerChangeEmailValue').value.trim();
+  if(!email||!email.includes('@')){err.textContent='Please enter a valid email address.';err.style.display='block';return}
+  let btn=document.getElementById('customerChangeEmailSaveBtn');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'update_email',customer_id:c.id,email}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    closeCustomerChangeEmailModal();
+    await loadLiveData();
+    let refreshed=data.customers.find(x=>x.id===c.id);
+    if(refreshed)renderPortalAccessTab(refreshed);
+    alert(`Portal login email updated to ${email}. Their password has not changed.`);
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not update this email.');err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Save New Email';
   }
 }
 function closeCustomerModal(){document.getElementById('customerModal').classList.remove('show')}
@@ -416,7 +555,7 @@ async function completeBlockPurchase(){
   }catch(e){err.textContent=e.message||'Could not complete this purchase.';err.style.display='block'}
 }
 function renderTanningProducts(){let t=document.getElementById('tanningProductsTable');if(!t)return;let rows=data.tanningProducts||[];let q=(document.getElementById('tanningProductSearchInput')?.value||'').trim().toLowerCase();if(q)rows=rows.filter(p=>(p.title||'').toLowerCase().includes(q)||(p.type||'').toLowerCase().includes(q));t.innerHTML="<tr><th>Type</th><th>Product</th><th>Minutes</th><th>Price</th><th>Stock</th></tr>"+(rows.length?rows.map(p=>`<tr class='clinicRow' onclick="openTanningProduct('${p.id}')"><td>${escapeHtml(p.type)}</td><td><b>${escapeHtml(p.title)}</b></td><td>${p.minutes??'—'}</td><td>£${p.price.toFixed(2)}</td><td>${p.stock??'—'}</td></tr>`).join(''):`<tr><td colspan='5' class='muted'>${q?'No products match your search.':'No products yet.'}</td></tr>`)}
-function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpCardMachine').value=p?.cardMachine||'Sunbed Card';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('deleteTanningProductBtn').style.display=p?'inline-block':'none';document.getElementById('tanningProductModal').classList.add('show')}
+function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible','Gift Voucher'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpCardMachine').value=p?.cardMachine||'Sunbed Card';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('deleteTanningProductBtn').style.display=p?'inline-block':'none';document.getElementById('tanningProductModal').classList.add('show')}
 async function deleteTanningProduct(){if(!editingTanningProductId)return alert('Save the product before it can be deleted.');if(!confirm('Delete this product?'))return;let {error}=await sb.from('tanning_rlt_products').delete().eq('id',editingTanningProductId);if(error)return alert(error.message);document.getElementById('tanningProductModal').classList.remove('show');await loadLiveData();renderTanningProducts()}
 function selectTanningProductType(t){let modal=document.getElementById('tanningProductModal');modal.dataset.type=t;document.getElementById('productTypeButtons').querySelectorAll('button').forEach(b=>b.classList.toggle('primary',b.textContent===t));updateTanningProductFields()}
 function updateTanningProductFields(){let t=document.getElementById('tanningProductModal').dataset.type;document.getElementById('tpMinutesWrap').style.display=['PAYG Minutes','Block Minutes'].includes(t)?'block':'none';document.getElementById('tpStockWrap').style.display=t==='Tangible'?'block':'none'}
