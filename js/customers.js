@@ -396,6 +396,37 @@ async function saveCustomerSetPassword(){
     btn.disabled=false;btn.textContent='Set Password';
   }
 }
+function openCustomerChangeEmailModal(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  document.getElementById('customerChangeEmailLabel').textContent=`${c.firstName} ${c.lastName}`;
+  document.getElementById('customerChangeEmailValue').value=c.email||'';
+  document.getElementById('customerChangeEmailError').style.display='none';
+  document.getElementById('customerChangeEmailModal').classList.add('show');
+}
+function closeCustomerChangeEmailModal(){document.getElementById('customerChangeEmailModal').classList.remove('show')}
+async function saveCustomerChangeEmail(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let err=document.getElementById('customerChangeEmailError');err.style.display='none';
+  let email=document.getElementById('customerChangeEmailValue').value.trim();
+  if(!email||!email.includes('@')){err.textContent='Please enter a valid email address.';err.style.display='block';return}
+  let btn=document.getElementById('customerChangeEmailSaveBtn');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let {data:result,error}=await sb.functions.invoke('invite-customer-portal-access',{
+      body:{action:'update_email',customer_id:c.id,email}
+    });
+    if(error)throw error;
+    if(result?.error)throw new Error(result.error);
+    closeCustomerChangeEmailModal();
+    await loadLiveData();
+    let refreshed=data.customers.find(x=>x.id===c.id);
+    if(refreshed)renderPortalAccessTab(refreshed);
+    alert(`Portal login email updated to ${email}. Their password has not changed.`);
+  }catch(e){
+    err.textContent=await unwrapEdgeFunctionError(e,'Could not update this email.');err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Save New Email';
+  }
+}
 function closeCustomerModal(){document.getElementById('customerModal').classList.remove('show')}
 function openAddMinutesModal(){
   if(!editingCustomerId)return;
@@ -524,7 +555,7 @@ async function completeBlockPurchase(){
   }catch(e){err.textContent=e.message||'Could not complete this purchase.';err.style.display='block'}
 }
 function renderTanningProducts(){let t=document.getElementById('tanningProductsTable');if(!t)return;let rows=data.tanningProducts||[];let q=(document.getElementById('tanningProductSearchInput')?.value||'').trim().toLowerCase();if(q)rows=rows.filter(p=>(p.title||'').toLowerCase().includes(q)||(p.type||'').toLowerCase().includes(q));t.innerHTML="<tr><th>Type</th><th>Product</th><th>Minutes</th><th>Price</th><th>Stock</th></tr>"+(rows.length?rows.map(p=>`<tr class='clinicRow' onclick="openTanningProduct('${p.id}')"><td>${escapeHtml(p.type)}</td><td><b>${escapeHtml(p.title)}</b></td><td>${p.minutes??'—'}</td><td>£${p.price.toFixed(2)}</td><td>${p.stock??'—'}</td></tr>`).join(''):`<tr><td colspan='5' class='muted'>${q?'No products match your search.':'No products yet.'}</td></tr>`)}
-function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpCardMachine').value=p?.cardMachine||'Sunbed Card';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('deleteTanningProductBtn').style.display=p?'inline-block':'none';document.getElementById('tanningProductModal').classList.add('show')}
+function openTanningProduct(id=null){editingTanningProductId=id;let p=id?data.tanningProducts.find(x=>x.id===id):null;document.getElementById('tanningProductTitle').textContent=p?'Edit Product':'New Product';let types=['PAYG Minutes','Block Minutes','RLT Programme','Tangible','Gift Voucher'],selected=p?.type||'PAYG Minutes';document.getElementById('productTypeButtons').innerHTML=types.map(x=>`<button type='button' class='${x===selected?'primary':''}' onclick="selectTanningProductType('${x}')">${x}</button>`).join('');document.getElementById('tanningProductModal').dataset.type=selected;document.getElementById('tpTitle').value=p?.title||'';document.getElementById('tpPrice').value=p?.price??'';document.getElementById('tpMinutes').value=p?.minutes??'';document.getElementById('tpStock').value=p?.stock??'';document.getElementById('tpCardMachine').value=p?.cardMachine||'Sunbed Card';document.getElementById('tpDescription').value=p?.description||'';updateTanningProductFields();document.getElementById('deleteTanningProductBtn').style.display=p?'inline-block':'none';document.getElementById('tanningProductModal').classList.add('show')}
 async function deleteTanningProduct(){if(!editingTanningProductId)return alert('Save the product before it can be deleted.');if(!confirm('Delete this product?'))return;let {error}=await sb.from('tanning_rlt_products').delete().eq('id',editingTanningProductId);if(error)return alert(error.message);document.getElementById('tanningProductModal').classList.remove('show');await loadLiveData();renderTanningProducts()}
 function selectTanningProductType(t){let modal=document.getElementById('tanningProductModal');modal.dataset.type=t;document.getElementById('productTypeButtons').querySelectorAll('button').forEach(b=>b.classList.toggle('primary',b.textContent===t));updateTanningProductFields()}
 function updateTanningProductFields(){let t=document.getElementById('tanningProductModal').dataset.type;document.getElementById('tpMinutesWrap').style.display=['PAYG Minutes','Block Minutes'].includes(t)?'block':'none';document.getElementById('tpStockWrap').style.display=t==='Tangible'?'block':'none'}

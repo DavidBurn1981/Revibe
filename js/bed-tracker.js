@@ -21,7 +21,7 @@ function editExclusiveSessionType(which){
 }
 function normalizeSessionType(x){if(x.sessionType)return x.sessionType;if(x.redLight)return 'Red Light Therapy';if(x.hybrid)return 'Hybrid';return 'Standard UV'}
 function perfMinutes(x){return (+x.length||0)-(+x.rerunMinutes||0)-(+x.staffMinutes||0)}
-function paidMinutes(x){return (+x.cashMinutes||0)+(+x.cardMinutes||0)+(+x.accountMinutes||0)+(+x.bookedMinutes||0)}
+function paidMinutes(x){return (+x.cashMinutes||0)+(+x.cardMinutes||0)+(+x.accountMinutes||0)}
 function isPerformanceSession(x){let p=String(x?.payment||'').trim().toLowerCase();return p!=='free session'&&p!=='free'}
 function performanceSessions(rows){return (rows||[]).filter(isPerformanceSession)}
 function isLastDayOfCurrentMonth(){
@@ -105,7 +105,7 @@ function renderDailyTakings(){
   document.getElementById('dailyCashTaken').value=cashValue.toFixed(2);document.getElementById('dailyTreatmentsCardTaken').value=treatmentsCardValue.toFixed(2);document.getElementById('dailyBedCardTaken').value=bedCardValue.toFixed(2);document.getElementById('dailyFridgeReading').value=row?.fridgeReading===''||row?.fridgeReading===undefined||row?.fridgeReading===null?'':row.fridgeReading;document.getElementById('dailyGoogleReviews').value=row?.googleReviews===''||row?.googleReviews===undefined||row?.googleReviews===null?'':row.googleReviews;document.getElementById('dailyFacebookReviews').value=row?.facebookReviews===''||row?.facebookReviews===undefined||row?.facebookReviews===null?'':row.facebookReviews;document.getElementById('dailyEndOfDayNotes').value=row?.endOfDayNotes||'';updateDailyTakingsTotal();
   let canEdit=hasRolePermission('daily_session_tracker','edit');['dailyCashTaken','dailyTreatmentsCardTaken','dailyBedCardTaken','dailyFridgeReading','dailyGoogleReviews','dailyFacebookReviews','dailyEndOfDayNotes'].forEach(id=>document.getElementById(id).readOnly=!canEdit);document.getElementById('saveDailyTakingsBtn').style.display=canEdit?'inline-block':'none';
 }
-async function saveDailyTakings(){if(!requireRolePermission('daily_session_tracker','edit'))return;let key=document.getElementById('dailyTakingsDate').value||localDateKey(),cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,fridgeRaw=document.getElementById('dailyFridgeReading').value,fridge=fridgeRaw===''?null:+fridgeRaw,googleRaw=document.getElementById('dailyGoogleReviews').value,facebookRaw=document.getElementById('dailyFacebookReviews').value,endOfDayNotes=document.getElementById('dailyEndOfDayNotes').value.trim(),err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');err.style.display='none';let missingFields=[];if(googleRaw==='')missingFields.push('Google Reviews');if(facebookRaw==='')missingFields.push('Facebook Reviews');if(missingFields.length){alert(`You have not entered data into ${missingFields.join(', ')}. Please do this before being able to save`);return}let googleReviews=+googleRaw,facebookReviews=+facebookRaw;if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}if(fridge!==null&&!Number.isFinite(fridge)){err.textContent='Please enter a valid Fridge Reading.';err.style.display='block';return}if(!Number.isFinite(googleReviews)||googleReviews<0){err.textContent='Please enter a valid number of Google Reviews.';err.style.display='block';return}if(!Number.isFinite(facebookReviews)||facebookReviews<0){err.textContent='Please enter a valid number of Facebook Reviews.';err.style.display='block';return}btn.disabled=true;btn.textContent='Saving...';try{let {error}=await sb.from('daily_takings').upsert({takings_date:key,cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,fridge_reading:fridge,google_reviews:googleReviews,facebook_reviews:facebookReviews,end_of_day_notes:endOfDayNotes||null,updated_at:new Date().toISOString()},{onConflict:'takings_date'});if(error)throw error;await loadLiveData();renderDailyTakings();renderPerformanceReporting()}catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Save Daily Takings'}}
+async function saveDailyTakings(){if(!requireRolePermission('daily_session_tracker','edit'))return;let key=document.getElementById('dailyTakingsDate').value||localDateKey(),cash=+document.getElementById('dailyCashTaken').value,treatments=+document.getElementById('dailyTreatmentsCardTaken').value,beds=+document.getElementById('dailyBedCardTaken').value,fridgeRaw=document.getElementById('dailyFridgeReading').value,fridge=fridgeRaw===''?null:+fridgeRaw,googleRaw=document.getElementById('dailyGoogleReviews').value,googleReviews=googleRaw===''?null:+googleRaw,facebookRaw=document.getElementById('dailyFacebookReviews').value,facebookReviews=facebookRaw===''?null:+facebookRaw,endOfDayNotes=document.getElementById('dailyEndOfDayNotes').value.trim(),err=document.getElementById('dailyTakingsError'),btn=document.getElementById('saveDailyTakingsBtn');err.style.display='none';if([cash,treatments,beds].some(x=>!Number.isFinite(x)||x<0)){err.textContent='Please enter valid takings amounts.';err.style.display='block';return}if(fridge!==null&&!Number.isFinite(fridge)){err.textContent='Please enter a valid Fridge Reading.';err.style.display='block';return}if(googleReviews!==null&&(!Number.isFinite(googleReviews)||googleReviews<0)){err.textContent='Please enter a valid number of Google Reviews.';err.style.display='block';return}if(facebookReviews!==null&&(!Number.isFinite(facebookReviews)||facebookReviews<0)){err.textContent='Please enter a valid number of Facebook Reviews.';err.style.display='block';return}btn.disabled=true;btn.textContent='Saving...';try{let {error}=await sb.from('daily_takings').upsert({takings_date:key,cash_taken:cash,treatments_card_taken:treatments,bed_card_taken:beds,fridge_reading:fridge,google_reviews:googleReviews,facebook_reviews:facebookReviews,end_of_day_notes:endOfDayNotes||null,updated_at:new Date().toISOString()},{onConflict:'takings_date'});if(error)throw error;await loadLiveData();renderDailyTakings();renderPerformanceReporting()}catch(e){err.textContent=e.message||'Could not save Daily Takings.';err.style.display='block'}finally{btn.disabled=false;btn.textContent='Save Daily Takings'}}
 function periodRevenue(keys){
   let rows=(data.dailyTakings||[]).filter(x=>keys.includes(x.date)),
       cash=rows.reduce((s,x)=>s+(+x.cash||0),0),
@@ -137,7 +137,7 @@ function renderBedNextBooked(){
       .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
     if(upcoming){
       let dateLabel=upcoming.date===nowKey?'Today':formatSunbedDisplayDate(upcoming.date);
-      el.textContent=`Next Booked: ${dateLabel} at ${upcoming.time} — ${upcoming.name||'Unknown Customer'}`;
+      el.textContent=`Next Booked: ${dateLabel} at ${upcoming.time}`;
     }else{
       el.textContent='Next Booked: None';
     }
@@ -188,7 +188,7 @@ function renderBedTracker(){
   let headerBedCardEl=document.getElementById('headerBedCardValue');
   if(headerBedCardEl)headerBedCardEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygToday.card).toFixed(2)}`;
   let headerPurchasesEl=document.getElementById('headerPurchasesValue');
-  if(headerPurchasesEl)headerPurchasesEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.grandTotal,0)+paygToday.cash+paygToday.card).toFixed(2)}`;
+  if(headerPurchasesEl)headerPurchasesEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.grandTotal,0).toFixed(2)}`;
   document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
     ?`${paidTotal} paid-for minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
     :'Cash, Card and Account minutes only — Free and Staff minutes excluded.';
@@ -230,9 +230,9 @@ renderDailyAverageComparison();
 }
 function parseLocalDateKey(key){let [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d)}
 function dayKpi(dateKey,totalMinutes){let today=localDateKey(),h=effectiveHoursForDate(dateKey);let hours=dateKey===today?getElapsedOpeningHours(new Date()):hoursDuration(h);return hours>0?totalMinutes/BED_COUNT/hours:0}
-function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.reduce((a,b)=>a+perfMinutes(b),0),paid=rows.reduce((a,b)=>a+paidMinutes(b),0);return {sessions:rows.length,minutes:total,paidMinutes:paid,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0),staffMinutes:rows.reduce((a,b)=>a+(+b.staffMinutes||0),0),freeMinutes:rows.reduce((a,b)=>a+(+b.freeMinutes||0),0),subscriberMinutes:rows.reduce((a,b)=>a+(+b.subscriberMinutes||0),0)}}
+function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.reduce((a,b)=>a+perfMinutes(b),0),paid=rows.reduce((a,b)=>a+paidMinutes(b),0);return {sessions:rows.length,minutes:total,paidMinutes:paid,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0)}}
 function dateRangeKeys(start,end){let keys=[],d=new Date(start);d.setHours(12,0,0,0);let e=new Date(end);e.setHours(12,0,0,0);while(d<=e){keys.push(localDateKey(d));d.setDate(d.getDate()+1)}return keys}
-function summaryMetricsHtml(a,kpi,paidKpi,extraMinuteTiles,showSubscriberTile){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div>${extraMinuteTiles?`<div class='metric'><div class='label'>Staff Minutes Used</div><div class='value'>${a.staffMinutes}</div></div><div class='metric'><div class='label'>Free Minutes Used</div><div class='value'>${a.freeMinutes}</div></div>`:''}${showSubscriberTile?`<div class='metric'><div class='label'>Subscriber Minutes Used</div><div class='value'>${a.subscriberMinutes}</div></div>`:''}<div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>KPI (All Minutes)</div><div class='value'>${kpi.toFixed(1)}</div></div><div class='metric'><div class='label'>KPI (Paid Minutes)</div><div class='value'>${paidKpi.toFixed(1)}</div></div></div>`}
+function summaryMetricsHtml(a,kpi,paidKpi){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div><div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>KPI (All Minutes)</div><div class='value'>${kpi.toFixed(1)}</div></div><div class='metric'><div class='label'>KPI (Paid Minutes)</div><div class='value'>${paidKpi.toFixed(1)}</div></div></div>`}
 function periodOpenHours(keys){let today=localDateKey();return keys.reduce((sum,k)=>sum+(k===today?getElapsedOpeningHours(new Date()):hoursDuration(effectiveHoursForDate(k))),0)}
 let currentPeriodMode=null,currentPeriodRefDate=null;
 function renderPeriodPerformance(mode,refDate){
@@ -283,7 +283,7 @@ function renderPeriodPerformance(mode,refDate){
 
   document.getElementById('perfContent').innerHTML=
     revenueSummary+
-    summaryMetricsHtml(a,kpi,paidKpi,mode==='month',mode==='week')+
+    summaryMetricsHtml(a,kpi,paidKpi)+
     `<div class='card perfTableWrap'><table class='table'>
       <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI (All)</th><th>KPI (Paid)</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Total Revenue</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
       ${daily.map(d=>`<tr>
@@ -579,8 +579,6 @@ function bedSessionHistoryRows(){
     staffMinutes:+x.staffMinutes||0,
     staffMemberName:x.staffMemberName||'',
     rerunMinutes:+x.rerunMinutes||0,
-    subscriberMinutes:+x.subscriberMinutes||0,
-    bookedMinutes:+x.bookedMinutes||0,
     customerId:x.customerId||null
   }));
 }
@@ -644,8 +642,6 @@ function renderDailySessionsPurchases(key){
     .sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
 
   let dayTotal=rows.reduce((s,p)=>s+p.grandTotal,0);
-  let paygForPurchasesTotal=paygSessionTotalsForDay(key);
-  dayTotal+=paygForPurchasesTotal.cash+paygForPurchasesTotal.card;
   let totalEl=document.getElementById('dailySessionsPurchasesValue');
   if(totalEl)totalEl.textContent=`£${dayTotal.toFixed(2)}`;
 
@@ -684,10 +680,6 @@ function renderDailySessionsPage(key){
   let totalFree=rows.reduce((sum,x)=>sum+(+x.freeMinutes||0),0);
   let totalStaff=rows.reduce((sum,x)=>sum+(+x.staffMinutes||0),0);
   let totalRerun=rows.reduce((sum,x)=>sum+(+x.rerunMinutes||0),0);
-  let totalSubscriber=rows.reduce((sum,x)=>sum+(+x.subscriberMinutes||0),0);
-  let totalBooked=rows.reduce((sum,x)=>sum+(+x.bookedMinutes||0),0);
-  let subscriberEl=document.getElementById('dailySessionsSubscriberValue');
-  if(subscriberEl)subscriberEl.textContent=totalSubscriber;
   let totalSignUps=rows.filter(x=>x.newSignup==='Yes').length;
   let totalBlockBookings=rows.filter(x=>x.block==='Yes').length;
 
@@ -719,9 +711,9 @@ function renderDailySessionsPage(key){
 
   let head=document.getElementById('dailySessionsHead');
   if(head)head.innerHTML=
-    `<tr><th>Time</th><th>Customer</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Subscriber</th><th>Booked</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th class='totalMinsCol'>Total Mins</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
+    `<tr><th>Time</th><th>Customer</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th class='totalMinsCol'>Total Mins</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
 
-  let cols=canDelete?16:15;
+  let cols=canDelete?14:13;
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
     ? rows.map(x=>{
@@ -733,8 +725,6 @@ function renderDailySessionsPage(key){
         <td>${x.cashMinutes} min</td>
         <td>${x.cardMinutes} min</td>
         <td>${x.accountMinutes} min</td>
-        <td>${x.subscriberMinutes} min</td>
-        <td>${x.bookedMinutes} min</td>
         <td>${x.freeMinutes} min</td>
         <td>${x.staffMinutes} min</td>
         <td>${x.rerunMinutes} min</td>
@@ -756,8 +746,6 @@ function renderDailySessionsPage(key){
         <td>${totalCash} min</td>
         <td>${totalCard} min</td>
         <td>${totalAccount} min</td>
-        <td>${totalSubscriber} min</td>
-        <td>${totalBooked} min</td>
         <td>${totalFree} min</td>
         <td>${totalStaff} min</td>
         <td>${totalRerun} min</td>
@@ -882,6 +870,7 @@ function showSessionLoggedConfirmation(date){
 let purchaseSelection={treatments:[],glowStudio:[]};
 function openBlockMinutesPurchase(){openPurchaseCategory('Block Minutes')}
 function openTangiblesPurchase(){openPurchaseCategory('Tangible')}
+function openGiftVouchersPurchase(){openPurchaseCategory('Gift Voucher')}
 function openRltProgrammePurchase(){openPurchaseCategory('RLT Programme')}
 function openPaygMinutesPurchase(){openPurchaseCategory('PAYG Minutes')}
 function openPurchaseCategory(type){
@@ -1075,52 +1064,20 @@ function subscriberStatusBadgeHtml(c){
 }
 function applyTodaysBookingAutofill(customerId,prefix){
   prefix=prefix||'session';
-  // Walk In sessions are, by definition, never tied to a booking - even if
-  // this customer happens to also have one sitting on the system for later
-  // today, Walk In should completely ignore it rather than auto-detect it.
-  if(prefix==='wizSession'&&wizMode==='existing'){
-    document.getElementById(prefix+'FulfillsBookingId').value='';
-    document.getElementById(prefix+'BookedMinutes').readOnly=false;
-    let bookedRowWalkIn=document.getElementById(prefix+'BookedRow');
-    if(bookedRowWalkIn)bookedRowWalkIn.style.display='none';
-    document.getElementById(prefix+'BookedHint').style.display='none';
-    return;
-  }
   let today=localDateKey();
   let booking=(data.sunbedBookings||[]).find(b=>b.customerId===customerId&&b.date===today&&b.status==='Booked'&&!b.fulfilledBySessionId);
   let hint=document.getElementById(prefix+'BookedHint');
-  let bookedRow=document.getElementById(prefix+'BookedRow');
-  let c=(data.customers||[]).find(x=>x.id===customerId);
-  let isSubscriber=c&&c.subscriptionStatus==='Subscriber';
   if(booking){
     document.getElementById(prefix+'FulfillsBookingId').value=booking.id;
-    if(isSubscriber){
-      // Nothing was deducted from their balance at booking time (their
-      // membership covers it), so this counts as subscriber minutes, not
-      // booked/pre-paid minutes - and there's nothing to protect from
-      // double-entry here, so the Booked field/row stays hidden.
-      document.getElementById(prefix+'SubscriberMinutes').value=booking.length;
-      if(bookedRow)bookedRow.style.display='none';
-    }else{
-      document.getElementById(prefix+'BookedMinutes').value=booking.length;
-      document.getElementById(prefix+'BookedMinutes').readOnly=true;
-      if(bookedRow)bookedRow.style.display='';
-    }
+    document.getElementById(prefix+'BookedMinutes').value=booking.length;
     hint.textContent=`Auto-filled from their ${booking.time} online booking (${booking.bed}).`;
     hint.style.display='block';
     if(booking.sessionType==='Red Light Therapy'){document.getElementById(prefix+'Rlt').checked=true;document.getElementById(prefix+'Hybrid').checked=false}
     else if(booking.sessionType){document.getElementById(prefix+'Hybrid').checked=true;document.getElementById(prefix+'Rlt').checked=false}
   }else{
     document.getElementById(prefix+'FulfillsBookingId').value='';
-    document.getElementById(prefix+'BookedMinutes').readOnly=false;
-    if(bookedRow)bookedRow.style.display='none';
     hint.style.display='none';
   }
-  // Setting these fields' values directly above never fires their oninput
-  // handlers, so the Total field would otherwise stay stuck at whatever it
-  // showed before the autofill - this recalculates it explicitly instead.
-  if(prefix==='wizSession')wizUpdateSessionLengthTotal();
-  else updateSessionLengthTotal();
 }
 function selectSessionCustomer(id){
   let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
@@ -1146,8 +1103,6 @@ function clearSessionCustomer(){
   document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.';
   document.getElementById('sessionFulfillsBookingId').value='';
   document.getElementById('sessionBookedHint').style.display='none';
-  document.getElementById('sessionBookedRow').style.display='none';
-  document.getElementById('sessionBookedMinutes').readOnly=false;
   updateSessionLengthTotal();
 }
 function paygSessionTotalsForDay(key){
