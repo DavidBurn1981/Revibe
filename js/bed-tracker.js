@@ -189,6 +189,14 @@ function renderBedTracker(){
   if(headerBedCardEl)headerBedCardEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygToday.card).toFixed(2)}`;
   let headerPurchasesEl=document.getElementById('headerPurchasesValue');
   if(headerPurchasesEl)headerPurchasesEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.grandTotal,0)+paygToday.cash+paygToday.card).toFixed(2)}`;
+  let headerWeeklyPassesEl=document.getElementById('headerWeeklyPassesValue');
+  if(headerWeeklyPassesEl)headerWeeklyPassesEl.textContent=weeklyPassesSoldOnDate(todayKey);
+  let headerMonthlyUnlimitedEl=document.getElementById('headerMonthlyUnlimitedValue');
+  if(headerMonthlyUnlimitedEl)headerMonthlyUnlimitedEl.textContent=monthlyUnlimitedSoldOnDate(todayKey);
+  let headerBookingsMadeEl=document.getElementById('headerBookingsMadeValue');
+  if(headerBookingsMadeEl)headerBookingsMadeEl.textContent=bookingsMadeOnDate(todayKey);
+  let headerPortalRegistrationsEl=document.getElementById('headerPortalRegistrationsValue');
+  if(headerPortalRegistrationsEl)headerPortalRegistrationsEl.textContent=portalRegistrationsOnDate(todayKey);
   document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
     ?`${paidTotal} paid-for minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
     :'Cash, Card and Account minutes only — Free and Staff minutes excluded.';
@@ -272,7 +280,7 @@ function renderPeriodPerformance(mode,refDate){
 
   let daily=keys.map(k=>{
     let r=rows.filter(x=>x.date===k),m=aggregateSessions(r),t=getDailyTakings(k);
-    return {key:k,...m,kpi:dayKpi(k,m.minutes),paidKpi:dayKpi(k,m.paidMinutes),takings:t};
+    return {key:k,...m,kpi:dayKpi(k,m.minutes),paidKpi:dayKpi(k,m.paidMinutes),takings:t,weeklyPasses:weeklyPassesSoldOnDate(k),monthlyUnlimited:monthlyUnlimitedSoldOnDate(k)};
   });
 
   let revenueSummary=`<div class='periodRevenueSummary'>
@@ -285,11 +293,12 @@ function renderPeriodPerformance(mode,refDate){
     revenueSummary+
     summaryMetricsHtml(a,kpi,paidKpi,mode==='month',mode==='week')+
     `<div class='card perfTableWrap'><table class='table'>
-      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI (All)</th><th>KPI (Paid)</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Total Revenue</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
+      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI (All)</th><th>KPI (Paid)</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Total Revenue</th><th>Weekly Passes Sold</th><th>Monthly Unlimited Sold</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
       ${daily.map(d=>`<tr>
         <td><b>${parseLocalDateKey(d.key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td>
         <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td><td>${d.kpi.toFixed(1)}</td><td>${d.paidKpi.toFixed(1)}</td>
         <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${takingsTotal(d.takings).toFixed(2)}</td>
+        <td>${d.weeklyPasses}</td><td>${d.monthlyUnlimited}</td>
         <td>${d.takings?.googleReviews===''||d.takings?.googleReviews==null?'—':d.takings.googleReviews}</td><td>${d.takings?.facebookReviews===''||d.takings?.facebookReviews==null?'—':d.takings.facebookReviews}</td>
       </tr>`).join('')}
     </table></div>`;
@@ -1161,6 +1170,34 @@ function paygSessionTotalsForDay(key){
     card+=charge.cardAmount||0;
   });
   return {cash,card};
+}
+// A 1 Week Pass sold in-shop leaves a customer_purchase_items row (via the
+// wizard's normal purchase-cart checkout) tagged with the pass's own
+// tanning_product_id; one sold through the portal's Stripe checkout instead
+// leaves a customer_transactions row (written by the webhook, since that
+// checkout never touches customer_purchases/customer_purchase_items at all).
+// Between the two, every pass sold is counted exactly once, whichever way it
+// was bought.
+function weeklyPassesSoldOnDate(dateKey){
+  let passProductIds=new Set((data.tanningProducts||[]).filter(p=>p.grantsUnlimitedPass).map(p=>p.id));
+  let shopPurchaseIds=new Set((data.customerPurchases||[]).filter(p=>p.date===dateKey).map(p=>p.id));
+  let shopCount=(data.customerPurchaseItems||[]).filter(i=>shopPurchaseIds.has(i.purchaseId)&&passProductIds.has(i.tanningProductId)).length;
+  let onlineCount=(data.customerTransactions||[]).filter(t=>t.product==='1 Week Pass (Online Purchase)'&&t.createdAt&&localDateKey(new Date(t.createdAt))===dateKey).length;
+  return shopCount+onlineCount;
+}
+// The Monthly Unlimited membership is a recurring Stripe subscription, always
+// started through the portal's own checkout - subscription_events is the
+// single record of that regardless of which device/flow the customer used.
+function monthlyUnlimitedSoldOnDate(dateKey){
+  return (data.subscriptionEvents||[]).filter(e=>e.eventType==='subscription_started'&&e.occurredAt&&localDateKey(new Date(e.occurredAt))===dateKey).length;
+}
+// Counts bookings CREATED on this date, for a session on any date - not
+// bookings whose appointment falls on this date.
+function bookingsMadeOnDate(dateKey){
+  return (data.sunbedBookings||[]).filter(b=>b.createdAt&&localDateKey(new Date(b.createdAt))===dateKey).length;
+}
+function portalRegistrationsOnDate(dateKey){
+  return (data.customers||[]).filter(c=>c.portalAccountCreatedAt&&localDateKey(new Date(c.portalAccountCreatedAt))===dateKey).length;
 }
 function paygChargeDetails(cashMin,cardMin){
   let totalMin=cashMin+cardMin;
