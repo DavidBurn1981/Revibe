@@ -24,7 +24,7 @@ async function loadAllBedSessions(){
   return {data:allRows,error:null};
 }
 async function loadLiveData(){
-  let [products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions,staffRotas,apartmentCleaningTasks,customerPurchases,customerPurchaseItems,apartments,apartmentBookings,subscriptionEvents]=await Promise.all([
+  let [products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions,staffRotas,apartmentCleaningTasks,customerPurchases,customerPurchaseItems,apartments,apartmentBookings,subscriptionEvents,subscriptionProductConfig]=await Promise.all([
     sb.from('products').select('*').order('name'),
     sb.from('treatments').select('*').order('name'),
     sb.from('treatment_groupings').select('*').order('display_order'),
@@ -55,9 +55,10 @@ async function loadLiveData(){
     sb.from('customer_purchase_items').select('*'),
     sb.from('apartments').select('id,name,last_synced_at,last_sync_error').order('name'),
     sb.from('apartment_bookings').select('*').order('check_in'),
-    sb.from('subscription_events').select('*').order('occurred_at',{ascending:false})
+    sb.from('subscription_events').select('*').order('occurred_at',{ascending:false}),
+    sb.from('subscription_product_config').select('*')
   ]);
-  let err=[products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions,staffRotas,apartmentCleaningTasks,customerPurchases,customerPurchaseItems,apartments,apartmentBookings,subscriptionEvents].find(x=>x.error)?.error;
+  let err=[products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions,staffRotas,apartmentCleaningTasks,customerPurchases,customerPurchaseItems,apartments,apartmentBookings,subscriptionEvents,subscriptionProductConfig].find(x=>x.error)?.error;
   if(err)throw err;
   data.products=products.data.map(x=>({id:x.id,name:x.name,active:x.active}));
   data.treatmentGroupings=treatmentGroupings.data.map(x=>({id:x.id,productId:x.product_id,name:x.name,displayOrder:+x.display_order||0}));
@@ -102,6 +103,7 @@ async function loadLiveData(){
   data.financeOutgoings=financeOutgoings.data.map(x=>({id:x.id,month:+x.finance_month,year:+x.finance_year,wages:x.wages==null?null:+x.wages,rent:+x.rent,bedHire:+x.bed_hire,insurance:+x.insurance}));
   data.customers=customers.data.map(x=>({id:x.id,accountNumber:x.account_number,firstName:x.first_name,lastName:x.last_name,name:`${x.first_name} ${x.last_name}`,dob:x.date_of_birth,phone:x.phone_number||'',email:x.email||'',address:x.address||'',uv:x.intends_uv_or_injectables,idChecked:x.id_checked,idCheckedDate:x.id_checked_date,minutesLeft:+x.minutes_left||0,active:x.active,uvAllowed:x.uv_allowed,verifiedBy:x.verified_by||[],skinType:x.skin_type||null,generalHealthNotes:x.general_health_notes||'',bedUse:x.bed_use||'Hybrid',preferredBed:x.preferred_bed||'Any Bed',waiverSignedPresent:!!x.waiver_signed_present,bedDemoProvided:!!x.bed_demo_provided,createdAt:x.created_at,authUserId:x.auth_user_id||null,subscriptionStatus:x.subscription_status||'No',portalLastLogin:x.portal_last_login||null,subscriptionType:x.subscription_type||null,subscriptionExpiresAt:x.subscription_expires_at||null,portalAccountCreatedAt:x.portal_account_created_at||null}));
   data.subscriptionEvents=(subscriptionEvents.data||[]).map(x=>({id:x.id,customerId:x.customer_id,eventType:x.event_type,occurredAt:x.occurred_at,details:x.details||null}));
+  data.subscriptionProductConfig=(subscriptionProductConfig.data||[]).map(x=>({id:x.id,title:x.title,pricePence:+x.price_pence||0,active:x.active}));
   data.tanningProducts=tanningProducts.data.map(x=>({id:x.id,type:x.product_type,title:x.title,description:x.description||'',minutes:x.minute_amount==null?null:+x.minute_amount,price:+x.price||0,stock:x.current_stock_level==null?null:+x.current_stock_level,active:x.active,cardMachine:x.card_machine||'Sunbed Card',grantsUnlimitedPass:!!x.grants_unlimited_pass,unlimitedPassDays:x.unlimited_pass_days==null?null:+x.unlimited_pass_days}));
   data.customerTransactions=customerTransactions.data.map(x=>({id:x.id,customerId:x.customer_id,type:x.transaction_type,product:x.product_title_snapshot||'',value:+x.total_value||0,minutes:+x.minutes_change||0,balance:+x.balance_after||0,createdAt:x.created_at,notes:x.notes||'',reasonCategory:x.reason_category||''}));
 

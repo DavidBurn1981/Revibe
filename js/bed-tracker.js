@@ -646,13 +646,31 @@ function openDailySessionsCalendar(){
     picker.focus();
   }
 }
+// Online (portal/Stripe) sales never go through the till's own purchase cart,
+// so they never create a customer_purchases/customer_purchase_items row - a
+// 1 Week Pass bought online is recorded on customer_transactions instead (see
+// weeklyPassesSoldOnDate above), and a Monthly Unlimited membership starting
+// is recorded on subscription_events only, never as a "purchase" row at all.
+// Both are still real money taken that day, so they're folded into this list
+// as their own rows rather than being invisible here.
+function onlineSalesForDate(dateKey){
+  let passRows=(data.customerTransactions||[])
+    .filter(t=>t.product==='1 Week Pass (Online Purchase)'&&t.createdAt&&localDateKey(new Date(t.createdAt))===dateKey)
+    .map(t=>({createdAt:t.createdAt,customerId:t.customerId,item:'1 Week Pass (Online Purchase)',amount:+t.value||0}));
+  let membershipPrice=((data.subscriptionProductConfig||[]).find(x=>x.active)?.pricePence||0)/100;
+  let membershipRows=(data.subscriptionEvents||[])
+    .filter(e=>e.eventType==='subscription_started'&&e.occurredAt&&localDateKey(new Date(e.occurredAt))===dateKey)
+    .map(e=>({createdAt:e.occurredAt,customerId:e.customerId,item:'Monthly Unlimited Membership (Online Purchase)',amount:membershipPrice}));
+  return [...passRows,...membershipRows];
+}
 function renderDailySessionsPurchases(key){
   let table=document.getElementById('dailySessionsPurchasesTable');if(!table)return;
   let rows=(data.customerPurchases||[])
     .filter(p=>p.date===key)
     .sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  let onlineRows=onlineSalesForDate(key);
 
-  let dayTotal=rows.reduce((s,p)=>s+p.grandTotal,0);
+  let dayTotal=rows.reduce((s,p)=>s+p.grandTotal,0)+onlineRows.reduce((s,o)=>s+o.amount,0);
   let paygForPurchasesTotal=paygSessionTotalsForDay(key);
   dayTotal+=paygForPurchasesTotal.cash+paygForPurchasesTotal.card;
   let totalEl=document.getElementById('dailySessionsPurchasesValue');
@@ -665,16 +683,25 @@ function renderDailySessionsPurchases(key){
   let glowStudioTotalEl=document.getElementById('dailySessionsGlowStudioTotalValue');
   if(glowStudioTotalEl)glowStudioTotalEl.textContent=`£${glowStudioTotal.toFixed(2)}`;
 
-  table.innerHTML='<tr><th>Time</th><th>Customer</th><th>Items</th><th>Cash</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
-    (rows.length?rows.map(p=>{
-      let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
-      let itemSummary=items.map(i=>escapeHtml(i.title)).join(', ')||'—';
-      let timeLabel=p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
-      let customer=p.customerId?data.customers.find(c=>c.id===p.customerId):null;
-      let customerLabel=customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</a>`:'—';
-      let cashTotal=(p.glowStudioCashAmount||0)+(p.treatmentsCashAmount||0);
-      return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td>${timeLabel}</td><td>${customerLabel}</td><td>${itemSummary}</td><td>£${cashTotal.toFixed(2)}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
-    }).join(''):`<tr><td colspan='7' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this day.</td></tr>`);
+  let shopRowsHtml=rows.map(p=>{
+    let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
+    let itemSummary=items.map(i=>escapeHtml(i.title)).join(', ')||'—';
+    let timeLabel=p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
+    let customer=p.customerId?data.customers.find(c=>c.id===p.customerId):null;
+    let customerLabel=customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</a>`:'—';
+    let cashTotal=(p.glowStudioCashAmount||0)+(p.treatmentsCashAmount||0);
+    return {sortKey:p.createdAt||'',html:`<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td>${timeLabel}</td><td>Shop</td><td>${customerLabel}</td><td>${itemSummary}</td><td>£${cashTotal.toFixed(2)}</td><td>£${p.treatmentsTotal.toFixed(2)}</td><td>£${p.glowStudioTotal.toFixed(2)}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`};
+  });
+  let onlineRowsHtml=onlineRows.map(o=>{
+    let timeLabel=o.createdAt?new Date(o.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';
+    let customer=o.customerId?data.customers.find(c=>c.id===o.customerId):null;
+    let customerLabel=customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</a>`:'—';
+    return {sortKey:o.createdAt||'',html:`<tr><td>${timeLabel}</td><td>Online</td><td>${customerLabel}</td><td>${escapeHtml(o.item)}</td><td>—</td><td>—</td><td>—</td><td><b>£${o.amount.toFixed(2)}</b></td></tr>`};
+  });
+  let allRowsHtml=[...shopRowsHtml,...onlineRowsHtml].sort((a,b)=>b.sortKey.localeCompare(a.sortKey)).map(r=>r.html).join('');
+
+  table.innerHTML='<tr><th>Time</th><th>Channel</th><th>Customer</th><th>Items</th><th>Cash</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
+    (allRowsHtml||`<tr><td colspan='8' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this day.</td></tr>`);
 }
 function renderDailySessionsPage(key){
   if(!key)key=localDateKey();
