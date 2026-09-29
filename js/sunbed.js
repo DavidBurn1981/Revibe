@@ -32,7 +32,8 @@ function openSunbedBookingDetail(id){
   document.getElementById('sunbedBookingDetailError').style.display='none';
   let actions=document.getElementById('sunbedBookingDetailActions');
   let actionButtons='';
-  if(b.status!=='Cancelled'&&b.status!=='No Show'&&b.customerId){
+  let alreadyCancelledOrNoShow=['Cancelled','Cancelled Good','Cancelled Within Hour','No Show'].includes(b.status);
+  if(!alreadyCancelledOrNoShow&&b.customerId){
     actionButtons+=`<button class='danger' id='sunbedCancelBtn' onclick='sunbedCancelBookingFromDetail()'>Cancel Booking</button>`;
     actionButtons+=`<button class='danger' id='sunbedNoShowBtn' style='margin-left:8px' onclick='sunbedMarkNoShowFromDetail()'>No Show</button>`;
   }
@@ -81,7 +82,7 @@ function renderSunbedCalendar(){
 
   let hours=effectiveHoursForDate(viewDate);
   let openMin=minutesFromTime(hours.open),closeMin=minutesFromTime(hours.close);
-  let dayBookings=(data.sunbedBookings||[]).filter(x=>x.date===viewDate&&x.status!=='Cancelled');
+  let dayBookings=(data.sunbedBookings||[]).filter(x=>x.date===viewDate&&!['Cancelled','Cancelled Good','Cancelled Within Hour'].includes(x.status));
   let turnaround=4; // matches the existing "4 min turnaround" shown on each booking card
 
   let html=`<div class='sunbedDayGrid' style='grid-template-columns:90px repeat(${SUNBEDS.length},minmax(200px,1fr))'>
