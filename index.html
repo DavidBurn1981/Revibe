@@ -2323,6 +2323,42 @@ body.loading .app{visibility:hidden}
     <div id='sunbedBookingDetailActions' style='text-align:right;margin-top:18px'></div>
   </div>
 </div>
+
+<div class='modal' id='editTimeModal'>
+  <div class='modalbox' style='max-width:480px'>
+    <div class='top'><h1>Edit Time</h1><button onclick='closeEditBookingTime()'>✕</button></div>
+    <div class='muted' id='editTimeSummary' style='margin-bottom:14px'></div>
+    <div class='formgrid' style='grid-template-columns:1fr 1fr'>
+      <div>
+        <label>Date</label>
+        <input readonly id='editTimeDateDisplay' onclick='openEditTimeCalendarPicker()' placeholder='Select date' style='cursor:pointer'>
+        <input type='hidden' id='editTimeDate'>
+      </div>
+      <div>
+        <label>New Time</label>
+        <select id='editTimeSelect' onchange="document.getElementById('editTimeError').style.display='none'"></select>
+      </div>
+    </div>
+    <div class='muted' id='editTimeNoSlotsMsg' style='display:none;margin-top:8px'>No available times of the same bed type on this date - try a different date.</div>
+    <div id='editTimeError' class='formError' style='display:none'></div>
+    <div style='text-align:right;margin-top:18px'>
+      <button onclick='closeEditBookingTime()'>Cancel</button>
+      <button id='editTimeSaveBtn' style='margin-left:8px' onclick='saveEditBookingTime()'>Save New Time</button>
+    </div>
+  </div>
+</div>
+
+<div class='modal' id='editTimeCalendarPickerModal'>
+  <div class='modalbox' style='max-width:340px'>
+    <div class='top'><div><h1>Select Date</h1><div class='muted'>Choose the new date</div></div><button onclick='closeEditTimeCalendarPicker()'>✕</button></div>
+    <div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'>
+      <button type='button' onclick='changeEditTimePickerMonth(-1)'>←</button>
+      <strong id='editTimePickerMonthLabel'></strong>
+      <button type='button' onclick='changeEditTimePickerMonth(1)'>→</button>
+    </div>
+    <div id='editTimePickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div>
+  </div>
+</div>
 <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
 <script src='js/config.js'></script>
 <script src='js/utils.js'></script>
