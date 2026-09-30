@@ -34,7 +34,10 @@ function openSunbedBookingDetail(id){
   let actionButtons='';
   let alreadyCancelledOrNoShow=['Cancelled','Cancelled Good','Cancelled Within Hour','No Show'].includes(b.status);
   if(!alreadyCancelledOrNoShow&&b.customerId){
-    actionButtons+=`<button class='danger' id='sunbedCancelBtn' onclick='sunbedCancelBookingFromDetail()'>Cancel Booking</button>`;
+    if(b.status==='Booked'){
+      actionButtons+=`<button id='sunbedEditTimeBtn' onclick='openEditBookingTime()'>Edit Time</button>`;
+    }
+    actionButtons+=`<button class='danger' id='sunbedCancelBtn' style='margin-left:8px' onclick='sunbedCancelBookingFromDetail()'>Cancel Booking</button>`;
     actionButtons+=`<button class='danger' id='sunbedNoShowBtn' style='margin-left:8px' onclick='sunbedMarkNoShowFromDetail()'>No Show</button>`;
   }
   actions.innerHTML=actionButtons;
@@ -250,5 +253,106 @@ async function saveSunbedBooking(){
     err.textContent=msg;err.style.display='block';
   }finally{
     btn.disabled=false;btn.textContent='Book Sunbed';
+  }
+}
+
+// ---- Edit Time (reschedule an existing "Booked" booking) ----
+let editTimeBookingId=null;
+function openEditBookingTime(){
+  let id=sunbedDetailBookingId;
+  let b=(data.sunbedBookings||[]).find(x=>x.id===id);
+  if(!b)return;
+  editTimeBookingId=id;
+  document.getElementById('sunbedBookingDetailModal').classList.remove('show');
+  document.getElementById('editTimeError').style.display='none';
+  document.getElementById('editTimeSummary').textContent=`${escapeHtml(b.name||'')} · ${b.length} minute session · currently ${b.bed} on ${formatSunbedDisplayDate(b.date)} at ${b.time}`;
+  document.getElementById('editTimeDate').value=b.date;
+  document.getElementById('editTimeDateDisplay').value=formatSunbedDisplayDate(b.date);
+  editTimePopulateAvailableTimes();
+  document.getElementById('editTimeModal').classList.add('show');
+}
+function closeEditBookingTime(){document.getElementById('editTimeModal').classList.remove('show')}
+function openEditTimeCalendarPicker(){
+  let current=document.getElementById('editTimeDate').value;
+  sunbedPickerMonth=current?parseLocalDateKey(current):new Date();
+  editTimeRenderCalendarPicker();
+  document.getElementById('editTimeCalendarPickerModal').classList.add('show');
+}
+function closeEditTimeCalendarPicker(){document.getElementById('editTimeCalendarPickerModal').classList.remove('show')}
+function changeEditTimePickerMonth(delta){sunbedPickerMonth=new Date(sunbedPickerMonth.getFullYear(),sunbedPickerMonth.getMonth()+delta,1);editTimeRenderCalendarPicker()}
+function selectEditTimePickerDate(key){
+  document.getElementById('editTimeDate').value=key;
+  document.getElementById('editTimeDateDisplay').value=formatSunbedDisplayDate(key);
+  editTimePopulateAvailableTimes();
+  closeEditTimeCalendarPicker();
+}
+function editTimeRenderCalendarPicker(){
+  let grid=document.getElementById('editTimePickerGrid'),y=sunbedPickerMonth.getFullYear(),m=sunbedPickerMonth.getMonth();
+  document.getElementById('editTimePickerMonthLabel').textContent=new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let heads=['Mo','Tu','We','Th','Fr','Sa','Su'].map(x=>`<div style='color:#8f98a4;font-size:11px;padding:6px 0'>${x}</div>`).join('');
+  let first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),cells='';
+  for(let i=0;i<offset;i++)cells+=`<div></div>`;
+  for(let d=1;d<=days;d++){
+    let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let selected=document.getElementById('editTimeDate').value===key;
+    cells+=`<button type='button' onclick="selectEditTimePickerDate('${key}')" style='padding:10px 4px;${selected?'border-color:#18d7e8;background:#12343a;color:white;':''}'>${d}</button>`;
+  }
+  grid.innerHTML=heads+cells;
+}
+// Recomputes which start times are actually free for this booking's bed type
+// and length on the chosen date, using the same buffer/turnaround windows the
+// reschedule_bed_booking RPC enforces server-side, so the list shown here
+// only offers times the RPC will actually accept.
+function editTimePopulateAvailableTimes(){
+  let select=document.getElementById('editTimeSelect');
+  select.innerHTML='';
+  let b=(data.sunbedBookings||[]).find(x=>x.id===editTimeBookingId);
+  if(!b)return;
+  let date=document.getElementById('editTimeDate').value;
+  if(!date)return;
+  let bufferBefore=3,turnaround=2;
+  let bedsOfType=(data.beds||[]).filter(x=>x.active!==false&&x.type===b.bedType);
+  let otherBookings=(data.sunbedBookings||[])
+    .filter(x=>x.id!==b.id&&x.date===date&&['Booked','Completed'].includes(x.status)&&bedsOfType.some(bd=>bd.name===x.bed));
+  let hours=effectiveHoursForDate(date),startMin=timeToMinutes(hours.open),endMin=timeToMinutes(hours.close);
+  let anyAvailable=false;
+  for(let mins=startMin;mins<=endMin-b.length;mins+=5){
+    let windowStart=mins-bufferBefore,windowEnd=mins+b.length+turnaround;
+    let freeBed=bedsOfType.find(bed=>!otherBookings.some(ob=>{
+      if(ob.bed!==bed.name)return false;
+      let obStart=timeToMinutes(ob.time)-(ob.bufferBeforeMinutes||bufferBefore),obEnd=timeToMinutes(ob.time)+ob.length+turnaround;
+      return windowStart<obEnd&&obStart<windowEnd;
+    }));
+    if(freeBed){
+      anyAvailable=true;
+      let hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0'),v=`${hh}:${mm}`;
+      let o=document.createElement('option');o.value=v;o.textContent=v;
+      if(v===b.time)o.selected=true;
+      select.appendChild(o);
+    }
+  }
+  document.getElementById('editTimeNoSlotsMsg').style.display=anyAvailable?'none':'block';
+}
+async function saveEditBookingTime(){
+  let err=document.getElementById('editTimeError');err.style.display='none';
+  let date=document.getElementById('editTimeDate').value,time=document.getElementById('editTimeSelect').value;
+  if(!date||!time)return alert('Please choose a date and time.');
+  let btn=document.getElementById('editTimeSaveBtn');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    let {data:result,error}=await sb.rpc('reschedule_bed_booking',{
+      p_booking_id:editTimeBookingId,p_new_date:date,p_new_start_time:time
+    });
+    if(error)throw error;
+    let row=Array.isArray(result)?result[0]:result;
+    closeEditBookingTime();
+    await loadLiveData();renderSunbedCalendar();renderCustomers();
+    alert(`Booking moved to ${formatSunbedDisplayDate(row.booking_date)} at ${(row.start_time||'').slice(0,5)} on ${row.bed_name}.`);
+  }catch(e){
+    let msg=e.message||"Could not change this booking's time.";
+    if(msg.includes('UNLIMITED_DAILY_LIMIT'))msg='This customer is an Unlimited Member and can only have one session per 24 hours - the new time is too close to another of their sessions.';
+    else if(msg.includes('NO_BED_AVAILABLE'))msg='No suitable bed is available for that time - please pick a different slot.';
+    err.textContent=msg;err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Save New Time';
   }
 }
