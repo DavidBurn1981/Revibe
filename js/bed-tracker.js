@@ -518,6 +518,46 @@ function exportCustomerProfilingListToExcel(){
   XLSX.utils.book_append_sheet(wb,ws,'Customers');
   XLSX.writeFile(wb,`REVIBE ${title} ${localDateKey()}.xlsx`);
 }
+let lastPortalUsersExport=null;
+function portalUserDateTime(v){return v?new Date(v).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):''}
+async function openPortalUsersList(){
+  let modal=document.getElementById('portalUsersListModal'),table=document.getElementById('portalUsersListTable'),err=document.getElementById('portalUsersListError');
+  err.style.display='none';
+  table.innerHTML=`<tr><td class='muted' style='text-align:center;padding:24px'>Loading...</td></tr>`;
+  document.getElementById('portalUsersListSubtitle').textContent='';
+  modal.classList.add('show');
+  try{
+    let {data:rows,error}=await sb.rpc('get_portal_users');
+    if(error)throw error;
+    rows=rows||[];
+    lastPortalUsersExport=rows;
+    let activeCount=rows.filter(r=>r.activated_at).length;
+    document.getElementById('portalUsersListSubtitle').textContent=`${rows.length} portal account${rows.length===1?'':'s'} - ${activeCount} active, ${rows.length-activeCount} invited but not set up yet. "Last Used" is the last time they logged in.`;
+    table.innerHTML='<tr><th>Account</th><th>Customer</th><th>Email</th><th>Status</th><th>Registered</th><th>Last Used</th></tr>'+
+      (rows.length?rows.map(r=>{
+        let status=r.activated_at?`<span style='color:var(--green);font-weight:700'>Active</span>`:`<span style='color:var(--amber);font-weight:700'>Invited - not set up yet</span>`;
+        let lastUsed=r.last_login?portalUserDateTime(r.last_login):`<span class='muted'>Never</span>`;
+        return `<tr class='clinicRow' onclick="document.getElementById('portalUsersListModal').classList.remove('show');openCustomer('${r.customer_id}')"><td>${escapeHtml(r.account_number||'')}</td><td><a href='javascript:void(0)' style='color:var(--pink);text-decoration:underline'>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</a></td><td>${escapeHtml(r.email||'')}</td><td>${status}</td><td>${portalUserDateTime(r.registered_at)}</td><td>${lastUsed}</td></tr>`;
+      }).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:24px'>No customers have a portal account yet.</td></tr>`);
+  }catch(e){
+    table.innerHTML='';
+    err.textContent=e.message||'Could not load portal users.';err.style.display='block';
+  }
+}
+function exportPortalUsersToExcel(){
+  if(!lastPortalUsersExport||!lastPortalUsersExport.length){alert('No portal users to export.');return}
+  let sheetRows=lastPortalUsersExport.map(r=>({
+    'Account':r.account_number||'',
+    'Customer':`${r.first_name} ${r.last_name}`,
+    'Email':r.email||'',
+    'Status':r.activated_at?'Active':'Invited - not set up yet',
+    'Registered':portalUserDateTime(r.registered_at),
+    'Last Used':r.last_login?portalUserDateTime(r.last_login):'Never',
+  }));
+  let ws=XLSX.utils.json_to_sheet(sheetRows),wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Portal Users');
+  XLSX.writeFile(wb,`REVIBE Portal Users ${localDateKey()}.xlsx`);
+}
 let lastManualAdjustmentsExport=null;
 function openManualAdjustmentsList(){
   let rows=(data.customerTransactions||[])
