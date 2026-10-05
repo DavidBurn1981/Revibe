@@ -33,9 +33,46 @@ function backToStaffRotaList(){
   renderStaffRotaList();
 }
 function addStaffRota(){
-  document.getElementById('staffRotaCreateDate').value=localDateKey();
+  // Default to NEXT week - by far the most common reason to create a rota is
+  // planning ahead, and "This Week" / any other week is one tap away.
+  setStaffRotaCreateWeek(1);
   document.getElementById('staffRotaCreateError').style.display='none';
   document.getElementById('staffRotaCreateModal').classList.add('show');
+}
+function setStaffRotaCreateDate(key){
+  document.getElementById('staffRotaCreateDate').value=key;
+  document.getElementById('staffRotaCreateDateDisplay').value=formatSunbedDisplayDate(key);
+  let start=startMonday(parseLocalDateKey(key)),end=new Date(start);end.setDate(end.getDate()+6);
+  document.getElementById('staffRotaCreateWeekLabel').textContent=`Rota will be created for: ${nice(start)} – ${nice(end)}`;
+  document.getElementById('staffRotaCreateError').style.display='none';
+}
+function setStaffRotaCreateWeek(offsetWeeks){
+  let d=startMonday(new Date());d.setDate(d.getDate()+offsetWeeks*7);
+  setStaffRotaCreateDate(iso(d));
+}
+let staffRotaCreatePickerMonth=new Date();
+function openStaffRotaCreatePicker(){
+  let current=document.getElementById('staffRotaCreateDate').value;
+  staffRotaCreatePickerMonth=current?parseLocalDateKey(current):new Date();
+  renderStaffRotaCreatePicker();
+  document.getElementById('staffRotaCreatePickerModal').classList.add('show');
+}
+function closeStaffRotaCreatePicker(){document.getElementById('staffRotaCreatePickerModal').classList.remove('show')}
+function changeStaffRotaCreatePickerMonth(delta){staffRotaCreatePickerMonth=new Date(staffRotaCreatePickerMonth.getFullYear(),staffRotaCreatePickerMonth.getMonth()+delta,1);renderStaffRotaCreatePicker()}
+function selectStaffRotaCreateDate(key){setStaffRotaCreateDate(key);closeStaffRotaCreatePicker()}
+function renderStaffRotaCreatePicker(){
+  let grid=document.getElementById('staffRotaCreatePickerGrid'),y=staffRotaCreatePickerMonth.getFullYear(),m=staffRotaCreatePickerMonth.getMonth();
+  document.getElementById('staffRotaCreatePickerMonthLabel').textContent=new Date(y,m,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let heads=['Mo','Tu','We','Th','Fr','Sa','Su'].map(x=>`<div style='color:#8f98a4;font-size:11px;padding:6px 0'>${x}</div>`).join('');
+  let first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),cells='';
+  let selectedWeek=document.getElementById('staffRotaCreateDate').value?iso(startMonday(parseLocalDateKey(document.getElementById('staffRotaCreateDate').value))):null;
+  for(let i=0;i<offset;i++)cells+=`<div></div>`;
+  for(let d=1;d<=days;d++){
+    let key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let inSelectedWeek=selectedWeek&&iso(startMonday(parseLocalDateKey(key)))===selectedWeek;
+    cells+=`<button type='button' onclick="selectStaffRotaCreateDate('${key}')" style='padding:10px 4px;${inSelectedWeek?'border-color:#18d7e8;background:#12343a;color:white;':''}'>${d}</button>`;
+  }
+  grid.innerHTML=heads+cells;
 }
 function closeStaffRotaCreate(){document.getElementById('staffRotaCreateModal').classList.remove('show')}
 async function saveNewStaffRota(){

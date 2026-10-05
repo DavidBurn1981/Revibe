@@ -105,6 +105,7 @@ function checkNewCustomerAgeWarnings(){
 function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';document.getElementById('portalAccessStatus').innerHTML=`<div class='muted'>Save this customer first before setting up portal access.</div>`;document.getElementById('portalAccessNoAccount').style.display='none';document.getElementById('portalAccessHasAccount').style.display='none';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';document.getElementById('custUnlimitedMember').value='No';document.getElementById('custPassExpiryText').style.display='none';document.getElementById('custNoShowsRow').style.display='none';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;renderPortalAccessTab(c);document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custPreferredBed').value=c.preferredBed||'Any Bed';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);document.getElementById('custUnlimitedMember').value=c.subscriptionStatus==='Subscriber'?(c.subscriptionType==='7_Day_Pass'?'Yes (1 Week Pass)':c.subscriptionType==='Monthly'?'Yes (Monthly)':'Yes'):c.subscriptionStatus==='Subscriber - Failed Payment'?'Yes (Payment Issue)':'No';
 let passExpiryEl=document.getElementById('custPassExpiryText');
+document.getElementById('custCancelSubBtn').style.display=(c.subscriptionStatus==='Subscriber'||c.subscriptionStatus==='Subscriber - Failed Payment')?'inline-block':'none';
 if(c.subscriptionStatus==='Subscriber'&&c.subscriptionType==='7_Day_Pass'&&c.subscriptionExpiresAt){
   passExpiryEl.textContent=`Expires ${new Date(c.subscriptionExpiresAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}`;
   passExpiryEl.style.display='block';
@@ -119,6 +120,27 @@ if(c.subscriptionStatus==='Subscriber'){
 }else{
   noShowsRow.style.display='none';
 }updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+async function cancelCustomerSubscription(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let name=`${c.firstName} ${c.lastName}`;
+  let msg=`Cancel ${name}'s subscription? This sets their Subscribed Customer field to No.`;
+  if(c.stripeSubscriptionId)msg+=`\n\nNOTE: this does NOT stop their monthly card payments in Stripe - cancel the subscription there too (or use Manage Membership) or they will keep being charged.`;
+  if(!confirm(msg))return;
+  let btn=document.getElementById('custCancelSubBtn');btn.disabled=true;
+  try{
+    let {error}=await sb.from('customers').update({subscription_status:'No'}).eq('id',c.id);
+    if(error)throw error;
+    await loadLiveData();
+    // Update just the subscription bits on screen rather than re-opening the whole
+    // record, so anything else staff have typed into this open account isn't lost.
+    document.getElementById('custUnlimitedMember').value='No';
+    document.getElementById('custCancelSubBtn').style.display='none';
+    document.getElementById('custPassExpiryText').style.display='none';
+    document.getElementById('custNoShowsRow').style.display='none';
+    if(typeof renderCustomers==='function')renderCustomers();
+  }catch(e){alert(e.message||'Could not cancel this subscription.')}
+  finally{btn.disabled=false}
+}
 function renderPortalAccessTab(c){
   let statusEl=document.getElementById('portalAccessStatus'),noAccount=document.getElementById('portalAccessNoAccount'),hasAccount=document.getElementById('portalAccessHasAccount');
   if(c.authUserId){

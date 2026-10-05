@@ -93,7 +93,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   deleteTreatment:['treatment_booking_settings','delete'],
   deleteTreatmentGrouping:['treatment_booking_settings','delete'],
   addRenter:['treatment_booking_settings','edit'], openRenterEdit:['treatment_booking_settings','edit'], saveNewRenter:['treatment_booking_settings','edit'], deleteRenter:['treatment_booking_settings','delete'],
-  openCustomerCreate:['treatment_booking_settings','edit'], saveCustomer:['treatment_booking_settings','edit'], deleteCustomer:['treatment_booking_settings','delete'], completeBlockPurchase:['treatment_booking_settings','edit'],
+  openCustomerCreate:['treatment_booking_settings','edit'], cancelCustomerSubscription:['treatment_booking_settings','edit'], saveCustomer:['treatment_booking_settings','edit'], deleteCustomer:['treatment_booking_settings','delete'], completeBlockPurchase:['treatment_booking_settings','edit'],
   openNewCustomerWizard:['treatment_booking_settings','edit'], wizCreateAccount:['treatment_booking_settings','edit'], wizConfirmPurchases:['daily_session_tracker','edit'], wizRecordSession:['daily_session_tracker','edit'], openExistingCustomerWizard:['daily_session_tracker','edit'],
   openAddMinutesModal:['treatment_booking_settings','edit'], confirmAddMinutesManually:['treatment_booking_settings','edit'],
   openStaffMemberCreate:['staff_members','edit'], openStaffMemberEdit:['staff_members','edit'], saveStaffMember:['staff_members','edit'], deleteStaffMember:['staff_members','delete'],
