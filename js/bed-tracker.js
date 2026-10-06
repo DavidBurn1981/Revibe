@@ -78,6 +78,48 @@ async function saveMonthEndReviews(){
   }
 }
 function getDailyTakings(dateKey){return (data.dailyTakings||[]).find(x=>x.date===dateKey)||null}
+// ---- Revenue target -------------------------------------------------------
+// Revenue that counts towards the monthly revenue target: cash + bed card +
+// online sales. Treatments card is a separate business and is excluded.
+function revenueForTargetOnDate(key){
+  let cash,bed;
+  if(key===localDateKey()){
+    // Today is still in progress - live from actual purchases (same as the End of Day panel).
+    let purchases=(data.customerPurchases||[]).filter(p=>p.date===key),payg=paygSessionTotalsForDay(key);
+    cash=purchases.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+payg.cash;
+    bed=purchases.reduce((s,p)=>s+p.glowStudioCardAmount,0)+payg.card;
+  }else{
+    let row=getDailyTakings(key);cash=+row?.cash||0;bed=+row?.bedCard||0;
+  }
+  return cash+bed+onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0);
+}
+// The target for one day: whatever is still needed for the month (the monthly
+// target minus everything taken on EARLIER days), spread evenly over every
+// opening hour from that day to the end of the month, times that day's hours.
+// Recalculated live each time, so correcting an earlier day updates later targets.
+function revenueTargetForDate(key){
+  let d=parseLocalDateKey(key),month=d.getMonth()+1,year=d.getFullYear();
+  let stack=(data.monthlyTargets||[]).find(x=>x.monthNumber===month&&x.year===year);
+  let monthTarget=+stack?.revenueTarget||0;
+  if(!monthTarget)return null;
+  let keys=dateRangeKeys(new Date(year,month-1,1),new Date(year,month,0));
+  let hours=k=>hoursDuration(effectiveHoursForDate(k));
+  let revenueBefore=0,hoursLeft=0;
+  keys.forEach(k=>{if(k<key)revenueBefore+=revenueForTargetOnDate(k);else hoursLeft+=hours(k)});
+  let dayHours=hours(key),remaining=Math.max(0,monthTarget-revenueBefore);
+  let perHour=hoursLeft>0?remaining/hoursLeft:0;
+  return {target:perHour*dayHours,perHour,dayHours,hoursLeft,revenueBefore,remaining,monthTarget};
+}
+function setRevenueTargetTiles(key,targetId,actualId,tileId){
+  let t=revenueTargetForDate(key),actual=revenueForTargetOnDate(key);
+  let tEl=document.getElementById(targetId),aEl=document.getElementById(actualId),tile=document.getElementById(tileId);
+  if(tEl)tEl.textContent=t?`£${t.target.toFixed(2)}`:'Not set';
+  if(aEl)aEl.textContent=`£${actual.toFixed(2)}`;
+  if(tile){
+    tile.classList.remove('kpiAboveTarget','kpiBelowTarget');
+    if(t&&t.dayHours>0)tile.classList.add(actual>=t.target?'kpiAboveTarget':'kpiBelowTarget');
+  }
+}
 function takingsTotal(x){return x?(+x.cash||0)+(+x.treatmentsCard||0)+(+x.bedCard||0):0}
 function updateDailyTakingsTotal(){
   let total=(+document.getElementById('dailyCashTaken').value||0)+(+document.getElementById('dailyTreatmentsCardTaken').value||0)+(+document.getElementById('dailyBedCardTaken').value||0)+(+(document.getElementById('dailyOnlineSalesTaken')?.value)||0);
@@ -175,6 +217,7 @@ function renderBedTracker(){
 
   document.getElementById('metricSessions').textContent=rows.length;
   document.getElementById('metricMinutes').textContent=total;
+  setRevenueTargetTiles(localDateKey(),'headerRevenueTargetValue','headerRevenueActualValue','headerRevenueActualTile');
   let headerSessionsEl=document.getElementById('headerSessionsValue');
   if(headerSessionsEl)headerSessionsEl.textContent=rows.length;
   document.getElementById('metricSignups').textContent=signups;
@@ -253,7 +296,7 @@ function renderPeriodPerformance(mode,refDate){
 
   let daily=keys.map(k=>{
     let r=rows.filter(x=>x.date===k),m=aggregateSessions(r),t=getDailyTakings(k);
-    return {key:k,...m,kpi:dayKpi(k,m.minutes),paidKpi:dayKpi(k,m.paidMinutes),takings:t,weeklyPasses:weeklyPassesSoldOnDate(k),monthlyUnlimited:monthlyUnlimitedSoldOnDate(k),onlineSales:onlineSalesForDate(k).reduce((s,o)=>s+o.amount,0)};
+    return {key:k,...m,kpi:dayKpi(k,m.minutes),paidKpi:dayKpi(k,m.paidMinutes),takings:t,weeklyPasses:weeklyPassesSoldOnDate(k),monthlyUnlimited:monthlyUnlimitedSoldOnDate(k),onlineSales:onlineSalesForDate(k).reduce((s,o)=>s+o.amount,0),rtTarget:revenueTargetForDate(k),rtActual:revenueForTargetOnDate(k)};
   });
 
   let revenueSummary=`<div class='periodRevenueSummary'>
@@ -268,11 +311,12 @@ function renderPeriodPerformance(mode,refDate){
     revenueSummary+
     summaryMetricsHtml(a,kpi,paidKpi,mode==='month',mode==='week')+
     `<div class='card perfTableWrap'><table class='table'>
-      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Online Sales</th><th>Total Revenue</th><th>Weekly Passes Sold</th><th>Monthly Unlimited Sold</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
+      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Online Sales</th><th>Total Revenue</th><th>Revenue Target</th><th>Revenue vs Target</th><th>Weekly Passes Sold</th><th>Monthly Unlimited Sold</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
       ${daily.map(d=>`<tr>
         <td><b>${parseLocalDateKey(d.key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td>
         <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td>
         <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${d.onlineSales.toFixed(2)}</td><td>£${(takingsTotal(d.takings)+d.onlineSales).toFixed(2)}</td>
+        ${d.rtTarget?`<td>£${d.rtTarget.target.toFixed(2)}</td><td><span class='${d.rtActual>=d.rtTarget.target?'historyStatusGood':'historyStatusBad'}'>£${d.rtActual.toFixed(2)}</span></td>`:`<td>—</td><td>£${d.rtActual.toFixed(2)}</td>`}
         <td>${d.weeklyPasses}</td><td>${d.monthlyUnlimited}</td>
         <td>${d.takings?.googleReviews===''||d.takings?.googleReviews==null?'—':d.takings.googleReviews}</td><td>${d.takings?.facebookReviews===''||d.takings?.facebookReviews==null?'—':d.takings.facebookReviews}</td>
       </tr>`).join('')}
@@ -282,7 +326,7 @@ function renderPeriodPerformance(mode,refDate){
         return `<tr class='perfTotalRow' style='font-weight:800;border-top:2px solid var(--line)'>
         <td><b>TOTAL</b></td>
         <td>${sum(d=>d.sessions)}</td><td>${sum(d=>d.minutes)}</td><td>${sum(d=>d.rlt)}</td><td>${sum(d=>d.hybrid)}</td><td>${sum(d=>d.signups)}</td>
-        <td>£${sum(d=>rev(d,'cash')).toFixed(2)}</td><td>£${sum(d=>rev(d,'treatmentsCard')).toFixed(2)}</td><td>£${sum(d=>rev(d,'bedCard')).toFixed(2)}</td><td>£${sum(d=>d.onlineSales).toFixed(2)}</td><td>£${sum(d=>takingsTotal(d.takings)+d.onlineSales).toFixed(2)}</td>
+        <td>£${sum(d=>rev(d,'cash')).toFixed(2)}</td><td>£${sum(d=>rev(d,'treatmentsCard')).toFixed(2)}</td><td>£${sum(d=>rev(d,'bedCard')).toFixed(2)}</td><td>£${sum(d=>d.onlineSales).toFixed(2)}</td><td>£${sum(d=>takingsTotal(d.takings)+d.onlineSales).toFixed(2)}</td><td>—</td><td>£${sum(d=>d.rtActual).toFixed(2)}</td>
         <td>${sum(d=>d.weeklyPasses)}</td><td>${sum(d=>d.monthlyUnlimited)}</td>
         <td>${sum(d=>d.takings?.googleReviews)}</td><td>${sum(d=>d.takings?.facebookReviews)}</td>
       </tr>`})()}
@@ -775,6 +819,7 @@ function renderDailySessionsPage(key){
   let label=document.getElementById('dailySessionsDateLabel');
   if(label)label.textContent=formatBedSessionsDate(key);
 
+  setRevenueTargetTiles(key,'dailySessionsRevenueTargetValue','dailySessionsRevenueActualValue','dailySessionsRevenueActualTile');
   let sessionsCountEl=document.getElementById('dailySessionsCountValue');
   if(sessionsCountEl)sessionsCountEl.textContent=performanceSessions((data.bedSessions||[]).filter(x=>x.date===key)).length;
 

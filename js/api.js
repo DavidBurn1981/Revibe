@@ -91,7 +91,7 @@ async function loadLiveData(){
     signupTarget:+x.new_sign_ups_target||0,
     rltSessionsTarget:+x.rlt_only_sessions_target||0,
     totalMinutesTarget:+x.total_minutes_target||0,
-    newReviewsTarget:+x.new_reviews_target||0,rltCaseStudiesTarget:+x.rlt_case_studies_target||0,bonus1Kpi:+x.bonus_1_kpi||0,bonus1Amount:+x.bonus_1_amount||0,bonus2Kpi:+x.bonus_2_kpi||0,bonus2Amount:+x.bonus_2_amount||0,bonus3Kpi:+x.bonus_3_kpi||0,bonus3Amount:+x.bonus_3_amount||0
+    newReviewsTarget:+x.new_reviews_target||0,rltCaseStudiesTarget:+x.rlt_case_studies_target||0,bonus1Kpi:+x.bonus_1_kpi||0,bonus1Amount:+x.bonus_1_amount||0,bonus2Kpi:+x.bonus_2_kpi||0,bonus2Amount:+x.bonus_2_amount||0,bonus3Kpi:+x.bonus_3_kpi||0,bonus3Amount:+x.bonus_3_amount||0,revenueTarget:+x.revenue_target||0
   }));
   data.monthlyReviewCounts=monthlyReviewCounts.data.map(x=>({id:x.id,month:+x.review_month,year:+x.review_year,facebook:+x.facebook_reviews||0,google:+x.google_reviews||0}));
   data.holidayRequests=holidayRequests.data.map(x=>({

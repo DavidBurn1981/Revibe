@@ -49,6 +49,7 @@ function openMonthlyTargetCreate(){
   document.getElementById('targetMonthNumber').disabled=false;
   document.getElementById('targetYear').readOnly=false;
   document.getElementById('monthlyKpiTarget').value='';
+  document.getElementById('monthlyRevenueTarget').value='';
   document.getElementById('monthlySignupTarget').value='';
   document.getElementById('monthlyRltSessionsTarget').value='';
   document.getElementById('monthlyTotalMinutesTarget').value='0';
@@ -67,6 +68,7 @@ function openMonthlyTargetEdit(id){
   document.getElementById('targetMonthNumber').value=String(row.monthNumber);
   document.getElementById('targetYear').value=String(row.year);
   document.getElementById('monthlyKpiTarget').value=String(row.target);
+  document.getElementById('monthlyRevenueTarget').value=String(row.revenueTarget||0);
   document.getElementById('monthlySignupTarget').value=String(row.signupTarget);
   document.getElementById('monthlyRltSessionsTarget').value=String(row.rltSessionsTarget);
   document.getElementById('monthlyTotalMinutesTarget').value=String(calculatedMonthlyMinutesTarget(row.monthNumber,row.year,row.target));
@@ -89,6 +91,7 @@ async function saveMonthlyTarget(){
   let monthNumber=+document.getElementById('targetMonthNumber').value,
       year=+document.getElementById('targetYear').value,
       target=+document.getElementById('monthlyKpiTarget').value,
+      revenueTarget=+document.getElementById('monthlyRevenueTarget').value||0,
       signupTarget=+document.getElementById('monthlySignupTarget').value,
       rltSessionsTarget=+document.getElementById('monthlyRltSessionsTarget').value,
       totalMinutesTarget=calculatedMonthlyMinutesTarget(monthNumber,year,target),
@@ -99,6 +102,7 @@ async function saveMonthlyTarget(){
   if(monthNumber<1||monthNumber>12)return showMonthlyTargetError('Please select a valid month.');
   if(!Number.isInteger(year)||year<2020||year>2100)return showMonthlyTargetError('Please enter a valid year.');
   if(!Number.isFinite(target)||target<0)return showMonthlyTargetError('Please enter a valid Mins Per Bed Per Hour target.');
+  if(!Number.isFinite(revenueTarget)||revenueTarget<0)return showMonthlyTargetError('Please enter a valid Monthly Revenue Target.');
   if(!Number.isInteger(signupTarget)||signupTarget<0)return showMonthlyTargetError('Please enter a valid New Sign Ups target.');
   if(!Number.isInteger(rltSessionsTarget)||rltSessionsTarget<0)return showMonthlyTargetError('Please enter a valid Red Light Therapy Only Sessions target.');
   if(!Number.isInteger(totalMinutesTarget)||totalMinutesTarget<0)return showMonthlyTargetError('Please enter a valid Total Minutes target.');
@@ -109,7 +113,7 @@ async function saveMonthlyTarget(){
     let error;
     if(editingMonthlyTargetId){
       ({error}=await sb.from('monthly_targets')
-        .update({mins_per_bed_per_hour_target:target,new_sign_ups_target:signupTarget,rlt_only_sessions_target:rltSessionsTarget,total_minutes_target:totalMinutesTarget,new_reviews_target:newReviewsTarget,rlt_case_studies_target:rltCaseStudiesTarget,bonus_1_kpi:bonus1Kpi,bonus_1_amount:bonus1Amount,bonus_2_kpi:bonus2Kpi,bonus_2_amount:bonus2Amount,bonus_3_kpi:bonus3Kpi,bonus_3_amount:bonus3Amount,updated_at:new Date().toISOString()})
+        .update({revenue_target:revenueTarget,mins_per_bed_per_hour_target:target,new_sign_ups_target:signupTarget,rlt_only_sessions_target:rltSessionsTarget,total_minutes_target:totalMinutesTarget,new_reviews_target:newReviewsTarget,rlt_case_studies_target:rltCaseStudiesTarget,bonus_1_kpi:bonus1Kpi,bonus_1_amount:bonus1Amount,bonus_2_kpi:bonus2Kpi,bonus_2_amount:bonus2Amount,bonus_3_kpi:bonus3Kpi,bonus_3_amount:bonus3Amount,updated_at:new Date().toISOString()})
         .eq('id',editingMonthlyTargetId));
     }else{
       // target_month retained for compatibility; Month + Year are the explicit unique identity.
@@ -119,6 +123,7 @@ async function saveMonthlyTarget(){
         target_month_number:monthNumber,
         target_year:year,
         mins_per_bed_per_hour_target:target,
+        revenue_target:revenueTarget,
         new_sign_ups_target:signupTarget,
         rlt_only_sessions_target:rltSessionsTarget,
         total_minutes_target:totalMinutesTarget,
@@ -263,6 +268,24 @@ function buildPerformanceCards(stack,monthNumber,year){
     ${reviewPerformanceCard(stack,monthNumber,year)}
   </div>`;
 }
+function revenueTargetStripHtml(monthNumber,year){
+  let today=localDateKey(),t=revenueTargetForDate(today);
+  let head=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Revenue Target (cash, bed card and online sales)</div>`;
+  if(!t)return head+`<div class='performanceReportEmpty'>No Monthly Revenue Target has been set for ${MONTH_NAMES[monthNumber-1]} ${year}. Add one under Sunbed Performance → Settings → Monthly Targets.</div></div>`;
+  let todayRev=revenueForTargetOnDate(today),
+      monthRevSoFar=t.revenueBefore+todayRev,
+      remaining=Math.max(0,t.monthTarget-monthRevSoFar),
+      cls=t.dayHours>0?(todayRev>=t.target?'historyStatusGood':'historyStatusBad'):'',
+      m=v=>`£${v.toFixed(2)}`;
+  return head+`<div class='revenueGrid' style='grid-template-columns:repeat(auto-fit,minmax(150px,1fr))'>
+    <div class='revenueMetric'><div class='label'>Monthly Revenue Target</div><div class='value'>${m(t.monthTarget)}</div></div>
+    <div class='revenueMetric'><div class='label'>Revenue So Far This Month</div><div class='value'>${m(monthRevSoFar)}</div></div>
+    <div class='revenueMetric'><div class='label'>Still Needed This Month</div><div class='value'>${m(remaining)}</div></div>
+    <div class='revenueMetric'><div class='label'>Required Per Opening Hour</div><div class='value'>${m(t.perHour)}</div></div>
+    <div class='revenueMetric'><div class='label'>Today's Target</div><div class='value'>${m(t.target)}</div></div>
+    <div class='revenueMetric'><div class='label'>Today's Revenue So Far</div><div class='value ${cls}'>${m(todayRev)}</div></div>
+  </div><div class='performanceReportFormula'>Today's target = (${m(t.monthTarget)} − ${m(t.revenueBefore)} taken before today) ÷ ${t.hoursLeft.toFixed(1)} opening hours left in the month × ${t.dayHours.toFixed(1)} hours today.</div></div>`;
+}
 function renderPerformanceReporting(){
   let host=document.getElementById('performanceReportingContent');if(!host)return;
   let now=currentMonthIdentity(),stack=getTargetStackFor(now.month,now.year);
@@ -274,6 +297,8 @@ function renderPerformanceReporting(){
   }else{
     currentHtml+=buildPerformanceCards(stack,now.month,now.year);
   }
+
+  currentHtml+=revenueTargetStripHtml(now.month,now.year);
 
   let monthStatus=reportingMonthStatus(now.month,now.year),
       revenueKeys=dateRangeKeys(monthStatus.monthStart,monthStatus.effectiveEnd),
