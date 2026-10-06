@@ -205,7 +205,7 @@ function wizPickSelectCustomer(id){
   document.getElementById('wizSelectCustomerError').style.display='none';
   if(!c.waiverSignedPresent)alert('Customer does not have a waiver in place yet. Please ask them to do it before continuing');
   checkExistingCustomerUsageWarning(id);
-  {let within24=subscriberWithin24HoursMessage(id,localDateKey());if(within24)alert(within24);}
+  {let alreadyToday=subscriberAlreadyHadSessionMessage(id,localDateKey());if(alreadyToday)alert(alreadyToday);}
   if(wizMode==='existing-booking')wizCheckBookingForCustomer(id);
   else applyTodaysBookingAutofill(id,'wizSession');
 }
@@ -418,7 +418,7 @@ function wizAddProductToPurchase(id){
       alert('This product can not be purchased until your current 7 day pass has expired');
       return;
     }
-    alert(`Please ensure the customer understands that they can:\n\n- Only use the beds once in a 24 hour period\n- Book a maximum of 15 minutes per session for the duration of the pass\n\nYou can continue processing the purchase once they understand this.`);
+    alert(`Please ensure the customer understands that they can:\n\n- Only use the beds once per day\n- Book a maximum of 15 minutes per session for the duration of the pass\n\nYou can continue processing the purchase once they understand this.`);
   }
   let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0,grantsUnlimitedPass:!!p.grantsUnlimitedPass,unlimitedPassDays:p.unlimitedPassDays||null};
   let targetList=entry.cardMachine==='Treatment Card'?wizPurchaseSelection.treatments:wizPurchaseSelection.glowStudio;
@@ -664,7 +664,7 @@ async function wizRecordSession(){
   if(staffMin>0&&!staffMemberName){err.textContent='Please enter the Staff Member Name.';err.style.display='block';return}
   if(rerunMin>0&&!rerunReason){err.textContent='Please select a Rerun Reason.';err.style.display='block';return}
   let sessionTypeValue=rlt?'Red Light Therapy':'Hybrid';
-  {let within24=subscriberWithin24HoursMessage(wizCustomerId,date);if(within24){err.textContent=within24;err.style.display='block';return}}
+  {let alreadyToday=subscriberAlreadyHadSessionMessage(wizCustomerId,date);if(alreadyToday){err.textContent=alreadyToday;err.style.display='block';return}}
   if(findRecentDuplicateSession(wizCustomerId,date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,wizMode==='new',wizBoughtBlockMinutes)){
     if(!confirm('This exact session has just been recorded, for the same user and amount of minutes. Do you want to proceed?'))return;
   }

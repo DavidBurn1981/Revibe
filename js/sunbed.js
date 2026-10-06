@@ -248,7 +248,7 @@ async function saveSunbedBooking(){
   }catch(e){
     let msg=e.message||'Could not create this booking.';
     if(msg.includes('INSUFFICIENT_MINUTES'))msg='This customer does not have enough minutes for this session.';
-    else if(msg.includes('UNLIMITED_DAILY_LIMIT'))msg='This customer is an Unlimited Member and can only have one session per 24 hours.';
+    else if(msg.includes('UNLIMITED_DAILY_LIMIT'))msg='This customer is an Unlimited Member and can only have one session per day.';
     else if(msg.includes('NO_BED_AVAILABLE'))msg='No suitable bed is available for that time - please try a different time or bed type.';
     err.textContent=msg;err.style.display='block';
   }finally{
@@ -349,7 +349,7 @@ async function saveEditBookingTime(){
     alert(`Booking moved to ${formatSunbedDisplayDate(row.booking_date)} at ${(row.start_time||'').slice(0,5)} on ${row.bed_name}.`);
   }catch(e){
     let msg=e.message||"Could not change this booking's time.";
-    if(msg.includes('UNLIMITED_DAILY_LIMIT'))msg='This customer is an Unlimited Member and can only have one session per 24 hours - the new time is too close to another of their sessions.';
+    if(msg.includes('UNLIMITED_DAILY_LIMIT'))msg='This customer is an Unlimited Member and can only have one session per day - they already have another session on that day.';
     else if(msg.includes('NO_BED_AVAILABLE'))msg='No suitable bed is available for that time - please pick a different slot.';
     err.textContent=msg;err.style.display='block';
   }finally{
