@@ -80,7 +80,7 @@ async function saveMonthEndReviews(){
 function getDailyTakings(dateKey){return (data.dailyTakings||[]).find(x=>x.date===dateKey)||null}
 function takingsTotal(x){return x?(+x.cash||0)+(+x.treatmentsCard||0)+(+x.bedCard||0):0}
 function updateDailyTakingsTotal(){
-  let total=(+document.getElementById('dailyCashTaken').value||0)+(+document.getElementById('dailyTreatmentsCardTaken').value||0)+(+document.getElementById('dailyBedCardTaken').value||0);
+  let total=(+document.getElementById('dailyCashTaken').value||0)+(+document.getElementById('dailyTreatmentsCardTaken').value||0)+(+document.getElementById('dailyBedCardTaken').value||0)+(+(document.getElementById('dailyOnlineSalesTaken')?.value)||0);
   document.getElementById('dailyTakingsTotal').textContent=`£${total.toFixed(2)}`;
 }
 function setDailyTakingsDate(key){document.getElementById('dailyTakingsDate').value=key;document.getElementById('dailyTakingsDateDisplay').value=formatSunbedDisplayDate(key);renderDailyTakings()}
