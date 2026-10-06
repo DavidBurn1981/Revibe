@@ -718,7 +718,14 @@ function onlineSalesForDate(dateKey){
   let membershipRows=(data.subscriptionEvents||[])
     .filter(e=>e.eventType==='subscription_started'&&e.occurredAt&&localDateKey(new Date(e.occurredAt))===dateKey)
     .map(e=>({createdAt:e.occurredAt,customerId:e.customerId,item:'Monthly Unlimited Membership (Online Purchase)',amount:e.details?.amount_paid_pence!=null?e.details.amount_paid_pence/100:fallbackMembershipPrice}));
-  return [...passRows,...membershipRows];
+  // Monthly renewals: counted on the day Stripe confirms the payment was taken
+  // (invoice.payment_succeeded), at the amount actually collected. A retry after
+  // a failed card payment therefore lands on the day it finally succeeds. The
+  // first invoice (subscription_create) is skipped - it's already counted above.
+  let renewalRows=(data.subscriptionEvents||[])
+    .filter(e=>e.eventType==='payment_succeeded'&&e.details?.billing_reason==='subscription_cycle'&&e.details?.amount_paid_pence!=null&&e.occurredAt&&localDateKey(new Date(e.occurredAt))===dateKey)
+    .map(e=>({createdAt:e.occurredAt,customerId:e.customerId,item:'Monthly Unlimited Membership (Renewal)',amount:e.details.amount_paid_pence/100}));
+  return [...passRows,...membershipRows,...renewalRows];
 }
 function renderDailySessionsPurchases(key){
   let table=document.getElementById('dailySessionsPurchasesTable');if(!table)return;
