@@ -175,6 +175,8 @@ function renderBedTracker(){
 
   document.getElementById('metricSessions').textContent=rows.length;
   document.getElementById('metricMinutes').textContent=total;
+  let headerSessionsEl=document.getElementById('headerSessionsValue');
+  if(headerSessionsEl)headerSessionsEl.textContent=rows.length;
   document.getElementById('metricSignups').textContent=signups;
   document.getElementById('metricRltMinutes').textContent=rlt;
   document.getElementById('metricHybridMinutes').textContent=hybrid;
@@ -773,6 +775,9 @@ function renderDailySessionsPage(key){
   let label=document.getElementById('dailySessionsDateLabel');
   if(label)label.textContent=formatBedSessionsDate(key);
 
+  let sessionsCountEl=document.getElementById('dailySessionsCountValue');
+  if(sessionsCountEl)sessionsCountEl.textContent=performanceSessions((data.bedSessions||[]).filter(x=>x.date===key)).length;
+
   let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
   let paygForDay=paygSessionTotalsForDay(key);
   let onlineForDay=onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0);
@@ -873,6 +878,7 @@ function renderBedSessionsModal(key){
   let totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
 
   document.getElementById('bedSessionsDateLabel').textContent=formatBedSessionsDate(key);
+  {let el=document.getElementById('bedSessionsCountValue');if(el)el.textContent=performanceSessions((data.bedSessions||[]).filter(x=>x.date===key)).length}
 
   let picker=document.getElementById('bedSessionsDatePicker');
   if(picker&&picker.value!==key)picker.value=key;
