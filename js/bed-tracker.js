@@ -117,7 +117,7 @@ function periodRevenue(keys){
       treatments=rows.reduce((s,x)=>s+(+x.treatmentsCard||0),0),
       beds=rows.reduce((s,x)=>s+(+x.bedCard||0),0),
       online=keys.reduce((s,k)=>s+onlineSalesForDate(k).reduce((ss,o)=>ss+o.amount,0),0);
-  return {cash,treatments,beds,online,total:cash+treatments+beds};
+  return {cash,treatments,beds,online,total:cash+treatments+beds,totalWithOnline:cash+treatments+beds+online};
 }
 const DAILY_AVERAGE_COMPARISON_ENABLED=false; // temporarily disabled while historic session data is added - see renderDailyAverageComparison()
 function renderDailyAverageComparison(){
@@ -300,6 +300,7 @@ function renderPeriodPerformance(mode,refDate){
     <div class='periodRevenueCard'><div class='label'>Total Bed Card</div><div class='value'>£${revenue.beds.toFixed(2)}</div></div>
     <div class='periodRevenueCard'><div class='label'>Total Treatment Card</div><div class='value'>£${revenue.treatments.toFixed(2)}</div></div>
     <div class='periodRevenueCard'><div class='label'>Total Online Sales</div><div class='value'>£${revenue.online.toFixed(2)}</div></div>
+    <div class='periodRevenueCard'><div class='label'>TOTAL</div><div class='value'>£${revenue.totalWithOnline.toFixed(2)}</div></div>
   </div>`;
 
   document.getElementById('perfContent').innerHTML=
@@ -310,10 +311,20 @@ function renderPeriodPerformance(mode,refDate){
       ${daily.map(d=>`<tr>
         <td><b>${parseLocalDateKey(d.key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td>
         <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td><td>${d.kpi.toFixed(1)}</td><td>${d.paidKpi.toFixed(1)}</td>
-        <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${d.onlineSales.toFixed(2)}</td><td>£${takingsTotal(d.takings).toFixed(2)}</td>
+        <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${d.onlineSales.toFixed(2)}</td><td>£${(takingsTotal(d.takings)+d.onlineSales).toFixed(2)}</td>
         <td>${d.weeklyPasses}</td><td>${d.monthlyUnlimited}</td>
         <td>${d.takings?.googleReviews===''||d.takings?.googleReviews==null?'—':d.takings.googleReviews}</td><td>${d.takings?.facebookReviews===''||d.takings?.facebookReviews==null?'—':d.takings.facebookReviews}</td>
       </tr>`).join('')}
+      ${(()=>{
+        let sum=f=>daily.reduce((t,d)=>t+(+f(d)||0),0),
+            rev=(d,k)=>+d.takings?.[k]||0;
+        return `<tr class='perfTotalRow' style='font-weight:800;border-top:2px solid var(--line)'>
+        <td><b>TOTAL</b></td>
+        <td>${sum(d=>d.sessions)}</td><td>${sum(d=>d.minutes)}</td><td>${sum(d=>d.rlt)}</td><td>${sum(d=>d.hybrid)}</td><td>${sum(d=>d.signups)}</td><td>${kpi.toFixed(1)}</td><td>${paidKpi.toFixed(1)}</td>
+        <td>£${sum(d=>rev(d,'cash')).toFixed(2)}</td><td>£${sum(d=>rev(d,'treatmentsCard')).toFixed(2)}</td><td>£${sum(d=>rev(d,'bedCard')).toFixed(2)}</td><td>£${sum(d=>d.onlineSales).toFixed(2)}</td><td>£${sum(d=>takingsTotal(d.takings)+d.onlineSales).toFixed(2)}</td>
+        <td>${sum(d=>d.weeklyPasses)}</td><td>${sum(d=>d.monthlyUnlimited)}</td>
+        <td>${sum(d=>d.takings?.googleReviews)}</td><td>${sum(d=>d.takings?.facebookReviews)}</td>
+      </tr>`})()}
     </table></div>`;
 }
 function drawBarChart(canvas,labels,values,valueSuffix=''){let ctx=canvas.getContext('2d'),ratio=window.devicePixelRatio||1,w=Math.max(canvas.parentElement.clientWidth,700),h=280;canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.scale(ratio,ratio);ctx.clearRect(0,0,w,h);let pad={l:48,r:18,t:22,b:52},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,max=Math.max(...values,1),step=cw/Math.max(labels.length,1),bar=Math.max(10,step*.62);ctx.font='11px Segoe UI';ctx.fillStyle='#9da3ad';ctx.strokeStyle='#30353d';ctx.lineWidth=1;for(let i=0;i<=4;i++){let y=pad.t+ch-(ch*i/4),v=Math.round(max*i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(v,pad.l-38,y+4)}values.forEach((v,i)=>{let x=pad.l+i*step+(step-bar)/2,bh=max?ch*(v/max):0,y=pad.t+ch-bh;ctx.fillStyle='#ff2d78';ctx.fillRect(x,y,bar,bh);ctx.fillStyle='#f5f5f7';ctx.textAlign='center';ctx.fillText(`${Number(v).toFixed(valueSuffix?1:0)}${valueSuffix}`,x+bar/2,Math.max(12,y-6));ctx.save();ctx.translate(x+bar/2,pad.t+ch+15);ctx.rotate(-.55);ctx.fillStyle='#9da3ad';ctx.fillText(labels[i],0,0);ctx.restore()});ctx.textAlign='left'}

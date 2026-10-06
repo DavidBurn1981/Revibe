@@ -287,11 +287,12 @@ function renderPerformanceReporting(){
   let monthStatus=reportingMonthStatus(now.month,now.year),
       revenueKeys=dateRangeKeys(monthStatus.monthStart,monthStatus.effectiveEnd),
       revenue=periodRevenue(revenueKeys);
-  currentHtml+=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Revenue to Date</div><div class='revenueGrid'>
+  currentHtml+=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Revenue to Date</div><div class='revenueGrid' style='grid-template-columns:repeat(auto-fit,minmax(130px,1fr))'>
     <div class='revenueMetric'><div class='label'>Cash Taken</div><div class='value'>£${revenue.cash.toFixed(2)}</div></div>
     <div class='revenueMetric'><div class='label'>Treatments Card</div><div class='value'>£${revenue.treatments.toFixed(2)}</div></div>
     <div class='revenueMetric'><div class='label'>Bed Card</div><div class='value'>£${revenue.beds.toFixed(2)}</div></div>
-    <div class='revenueMetric'><div class='label'>Total</div><div class='value'>£${revenue.total.toFixed(2)}</div></div>
+    <div class='revenueMetric'><div class='label'>Online Sales</div><div class='value'>£${revenue.online.toFixed(2)}</div></div>
+    <div class='revenueMetric'><div class='label'>Total</div><div class='value'>£${revenue.totalWithOnline.toFixed(2)}</div></div>
   </div></div>`;
 
   let monthSessionRows=performanceSessions(data.bedSessions.filter(x=>{let d=parseLocalDateKey(x.date);return d.getMonth()+1===now.month&&d.getFullYear()===now.year;}));
