@@ -232,15 +232,6 @@ function buildPerformanceCards(stack,monthNumber,year){
 
   return `<div class='performanceReportGrid'>
     <div class='performanceReportCard'>
-      <h3>Mins Per Bed Per Hour</h3>
-      <div class='performanceReportNumbers'>
-        ${performanceNumber('Target',Number(stack.target).toFixed(1))}
-        ${performanceNumber('Actual',actual.kpi.toFixed(1),kpiClass)}
-      </div>
-      <div class='performanceReportFormula'>${actual.minutes} total minutes ÷ ${BED_COUNT} beds ÷ ${actual.hours.toFixed(1)} opening hours.</div>
-    </div>
-
-    <div class='performanceReportCard'>
       <h3>New Sign Ups</h3>
       <div class='performanceReportNumbers'>
         ${performanceNumber('Month Target',stack.signupTarget)}
@@ -304,9 +295,7 @@ function renderPerformanceReporting(){
   currentHtml+=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Session Insight</div><div class='revenueGrid'>
     <div class='revenueMetric'><div class='label'>Average Session Length</div><div class='value'>${monthSessionRows.length?(monthSessionRows.reduce((s,x)=>s+perfMinutes(x),0)/monthSessionRows.length).toFixed(1):'0.0'} min</div></div>
     <div class='revenueMetric'><div class='label'>Total Minutes This Month</div><div class='value'>${monthTotalMinutes} min</div></div>
-    <div class='revenueMetric'><div class='label'>Minutes Per Bed Per Hour</div><div class='value'>${monthKpiValue.toFixed(1)}</div></div>
     <div class='revenueMetric'><div class='label'>Total Paid-For Minutes</div><div class='value'>${paidMinutes} min</div></div>
-    <div class='revenueMetric'><div class='label'>Paid-For Minutes Per Bed Per Hour</div><div class='value'>${paidKpiValue.toFixed(1)}</div></div>
   </div></div>`;
   let previous=(data.monthlyTargets||[])
     .filter(x=>x.year<now.year || (x.year===now.year&&x.monthNumber<now.month))

@@ -178,12 +178,6 @@ function renderBedTracker(){
   document.getElementById('metricSignups').textContent=signups;
   document.getElementById('metricRltMinutes').textContent=rlt;
   document.getElementById('metricHybridMinutes').textContent=hybrid;
-  document.getElementById('metricKpi').textContent=kpi.toFixed(1);
-  document.getElementById('metricPaidKpi').textContent=paidKpi.toFixed(1);
-  let headerKpiEl=document.getElementById('headerKpiValue');
-  if(headerKpiEl)headerKpiEl.textContent=kpi.toFixed(1);
-  let headerPaidKpiEl=document.getElementById('headerPaidKpiValue');
-  if(headerPaidKpiEl)headerPaidKpiEl.textContent=paidKpi.toFixed(1);
   let todayKey=localDateKey();
   let purchasesToday=(data.customerPurchases||[]).filter(p=>p.date===todayKey);
   let paygToday=paygSessionTotalsForDay(todayKey);
@@ -209,41 +203,6 @@ function renderBedTracker(){
   if(headerBookingsMadeEl)headerBookingsMadeEl.textContent=bookingsMadeOnDate(todayKey);
   let headerPortalRegistrationsEl=document.getElementById('headerPortalRegistrationsValue');
   if(headerPortalRegistrationsEl)headerPortalRegistrationsEl.textContent=portalRegistrationsOnDate(todayKey);
-  document.getElementById('metricPaidKpiDetail').textContent=elapsed>0
-    ?`${paidTotal} paid-for minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
-    :'Cash, Card and Account minutes only — Free and Staff minutes excluded.';
-  let currentTarget=getCurrentMonthlyTarget(),kpiTile=document.getElementById('metricKpi')?.closest('.metric');
-  document.getElementById('metricKpiTarget').textContent=currentTarget==null?'Target: not set':`Target: ${Number(currentTarget).toFixed(1)}`;
-  if(kpiTile){
-    kpiTile.classList.remove('kpiAboveTarget','kpiBelowTarget');
-    if(currentTarget!=null)kpiTile.classList.add(kpi>=currentTarget?'kpiAboveTarget':'kpiBelowTarget');
-  }
-  document.getElementById('metricKpiDetail').textContent=elapsed>0
-    ?`${total} total minutes ÷ ${BED_COUNT} beds ÷ ${elapsed.toFixed(1)} open hours`
-    :(()=>{let h=effectiveHoursForDate(today);return `KPI starts calculating once the shop opens at ${h.open}.`})();
-
-  // Month-to-date performance: all recorded minutes this month divided by
-  // 4 beds and all elapsed opening hours in the month so far.
-  let monthStart=new Date(now.getFullYear(),now.getMonth(),1),
-      monthKeys=dateRangeKeys(monthStart,now),
-      monthRows=performanceSessions(data.bedSessions.filter(x=>monthKeys.includes(x.date))),
-      monthMinutes=monthRows.reduce((sum,x)=>sum+perfMinutes(x),0),
-      monthPaidMinutes=monthRows.reduce((sum,x)=>sum+paidMinutes(x),0),
-      monthHours=periodOpenHours(monthKeys),
-      monthKpi=monthHours>0?monthMinutes/BED_COUNT/monthHours:0,
-      monthPaidKpi=monthHours>0?monthPaidMinutes/BED_COUNT/monthHours:0;
-
-  document.getElementById('metricMonthKpi').textContent=monthKpi.toFixed(1);
-  document.getElementById('metricMonthKpiDetail').textContent=monthHours>0
-    ?`${monthMinutes} month-to-date minutes ÷ ${BED_COUNT} beds ÷ ${monthHours.toFixed(1)} opening hours`
-    :'No elapsed opening hours yet this month.';
-  let monthPaidKpiEl=document.getElementById('metricMonthPaidKpi');
-  if(monthPaidKpiEl){
-    monthPaidKpiEl.textContent=monthPaidKpi.toFixed(1);
-    document.getElementById('metricMonthPaidKpiDetail').textContent=monthHours>0
-      ?`${monthPaidMinutes} paid-for month-to-date minutes ÷ ${BED_COUNT} beds ÷ ${monthHours.toFixed(1)} opening hours`
-      :'No elapsed opening hours yet this month.';
-  }
   renderMonthlyReviewsRecorder();
   renderDailyTakings();
 renderDailyAverageComparison();
@@ -252,7 +211,7 @@ function parseLocalDateKey(key){let [y,m,d]=key.split('-').map(Number);return ne
 function dayKpi(dateKey,totalMinutes){let today=localDateKey(),h=effectiveHoursForDate(dateKey);let hours=dateKey===today?getElapsedOpeningHours(new Date()):hoursDuration(h);return hours>0?totalMinutes/BED_COUNT/hours:0}
 function aggregateSessions(rows){rows=performanceSessions(rows);let total=rows.reduce((a,b)=>a+perfMinutes(b),0),paid=rows.reduce((a,b)=>a+paidMinutes(b),0);return {sessions:rows.length,minutes:total,paidMinutes:paid,signups:rows.filter(x=>x.newSignup==='Yes'||x.newSignup===true).length,rlt:rows.filter(x=>normalizeSessionType(x)==='Red Light Therapy').reduce((a,b)=>a+perfMinutes(b),0),hybrid:rows.filter(x=>normalizeSessionType(x)==='Hybrid').reduce((a,b)=>a+perfMinutes(b),0),staffMinutes:rows.reduce((a,b)=>a+(+b.staffMinutes||0),0),freeMinutes:rows.reduce((a,b)=>a+(+b.freeMinutes||0),0),subscriberMinutes:rows.reduce((a,b)=>a+(+b.subscriberMinutes||0),0)}}
 function dateRangeKeys(start,end){let keys=[],d=new Date(start);d.setHours(12,0,0,0);let e=new Date(end);e.setHours(12,0,0,0);while(d<=e){keys.push(localDateKey(d));d.setDate(d.getDate()+1)}return keys}
-function summaryMetricsHtml(a,kpi,paidKpi,extraMinuteTiles,showSubscriberTile){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div>${extraMinuteTiles?`<div class='metric'><div class='label'>Staff Minutes Used</div><div class='value'>${a.staffMinutes}</div></div><div class='metric'><div class='label'>Free Minutes Used</div><div class='value'>${a.freeMinutes}</div></div>`:''}${showSubscriberTile?`<div class='metric'><div class='label'>Subscriber Minutes Used</div><div class='value'>${a.subscriberMinutes}</div></div>`:''}<div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div><div class='metric'><div class='label'>KPI (All Minutes)</div><div class='value'>${kpi.toFixed(1)}</div></div><div class='metric'><div class='label'>KPI (Paid Minutes)</div><div class='value'>${paidKpi.toFixed(1)}</div></div></div>`}
+function summaryMetricsHtml(a,kpi,paidKpi,extraMinuteTiles,showSubscriberTile){return `<div class='perfMetrics'><div class='metric'><div class='label'>Sessions</div><div class='value'>${a.sessions}</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value'>${a.minutes}</div></div>${extraMinuteTiles?`<div class='metric'><div class='label'>Staff Minutes Used</div><div class='value'>${a.staffMinutes}</div></div><div class='metric'><div class='label'>Free Minutes Used</div><div class='value'>${a.freeMinutes}</div></div>`:''}${showSubscriberTile?`<div class='metric'><div class='label'>Subscriber Minutes Used</div><div class='value'>${a.subscriberMinutes}</div></div>`:''}<div class='metric'><div class='label'>New Sign Ups</div><div class='value'>${a.signups}</div></div><div class='metric'><div class='label'>Red Light Minutes</div><div class='value'>${a.rlt}</div></div><div class='metric'><div class='label'>Hybrid Minutes</div><div class='value'>${a.hybrid}</div></div></div>`}
 function periodOpenHours(keys){let today=localDateKey();return keys.reduce((sum,k)=>sum+(k===today?getElapsedOpeningHours(new Date()):hoursDuration(effectiveHoursForDate(k))),0)}
 let currentPeriodMode=null,currentPeriodRefDate=null;
 function renderPeriodPerformance(mode,refDate){
@@ -307,10 +266,10 @@ function renderPeriodPerformance(mode,refDate){
     revenueSummary+
     summaryMetricsHtml(a,kpi,paidKpi,mode==='month',mode==='week')+
     `<div class='card perfTableWrap'><table class='table'>
-      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>KPI (All)</th><th>KPI (Paid)</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Online Sales</th><th>Total Revenue</th><th>Weekly Passes Sold</th><th>Monthly Unlimited Sold</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
+      <tr><th>Day</th><th>Sessions</th><th>Minutes</th><th>RLT</th><th>Hybrid</th><th>Sign Ups</th><th>Cash</th><th>Treatments Card</th><th>Bed Card</th><th>Online Sales</th><th>Total Revenue</th><th>Weekly Passes Sold</th><th>Monthly Unlimited Sold</th><th>Google Reviews</th><th>Facebook Reviews</th></tr>
       ${daily.map(d=>`<tr>
         <td><b>${parseLocalDateKey(d.key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td>
-        <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td><td>${d.kpi.toFixed(1)}</td><td>${d.paidKpi.toFixed(1)}</td>
+        <td>${d.sessions}</td><td>${d.minutes}</td><td>${d.rlt}</td><td>${d.hybrid}</td><td>${d.signups}</td>
         <td>£${(+d.takings?.cash||0).toFixed(2)}</td><td>£${(+d.takings?.treatmentsCard||0).toFixed(2)}</td><td>£${(+d.takings?.bedCard||0).toFixed(2)}</td><td>£${d.onlineSales.toFixed(2)}</td><td>£${(takingsTotal(d.takings)+d.onlineSales).toFixed(2)}</td>
         <td>${d.weeklyPasses}</td><td>${d.monthlyUnlimited}</td>
         <td>${d.takings?.googleReviews===''||d.takings?.googleReviews==null?'—':d.takings.googleReviews}</td><td>${d.takings?.facebookReviews===''||d.takings?.facebookReviews==null?'—':d.takings.facebookReviews}</td>
@@ -320,7 +279,7 @@ function renderPeriodPerformance(mode,refDate){
             rev=(d,k)=>+d.takings?.[k]||0;
         return `<tr class='perfTotalRow' style='font-weight:800;border-top:2px solid var(--line)'>
         <td><b>TOTAL</b></td>
-        <td>${sum(d=>d.sessions)}</td><td>${sum(d=>d.minutes)}</td><td>${sum(d=>d.rlt)}</td><td>${sum(d=>d.hybrid)}</td><td>${sum(d=>d.signups)}</td><td>${kpi.toFixed(1)}</td><td>${paidKpi.toFixed(1)}</td>
+        <td>${sum(d=>d.sessions)}</td><td>${sum(d=>d.minutes)}</td><td>${sum(d=>d.rlt)}</td><td>${sum(d=>d.hybrid)}</td><td>${sum(d=>d.signups)}</td>
         <td>£${sum(d=>rev(d,'cash')).toFixed(2)}</td><td>£${sum(d=>rev(d,'treatmentsCard')).toFixed(2)}</td><td>£${sum(d=>rev(d,'bedCard')).toFixed(2)}</td><td>£${sum(d=>d.onlineSales).toFixed(2)}</td><td>£${sum(d=>takingsTotal(d.takings)+d.onlineSales).toFixed(2)}</td>
         <td>${sum(d=>d.weeklyPasses)}</td><td>${sum(d=>d.monthlyUnlimited)}</td>
         <td>${sum(d=>d.takings?.googleReviews)}</td><td>${sum(d=>d.takings?.facebookReviews)}</td>
@@ -814,14 +773,6 @@ function renderDailySessionsPage(key){
   let label=document.getElementById('dailySessionsDateLabel');
   if(label)label.textContent=formatBedSessionsDate(key);
 
-  let kpi=Number(bedSessionHistoryKpi(key));
-  let kpiEl=document.getElementById('dailySessionsKpiValue');
-  if(kpiEl)kpiEl.textContent=Number.isFinite(kpi)?kpi.toFixed(1):'0.0';
-
-  let paidKpi=Number(bedSessionHistoryPaidKpi(key));
-  let paidKpiEl=document.getElementById('dailySessionsPaidKpiValue');
-  if(paidKpiEl)paidKpiEl.textContent=Number.isFinite(paidKpi)?paidKpi.toFixed(1):'0.0';
-
   let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
   let paygForDay=paygSessionTotalsForDay(key);
   let onlineForDay=onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0);
@@ -922,10 +873,6 @@ function renderBedSessionsModal(key){
   let totalMinutes=rows.reduce((sum,x)=>sum+(+x.length||0),0);
 
   document.getElementById('bedSessionsDateLabel').textContent=formatBedSessionsDate(key);
-  {
-    let kpi=Number(bedSessionHistoryKpi(key));
-    document.getElementById('bedSessionsKpiValue').textContent=Number.isFinite(kpi)?kpi.toFixed(1):'0.0';
-  }
 
   let picker=document.getElementById('bedSessionsDatePicker');
   if(picker&&picker.value!==key)picker.value=key;
