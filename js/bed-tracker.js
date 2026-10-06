@@ -739,6 +739,14 @@ function renderDailySessionsPurchases(key){
   if(treatmentsTotalEl)treatmentsTotalEl.textContent=`£${treatmentsTotal.toFixed(2)}`;
   let glowStudioTotalEl=document.getElementById('dailySessionsGlowStudioTotalValue');
   if(glowStudioTotalEl)glowStudioTotalEl.textContent=`£${glowStudioTotal.toFixed(2)}`;
+  // Bottom panel must tally with the top "Total Purchases": shop purchases
+  // (Treatments + Glow Studio) + pay-as-you-go sessions + online sales.
+  let paygDayTotal=paygForPurchasesTotal.cash+paygForPurchasesTotal.card;
+  let onlineDayTotal=onlineRows.reduce((s,o)=>s+o.amount,0);
+  let setTxt=(id,v)=>{let el=document.getElementById(id);if(el)el.textContent=`£${v.toFixed(2)}`;};
+  setTxt('dailySessionsPaygTotalValue',paygDayTotal);
+  setTxt('dailySessionsPurchasesOnlineValue',onlineDayTotal);
+  setTxt('dailySessionsAllTotalValue',dayTotal);
 
   let shopRowsHtml=rows.map(p=>{
     let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
@@ -755,7 +763,8 @@ function renderDailySessionsPurchases(key){
     let customerLabel=customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</a>`:'—';
     return {sortKey:o.createdAt||'',html:`<tr><td>${timeLabel}</td><td>Online</td><td>${customerLabel}</td><td>${escapeHtml(o.item)}</td><td>—</td><td>—</td><td>—</td><td><b>£${o.amount.toFixed(2)}</b></td></tr>`};
   });
-  let allRowsHtml=[...shopRowsHtml,...onlineRowsHtml].sort((a,b)=>b.sortKey.localeCompare(a.sortKey)).map(r=>r.html).join('');
+  let paygRowsHtml=paygDayTotal>0?[{sortKey:'',html:`<tr><td>—</td><td>Shop</td><td>—</td><td>Pay As You Go sessions (all customers)</td><td>£${paygForPurchasesTotal.cash.toFixed(2)}</td><td>—</td><td>—</td><td><b>£${paygDayTotal.toFixed(2)}</b></td></tr>`}]:[];
+  let allRowsHtml=[...shopRowsHtml,...onlineRowsHtml,...paygRowsHtml].sort((a,b)=>b.sortKey.localeCompare(a.sortKey)).map(r=>r.html).join('');
 
   table.innerHTML='<tr><th>Time</th><th>Channel</th><th>Customer</th><th>Items</th><th>Cash</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
     (allRowsHtml||`<tr><td colspan='8' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this day.</td></tr>`);
