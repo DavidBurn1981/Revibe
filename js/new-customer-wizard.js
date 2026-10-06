@@ -205,6 +205,7 @@ function wizPickSelectCustomer(id){
   document.getElementById('wizSelectCustomerError').style.display='none';
   if(!c.waiverSignedPresent)alert('Customer does not have a waiver in place yet. Please ask them to do it before continuing');
   checkExistingCustomerUsageWarning(id);
+  {let within24=subscriberWithin24HoursMessage(id,localDateKey());if(within24)alert(within24);}
   if(wizMode==='existing-booking')wizCheckBookingForCustomer(id);
   else applyTodaysBookingAutofill(id,'wizSession');
 }
@@ -663,6 +664,7 @@ async function wizRecordSession(){
   if(staffMin>0&&!staffMemberName){err.textContent='Please enter the Staff Member Name.';err.style.display='block';return}
   if(rerunMin>0&&!rerunReason){err.textContent='Please select a Rerun Reason.';err.style.display='block';return}
   let sessionTypeValue=rlt?'Red Light Therapy':'Hybrid';
+  {let within24=subscriberWithin24HoursMessage(wizCustomerId,date);if(within24){err.textContent=within24;err.style.display='block';return}}
   if(findRecentDuplicateSession(wizCustomerId,date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,wizMode==='new',wizBoughtBlockMinutes)){
     if(!confirm('This exact session has just been recorded, for the same user and amount of minutes. Do you want to proceed?'))return;
   }

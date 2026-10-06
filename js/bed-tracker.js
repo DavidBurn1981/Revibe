@@ -1327,6 +1327,29 @@ function checkSkinTypeSessionWarning(customerId,totalLength){
   lastSkinTypeWarningKey=key;
   document.getElementById('skinTypeWarningModal').classList.add('show');
 }
+// Subscribers (Monthly Unlimited and 1 Week Pass) can only have one session per
+// 24 hours - the same rule the booking system enforces. Returns a plain-English
+// message (including when they can next tan) if recording a session now would
+// break it, otherwise null. Looks at sessions already recorded on the tracker.
+function subscriberWithin24HoursMessage(customerId,dateKey,now){
+  let c=customerId?(data.customers||[]).find(x=>x.id===customerId):null;
+  if(!c||c.subscriptionStatus!=='Subscriber')return null;
+  now=now||new Date();
+  let key=dateKey||localDateKey(now);
+  let [y,m,d]=key.split('-').map(Number);
+  let newStart=new Date(y,m-1,d,now.getHours(),now.getMinutes());
+  let DAY=24*3600*1000;
+  let nearest=null;
+  (data.bedSessions||[]).filter(x=>x.customerId===customerId&&x.date&&x.time).forEach(x=>{
+    let [sy,sm,sd]=x.date.split('-').map(Number),[hh,mm]=x.time.split(':').map(Number);
+    let t=new Date(sy,sm-1,sd,hh,mm);
+    if(Math.abs(newStart-t)<DAY&&(!nearest||t>nearest))nearest=t;
+  });
+  if(!nearest)return null;
+  let fmt=t=>t.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+' at '+t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  let next=new Date(nearest.getTime()+DAY);
+  return `${c.firstName} ${c.lastName} is a subscriber and can only have one session per 24 hours. Their last session was ${fmt(nearest)}, so they can have another from ${fmt(next)}.`;
+}
 function checkExistingCustomerUsageWarning(customerId){
   if(!customerId)return;
   let sessions=(data.bedSessions||[]).filter(x=>x.customerId===customerId);
@@ -1525,6 +1548,7 @@ async function recordBedSession(){
  if(staffMin>0&&!staffMemberName)return alert('Please enter the Staff Member Name.');
  if(rerunMin>0&&!rerunReason)return alert('Please select a Rerun Reason.');
  let sessionTypeValue=rlt?'Red Light Therapy':'Hybrid';
+ {let within24=subscriberWithin24HoursMessage(customerId,date);if(within24)return alert(within24);}
  if(findRecentDuplicateSession(customerId,date,cashMin,cardMin,accountMin,freeMin,staffMin,rerunMin,sessionTypeValue,newSignup,purchasedBlock)){
    if(!confirm('This exact session has just been recorded, for the same user and amount of minutes. Do you want to proceed?'))return;
  }
