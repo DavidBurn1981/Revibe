@@ -529,12 +529,20 @@ function renderCustomerPurchases(c){
    return `<tr><td><b>${dateLabel}</b></td><td>${escapeHtml(s.time||'')}</td><td>${s.length} min</td><td>${s.accountMinutes} min</td><td>${escapeHtml(normalizeSessionType(s))}</td></tr>`;
  }).join(''):"<tr><td colspan='5' class='muted'>No sessions yet.</td></tr>")
  let purchases=(data.customerPurchases||[]).filter(p=>p.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date)||(b.createdAt||'').localeCompare(a.createdAt||''));
- document.getElementById('customerRecordPurchasesTable').innerHTML="<tr><th>Date</th><th>Items</th><th>Grand Total</th></tr>"+(purchases.length?purchases.map(p=>{
+ // Online purchases (portal passes / minutes) are stored as account transactions, not till
+ // purchases. Show them here too, display-only: they are NOT till takings and are already
+ // counted in Online Sales, so they are not clickable and not added into any totals.
+ let tillRows=purchases.map(p=>{
    let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
    let itemSummary=items.map(i=>escapeHtml(i.title)).join(', ')||'—';
-   let dateLabel=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-   return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${dateLabel}</b></td><td>${itemSummary}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
- }).join(''):"<tr><td colspan='3' class='muted'>No purchases yet.</td></tr>")
+   return {sort:p.date+'|'+(p.createdAt||''),html:`<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td><td>${itemSummary}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`};
+ });
+ let onlineRows=(data.customerTransactions||[]).filter(t=>t.customerId===c.id&&/\(Online Purchase\)/.test(t.product||'')&&t.createdAt).map(t=>{
+   let d=new Date(t.createdAt),key=localDateKey(d);
+   return {sort:key+'|'+t.createdAt,html:`<tr><td><b>${parseLocalDateKey(key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td><td>${escapeHtml(t.product)} <span class='muted'>(Online)</span></td><td><b>£${t.value.toFixed(2)}</b></td></tr>`};
+ });
+ let allRows=tillRows.concat(onlineRows).sort((a,b)=>b.sort.localeCompare(a.sort));
+ document.getElementById('customerRecordPurchasesTable').innerHTML="<tr><th>Date</th><th>Items</th><th>Grand Total</th></tr>"+(allRows.length?allRows.map(r=>r.html).join(''):"<tr><td colspan='3' class='muted'>No purchases yet.</td></tr>")
 }
 function openBlockPurchase(id){purchaseProductId=id;document.getElementById('purchaseQty').value='1';document.getElementById('purchaseCardAmount').value='';document.getElementById('purchaseCashAmount').value='';document.getElementById('purchaseModalError').textContent='';document.getElementById('purchaseModalError').style.display='none';updatePurchaseSummary();document.getElementById('purchaseModal').classList.add('show')}
 function updatePurchaseSummary(){
