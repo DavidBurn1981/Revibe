@@ -102,8 +102,16 @@ function checkNewCustomerAgeWarnings(){
     alert('Challenge 25, ask for ID');
   }
 }
-function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';document.getElementById('portalAccessStatus').innerHTML=`<div class='muted'>Save this customer first before setting up portal access.</div>`;document.getElementById('portalAccessNoAccount').style.display='none';document.getElementById('portalAccessHasAccount').style.display='none';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';document.getElementById('custUnlimitedMember').value='No';document.getElementById('custNoShowsRow').style.display='none';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+function openCustomerCreate(){editingCustomerId=null;uvAllowedManuallySet=false;document.getElementById('customerModalTitle').textContent='New Customer';document.getElementById('customerAccountLabel').textContent='Account number will be generated automatically.';document.getElementById('portalAccessStatus').innerHTML=`<div class='muted'>Save this customer first before setting up portal access.</div>`;document.getElementById('portalAccessNoAccount').style.display='none';document.getElementById('portalAccessHasAccount').style.display='none';['custFirst','custLast','custDob','custPhone','custEmail','custAddress','custHealthNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('custUv').value='true';document.getElementById('custIdChecked').value='false';document.getElementById('custIdDate').value='';document.getElementById('custMinutes').value='0';document.getElementById('custUvAllowed').value='false';document.getElementById('custWaiverSigned').value='false';document.getElementById('custBedUse').value='Hybrid';document.getElementById('custPreferredBed').value='Any Bed';document.getElementById('custBedDemo').value='false';document.getElementById('custUnlimitedMember').value='No';document.getElementById('custPassExpiryText').style.display='none';document.getElementById('custNoShowsRow').style.display='none';updateUvAllowedColour();setVerifiedBySelections([]);document.getElementById('verifiedByRow').style.display='none';selectedSkinType=null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.remove('selected'));document.getElementById('customerPurchaseArea').style.display='none';document.getElementById('customerError').style.display='none';switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
 function openCustomer(id){let c=data.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;document.getElementById('customerModalTitle').textContent=`${c.firstName} ${c.lastName}`;document.getElementById('customerAccountLabel').textContent=`Account ${c.accountNumber}`;renderPortalAccessTab(c);document.getElementById('custFirst').value=c.firstName;document.getElementById('custLast').value=c.lastName;document.getElementById('custDob').value=c.dob;document.getElementById('custPhone').value=c.phone||'';document.getElementById('custEmail').value=c.email||'';document.getElementById('custAddress').value=c.address||'';document.getElementById('custUv').value=String(c.uv);document.getElementById('custIdChecked').value=String(c.idChecked);document.getElementById('custIdDate').value=c.idCheckedDate||'';document.getElementById('custMinutes').value=c.minutesLeft;document.getElementById('custUvAllowed').value=String(!!c.uvAllowed);document.getElementById('custWaiverSigned').value=String(!!c.waiverSignedPresent);document.getElementById('custBedUse').value=c.bedUse||'Hybrid';document.getElementById('custPreferredBed').value=c.preferredBed||'Any Bed';document.getElementById('custBedDemo').value=String(!!c.bedDemoProvided);document.getElementById('custUnlimitedMember').value=c.subscriptionStatus==='Subscriber'?(c.subscriptionType==='7_Day_Pass'?'Yes (1 Week Pass)':c.subscriptionType==='Monthly'?'Yes (Monthly)':'Yes'):c.subscriptionStatus==='Subscriber - Failed Payment'?'Yes (Payment Issue)':'No';
+let passExpiryEl=document.getElementById('custPassExpiryText');
+document.getElementById('custCancelSubBtn').style.display=(c.subscriptionStatus==='Subscriber'||c.subscriptionStatus==='Subscriber - Failed Payment')?'inline-block':'none';
+if(c.subscriptionStatus==='Subscriber'&&c.subscriptionType==='7_Day_Pass'&&c.subscriptionExpiresAt){
+  passExpiryEl.textContent=`Expires ${new Date(c.subscriptionExpiresAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}`;
+  passExpiryEl.style.display='block';
+}else{
+  passExpiryEl.style.display='none';
+}
 let noShowsRow=document.getElementById('custNoShowsRow');
 if(c.subscriptionStatus==='Subscriber'){
   let noShowCount=(data.sunbedBookings||[]).filter(b=>b.customerId===c.id&&(b.status==='No Show'||b.status==='Cancelled Within Hour'||(b.status==='Cancelled'&&!b.minutesRefunded))).length;
@@ -112,6 +120,34 @@ if(c.subscriptionStatus==='Subscriber'){
 }else{
   noShowsRow.style.display='none';
 }updateUvAllowedColour();document.getElementById('custHealthNotes').value=c.generalHealthNotes||'';setVerifiedBySelections(c.verifiedBy||[]);document.getElementById('verifiedByRow').style.display=c.idChecked?'block':'none';selectedSkinType=c.skinType||null;document.querySelectorAll('.skinTypeBtn').forEach(b=>b.classList.toggle('selected',+b.dataset.type===selectedSkinType));document.getElementById('customerPurchaseArea').style.display='block';renderCustomerPurchases(c);switchCustomerTab('personal');document.getElementById('customerModal').classList.add('show')}
+async function cancelCustomerSubscription(){
+  let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
+  let name=`${c.firstName} ${c.lastName}`;
+  let msg=`Cancel ${name}'s subscription? This sets their Subscribed Customer field to No.`;
+  if(c.stripeSubscriptionId)msg+=`\n\nThis ALSO cancels their monthly card payments in Stripe straight away, so they will not be charged again. This cannot be undone.`;
+  if(!confirm(msg))return;
+  let btn=document.getElementById('custCancelSubBtn');btn.disabled=true;
+  try{
+    // Cancels the real Stripe subscription first (so billing actually stops), then marks
+    // the account as not subscribed. If Stripe refuses, nothing is changed here.
+    let {data:result,error}=await sb.functions.invoke('cancel-customer-subscription',{body:{customer_id:c.id}});
+    if(error){
+      let detail='';
+      try{let b=await error.context.json();detail=b&&b.error?b.error:''}catch(_){}
+      throw new Error(detail||error.message||'Could not cancel this subscription.');
+    }
+    if(!result||!result.success)throw new Error((result&&result.error)||'Could not cancel this subscription.');
+    await loadLiveData();
+    // Update just the subscription bits on screen rather than re-opening the whole
+    // record, so anything else staff have typed into this open account isn't lost.
+    document.getElementById('custUnlimitedMember').value='No';
+    document.getElementById('custCancelSubBtn').style.display='none';
+    document.getElementById('custPassExpiryText').style.display='none';
+    document.getElementById('custNoShowsRow').style.display='none';
+    if(typeof renderCustomers==='function')renderCustomers();
+  }catch(e){alert(e.message||'Could not cancel this subscription.')}
+  finally{btn.disabled=false}
+}
 function renderPortalAccessTab(c){
   let statusEl=document.getElementById('portalAccessStatus'),noAccount=document.getElementById('portalAccessNoAccount'),hasAccount=document.getElementById('portalAccessHasAccount');
   if(c.authUserId){
@@ -500,12 +536,20 @@ function renderCustomerPurchases(c){
    return `<tr><td><b>${dateLabel}</b></td><td>${escapeHtml(s.time||'')}</td><td>${s.length} min</td><td>${s.accountMinutes} min</td><td>${escapeHtml(normalizeSessionType(s))}</td></tr>`;
  }).join(''):"<tr><td colspan='5' class='muted'>No sessions yet.</td></tr>")
  let purchases=(data.customerPurchases||[]).filter(p=>p.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date)||(b.createdAt||'').localeCompare(a.createdAt||''));
- document.getElementById('customerRecordPurchasesTable').innerHTML="<tr><th>Date</th><th>Items</th><th>Grand Total</th></tr>"+(purchases.length?purchases.map(p=>{
+ // Online purchases (portal passes / minutes) are stored as account transactions, not till
+ // purchases. Show them here too, display-only: they are NOT till takings and are already
+ // counted in Online Sales, so they are not clickable and not added into any totals.
+ let tillRows=purchases.map(p=>{
    let items=(data.customerPurchaseItems||[]).filter(i=>i.purchaseId===p.id);
    let itemSummary=items.map(i=>escapeHtml(i.title)).join(', ')||'—';
-   let dateLabel=parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-   return `<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${dateLabel}</b></td><td>${itemSummary}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`;
- }).join(''):"<tr><td colspan='3' class='muted'>No purchases yet.</td></tr>")
+   return {sort:p.date+'|'+(p.createdAt||''),html:`<tr class='clinicRow' onclick="openCustomerPurchaseDetail('${p.id}')"><td><b>${parseLocalDateKey(p.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td><td>${itemSummary}</td><td><b>£${p.grandTotal.toFixed(2)}</b></td></tr>`};
+ });
+ let onlineRows=(data.customerTransactions||[]).filter(t=>t.customerId===c.id&&/\(Online Purchase\)/.test(t.product||'')&&t.createdAt).map(t=>{
+   let d=new Date(t.createdAt),key=localDateKey(d);
+   return {sort:key+'|'+t.createdAt,html:`<tr><td><b>${parseLocalDateKey(key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td><td>${escapeHtml(t.product)} <span class='muted'>(Online)</span></td><td><b>£${t.value.toFixed(2)}</b></td></tr>`};
+ });
+ let allRows=tillRows.concat(onlineRows).sort((a,b)=>b.sort.localeCompare(a.sort));
+ document.getElementById('customerRecordPurchasesTable').innerHTML="<tr><th>Date</th><th>Items</th><th>Grand Total</th></tr>"+(allRows.length?allRows.map(r=>r.html).join(''):"<tr><td colspan='3' class='muted'>No purchases yet.</td></tr>")
 }
 function openBlockPurchase(id){purchaseProductId=id;document.getElementById('purchaseQty').value='1';document.getElementById('purchaseCardAmount').value='';document.getElementById('purchaseCashAmount').value='';document.getElementById('purchaseModalError').textContent='';document.getElementById('purchaseModalError').style.display='none';updatePurchaseSummary();document.getElementById('purchaseModal').classList.add('show')}
 function updatePurchaseSummary(){
