@@ -124,12 +124,19 @@ async function cancelCustomerSubscription(){
   let c=data.customers.find(x=>x.id===editingCustomerId);if(!c)return;
   let name=`${c.firstName} ${c.lastName}`;
   let msg=`Cancel ${name}'s subscription? This sets their Subscribed Customer field to No.`;
-  if(c.stripeSubscriptionId)msg+=`\n\nNOTE: this does NOT stop their monthly card payments in Stripe - cancel the subscription there too (or use Manage Membership) or they will keep being charged.`;
+  if(c.stripeSubscriptionId)msg+=`\n\nThis ALSO cancels their monthly card payments in Stripe straight away, so they will not be charged again. This cannot be undone.`;
   if(!confirm(msg))return;
   let btn=document.getElementById('custCancelSubBtn');btn.disabled=true;
   try{
-    let {error}=await sb.from('customers').update({subscription_status:'No'}).eq('id',c.id);
-    if(error)throw error;
+    // Cancels the real Stripe subscription first (so billing actually stops), then marks
+    // the account as not subscribed. If Stripe refuses, nothing is changed here.
+    let {data:result,error}=await sb.functions.invoke('cancel-customer-subscription',{body:{customer_id:c.id}});
+    if(error){
+      let detail='';
+      try{let b=await error.context.json();detail=b&&b.error?b.error:''}catch(_){}
+      throw new Error(detail||error.message||'Could not cancel this subscription.');
+    }
+    if(!result||!result.success)throw new Error((result&&result.error)||'Could not cancel this subscription.');
     await loadLiveData();
     // Update just the subscription bits on screen rather than re-opening the whole
     // record, so anything else staff have typed into this open account isn't lost.
