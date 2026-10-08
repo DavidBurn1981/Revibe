@@ -1,3 +1,22 @@
+async function loadAllCustomerTransactions(){
+  // Supabase returns at most 1000 rows per request, so read in pages. Without this,
+  // once the table passed 1000 rows the newest ones were silently left out.
+  const pageSize=1000;
+  let allRows=[],from=0;
+  while(true){
+    let {data:rows,error}=await sb
+      .from('customer_transactions')
+      .select('*')
+      .order('created_at',{ascending:true})
+      .order('id',{ascending:true})
+      .range(from,from+pageSize-1);
+    if(error)return {data:null,error};
+    allRows=allRows.concat(rows||[]);
+    if(!rows||rows.length<pageSize)break;
+    from+=pageSize;
+  }
+  return {data:allRows,error:null};
+}
 async function loadAllBedSessions(){
   const pageSize=1000;
   let allRows=[];
@@ -45,7 +64,7 @@ async function loadLiveData(){
     sb.from('finance_outgoings').select('*').order('finance_year').order('finance_month'),
     sb.from('customers').select('*').order('last_name'),
     sb.from('tanning_rlt_products').select('*').order('title'),
-    sb.from('customer_transactions').select('*').order('created_at'),
+    loadAllCustomerTransactions(),
     sb.from('opening_hours').select('*').order('day_of_week'),
     sb.from('opening_hours_history').select('*').order('effective_from'),
     sb.from('business_planner_actions').select('*').order('action_date'),
