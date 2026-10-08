@@ -1,22 +1,22 @@
-async function loadAllCustomerTransactions(){
-  // Supabase returns at most 1000 rows per request, so read in pages. Without this,
-  // once the table passed 1000 rows the newest ones were silently left out.
+async function loadAllRows(table,select,orders){
+  // Supabase hands back at most 1000 rows per request. Read in pages so that no list
+  // can silently lose rows as the business grows. 'id' is added last so paging is stable.
   const pageSize=1000;
   let allRows=[],from=0;
   while(true){
-    let {data:rows,error}=await sb
-      .from('customer_transactions')
-      .select('*')
-      .order('created_at',{ascending:true})
-      .order('id',{ascending:true})
-      .range(from,from+pageSize-1);
+    let q=sb.from(table).select(select);
+    (orders||[]).forEach(o=>{q=q.order(o[0],{ascending:o[1]!==false})});
+    q=q.order('id',{ascending:true}).range(from,from+pageSize-1);
+    let {data:rows,error}=await q;
     if(error)return {data:null,error};
-    allRows=allRows.concat(rows||[]);
-    if(!rows||rows.length<pageSize)break;
+    rows=rows||[];
+    allRows=allRows.concat(rows);
+    if(rows.length<pageSize)break;
     from+=pageSize;
   }
   return {data:allRows,error:null};
 }
+function loadAllCustomerTransactions(){return loadAllRows('customer_transactions','*',[['created_at',true]])}
 async function loadAllBedSessions(){
   const pageSize=1000;
   let allRows=[];
@@ -44,38 +44,38 @@ async function loadAllBedSessions(){
 }
 async function loadLiveData(){
   let [products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions,staffRotas,apartmentCleaningTasks,customerPurchases,customerPurchaseItems,apartments,apartmentBookings,subscriptionEvents,subscriptionProductConfig]=await Promise.all([
-    sb.from('products').select('*').order('name'),
-    sb.from('treatments').select('*').order('name'),
-    sb.from('treatment_groupings').select('*').order('display_order'),
-    sb.from('renters').select('*').order('name'),
-    sb.from('renter_products').select('*'),
-    sb.from('clinic_days').select('*').order('clinic_date'),
-    sb.from('treatment_bookings').select('*').order('booking_date'),
-    sb.from('beds').select('*').order('bed_number'),
-    sb.from('sunbed_bookings').select('*').order('booking_date'),
+    loadAllRows('products','*',[['name',true]]),
+    loadAllRows('treatments','*',[['name',true]]),
+    loadAllRows('treatment_groupings','*',[['display_order',true]]),
+    loadAllRows('renters','*',[['name',true]]),
+    loadAllRows('renter_products','*',[]),
+    loadAllRows('clinic_days','*',[['clinic_date',true]]),
+    loadAllRows('treatment_bookings','*',[['booking_date',true]]),
+    loadAllRows('beds','*',[['bed_number',true]]),
+    loadAllRows('sunbed_bookings','*',[['booking_date',true]]),
     loadAllBedSessions(),
-    sb.from('staff_members').select('*').order('name'),
-    sb.from('staff_shifts').select('*').order('shift_date'),
-    sb.from('monthly_targets').select('*').order('target_month'),
-    sb.from('monthly_review_counts').select('*').order('review_year').order('review_month'),
-    sb.from('holiday_requests').select('*').order('start_date'),
-    sb.from('daily_takings').select('*').order('takings_date'),
-    sb.from('orders').select('*').order('order_date'),
-    sb.from('finance_outgoings').select('*').order('finance_year').order('finance_month'),
-    sb.from('customers').select('*').order('last_name'),
-    sb.from('tanning_rlt_products').select('*').order('title'),
+    loadAllRows('staff_members','*',[['name',true]]),
+    loadAllRows('staff_shifts','*',[['shift_date',true]]),
+    loadAllRows('monthly_targets','*',[['target_month',true]]),
+    loadAllRows('monthly_review_counts','*',[['review_year',true],['review_month',true]]),
+    loadAllRows('holiday_requests','*',[['start_date',true]]),
+    loadAllRows('daily_takings','*',[['takings_date',true]]),
+    loadAllRows('orders','*',[['order_date',true]]),
+    loadAllRows('finance_outgoings','*',[['finance_year',true],['finance_month',true]]),
+    loadAllRows('customers','*',[['last_name',true]]),
+    loadAllRows('tanning_rlt_products','*',[['title',true]]),
     loadAllCustomerTransactions(),
-    sb.from('opening_hours').select('*').order('day_of_week'),
-    sb.from('opening_hours_history').select('*').order('effective_from'),
-    sb.from('business_planner_actions').select('*').order('action_date'),
-    sb.from('staff_rotas').select('*').order('week_start_date',{ascending:false}),
-    sb.from('apartment_cleaning_tasks').select('*').order('task_date'),
-    sb.from('customer_purchases').select('*').order('purchase_date',{ascending:false}),
-    sb.from('customer_purchase_items').select('*'),
-    sb.from('apartments').select('id,name,last_synced_at,last_sync_error').order('name'),
-    sb.from('apartment_bookings').select('*').order('check_in'),
-    sb.from('subscription_events').select('*').order('occurred_at',{ascending:false}),
-    sb.from('subscription_product_config').select('*')
+    loadAllRows('opening_hours','*',[['day_of_week',true]]),
+    loadAllRows('opening_hours_history','*',[['effective_from',true]]),
+    loadAllRows('business_planner_actions','*',[['action_date',true]]),
+    loadAllRows('staff_rotas','*',[['week_start_date',false]]),
+    loadAllRows('apartment_cleaning_tasks','*',[['task_date',true]]),
+    loadAllRows('customer_purchases','*',[['purchase_date',false]]),
+    loadAllRows('customer_purchase_items','*',[]),
+    loadAllRows('apartments','id,name,last_synced_at,last_sync_error',[['name',true]]),
+    loadAllRows('apartment_bookings','*',[['check_in',true]]),
+    loadAllRows('subscription_events','*',[['occurred_at',false]]),
+    loadAllRows('subscription_product_config','*',[])
   ]);
   let err=[products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions,staffRotas,apartmentCleaningTasks,customerPurchases,customerPurchaseItems,apartments,apartmentBookings,subscriptionEvents,subscriptionProductConfig].find(x=>x.error)?.error;
   if(err)throw err;
@@ -120,7 +120,7 @@ async function loadLiveData(){
   data.dailyTakings=dailyTakings.data.map(x=>({id:x.id,date:x.takings_date,cash:+x.cash_taken||0,treatmentsCard:+x.treatments_card_taken||0,bedCard:+x.bed_card_taken||0,fridgeReading:x.fridge_reading===null||x.fridge_reading===undefined?'':+x.fridge_reading,googleReviews:x.google_reviews===null||x.google_reviews===undefined?'':+x.google_reviews,facebookReviews:x.facebook_reviews===null||x.facebook_reviews===undefined?'':+x.facebook_reviews,endOfDayNotes:x.end_of_day_notes||''}));
   data.orders=orders.data.map(x=>({id:x.id,description:x.description,date:x.order_date,supplier:x.supplier||'',amount:+x.amount||0,card:x.card_used,staffId:x.ordered_by_staff_member_id}));
   data.financeOutgoings=financeOutgoings.data.map(x=>({id:x.id,month:+x.finance_month,year:+x.finance_year,wages:x.wages==null?null:+x.wages,rent:+x.rent,bedHire:+x.bed_hire,insurance:+x.insurance}));
-  data.customers=customers.data.map(x=>({id:x.id,accountNumber:x.account_number,firstName:x.first_name,lastName:x.last_name,name:`${x.first_name} ${x.last_name}`,dob:x.date_of_birth,phone:x.phone_number||'',email:x.email||'',address:x.address||'',uv:x.intends_uv_or_injectables,idChecked:x.id_checked,idCheckedDate:x.id_checked_date,minutesLeft:+x.minutes_left||0,active:x.active,uvAllowed:x.uv_allowed,verifiedBy:x.verified_by||[],skinType:x.skin_type||null,generalHealthNotes:x.general_health_notes||'',bedUse:x.bed_use||'Hybrid',preferredBed:x.preferred_bed||'Any Bed',waiverSignedPresent:!!x.waiver_signed_present,bedDemoProvided:!!x.bed_demo_provided,createdAt:x.created_at,authUserId:x.auth_user_id||null,subscriptionStatus:x.subscription_status||'No',stripeSubscriptionId:x.stripe_subscription_id||null,portalLastLogin:x.portal_last_login||null,subscriptionType:x.subscription_type||null,subscriptionExpiresAt:x.subscription_expires_at||null,portalAccountCreatedAt:x.portal_account_created_at||null}));
+  data.customers=customers.data.map(x=>({id:x.id,accountNumber:x.account_number,agreedSms:x.agreed_sms!==false,agreedEmail:x.agreed_email!==false,firstName:x.first_name,lastName:x.last_name,name:`${x.first_name} ${x.last_name}`,dob:x.date_of_birth,phone:x.phone_number||'',email:x.email||'',address:x.address||'',uv:x.intends_uv_or_injectables,idChecked:x.id_checked,idCheckedDate:x.id_checked_date,minutesLeft:+x.minutes_left||0,active:x.active,uvAllowed:x.uv_allowed,verifiedBy:x.verified_by||[],skinType:x.skin_type||null,generalHealthNotes:x.general_health_notes||'',bedUse:x.bed_use||'Hybrid',preferredBed:x.preferred_bed||'Any Bed',waiverSignedPresent:!!x.waiver_signed_present,bedDemoProvided:!!x.bed_demo_provided,createdAt:x.created_at,authUserId:x.auth_user_id||null,subscriptionStatus:x.subscription_status||'No',stripeSubscriptionId:x.stripe_subscription_id||null,portalLastLogin:x.portal_last_login||null,subscriptionType:x.subscription_type||null,subscriptionExpiresAt:x.subscription_expires_at||null,portalAccountCreatedAt:x.portal_account_created_at||null}));
   data.subscriptionEvents=(subscriptionEvents.data||[]).map(x=>({id:x.id,customerId:x.customer_id,eventType:x.event_type,occurredAt:x.occurred_at,details:x.details||null}));
   data.subscriptionProductConfig=(subscriptionProductConfig.data||[]).map(x=>({id:x.id,title:x.title,pricePence:+x.price_pence||0,active:x.active}));
   data.tanningProducts=tanningProducts.data.map(x=>({id:x.id,type:x.product_type,title:x.title,description:x.description||'',minutes:x.minute_amount==null?null:+x.minute_amount,price:+x.price||0,stock:x.current_stock_level==null?null:+x.current_stock_level,active:x.active,cardMachine:x.card_machine||'Sunbed Card',grantsUnlimitedPass:!!x.grants_unlimited_pass,unlimitedPassDays:x.unlimited_pass_days==null?null:+x.unlimited_pass_days}));
