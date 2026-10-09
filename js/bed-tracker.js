@@ -223,6 +223,10 @@ function renderBedTracker(){
   document.getElementById('metricSignups').textContent=signups;
   let headerNewSignUpsEl=document.getElementById('headerNewSignUpsValue');
   if(headerNewSignUpsEl)headerNewSignUpsEl.textContent=signups;
+  let headerTotalMinsEl=document.getElementById('headerTotalMinsValue');
+  if(headerTotalMinsEl)headerTotalMinsEl.textContent=total;
+  let headerSubscriberMinsEl=document.getElementById('headerSubscriberMinsValue');
+  if(headerSubscriberMinsEl)headerSubscriberMinsEl.textContent=rows.reduce((a,b)=>a+(+b.subscriberMinutes||0),0);
   document.getElementById('metricRltMinutes').textContent=rlt;
   document.getElementById('metricHybridMinutes').textContent=hybrid;
   let todayKey=localDateKey();
