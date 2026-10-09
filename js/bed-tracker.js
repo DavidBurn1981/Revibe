@@ -730,8 +730,8 @@ function openDailySessionsCalendar(){
 // as their own rows rather than being invisible here.
 function onlineSalesForDate(dateKey){
   let passRows=(data.customerTransactions||[])
-    .filter(t=>t.product==='1 Week Pass (Online Purchase)'&&t.createdAt&&localDateKey(new Date(t.createdAt))===dateKey)
-    .map(t=>({createdAt:t.createdAt,customerId:t.customerId,item:'1 Week Pass (Online Purchase)',amount:+t.value||0}));
+    .filter(t=>/^(1 Week Pass|\d+ Minutes) \(Online Purchase\)$/.test(t.product||'')&&t.createdAt&&localDateKey(new Date(t.createdAt))===dateKey)
+    .map(t=>({createdAt:t.createdAt,customerId:t.customerId,item:t.product,amount:+t.value||0}));
   // The real amount Stripe actually charged at signup, straight from the
   // checkout session - not the product's list price, which a coupon or
   // proration could make wrong. Only falls back to today's list price for
