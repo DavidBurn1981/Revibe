@@ -221,6 +221,8 @@ function renderBedTracker(){
   let headerSessionsEl=document.getElementById('headerSessionsValue');
   if(headerSessionsEl)headerSessionsEl.textContent=rows.length;
   document.getElementById('metricSignups').textContent=signups;
+  let headerNewSignUpsEl=document.getElementById('headerNewSignUpsValue');
+  if(headerNewSignUpsEl)headerNewSignUpsEl.textContent=signups;
   document.getElementById('metricRltMinutes').textContent=rlt;
   document.getElementById('metricHybridMinutes').textContent=hybrid;
   let todayKey=localDateKey();
