@@ -617,16 +617,32 @@ async function saveTanningProduct(){let type=document.getElementById('tanningPro
 function sessionCustomerChanged(){let id=document.getElementById('sessionCustomerId').value;if(id&&data.customers.find(x=>x.id===id))selectSessionCustomer(id);else document.getElementById('sessionCustomerBalance').textContent='Select a customer to see account minutes, or leave blank.'}
 function purchaseMoreFromSession(){let id=document.getElementById('sessionCustomerId').value;document.getElementById('insufficientMinutesModal').classList.remove('show');if(id)openCustomer(id)}
 
-// ---- Text the customer their minutes balance (via Brevo, sent by the send-minutes-sms function) ----
-// Limited by the server to one balance text per customer every 14 days.
+// ---- Texts to the customer, sent via Brevo by the send-minutes-sms function ----
+// Two kinds (minutes reminder / marketing). A customer can receive ONE text of either kind
+// in any 14 days - enforced by the server; the buttons just show it: green = OK to send, red = blocked.
+const SMS_COOLDOWN_DAYS=14;
+function setSmsButtonState(state){
+  ['smsBalanceBtn','smsMarketingBtn'].forEach(id=>{
+    let b=document.getElementById(id);if(!b)return;
+    if(state==='ok'){b.style.background='#1f9d55';b.style.borderColor='#1f9d55';b.style.color='#fff'}
+    else if(state==='blocked'){b.style.background='#d63031';b.style.borderColor='#d63031';b.style.color='#fff'}
+    else{b.style.background='';b.style.borderColor='';b.style.color=''}
+  });
+}
 async function loadLastSmsDate(customerId){
   let el=document.getElementById('custLastSms');if(!el)return;
   el.value=customerId?'Checking...':'Never';
+  setSmsButtonState(customerId?'':'');
   if(!customerId)return;
   try{
-    let {data:rows}=await sb.from('sms_log').select('created_at').eq('customer_id',customerId).eq('kind','minutes_balance').eq('status','sent').order('created_at',{ascending:false}).limit(1);
+    let {data:rows,error}=await sb.from('sms_log').select('created_at').eq('customer_id',customerId).in('kind',['minutes_balance','marketing']).eq('status','sent').order('created_at',{ascending:false}).limit(1);
+    if(error)throw error;
     if(editingCustomerId!==customerId)return;
-    el.value=rows&&rows.length?new Date(rows[0].created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'Never';
+    if(rows&&rows.length){
+      let last=new Date(rows[0].created_at);
+      el.value=last.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      setSmsButtonState(Date.now()-last.getTime()<SMS_COOLDOWN_DAYS*86400000?'blocked':'ok');
+    }else{el.value='Never';setSmsButtonState('ok')}
   }catch(e){el.value='Unknown'}
 }
 async function smsFunctionError(error,data){
@@ -634,18 +650,19 @@ async function smsFunctionError(error,data){
   try{let b=await error.context.json();if(b&&b.error)return b.error}catch(_e){}
   return (error&&error.message)||'Could not send the text.';
 }
-async function sendMinutesBalanceSms(){
+async function sendCustomerSms(kind){
   if(!editingCustomerId)return alert('Save this customer first.');
-  let id=editingCustomerId,btn=document.getElementById('smsBalanceBtn');
-  btn.disabled=true;
+  let id=editingCustomerId,btns=['smsBalanceBtn','smsMarketingBtn'].map(x=>document.getElementById(x));
+  btns.forEach(b=>b&&(b.disabled=true));
   try{
-    let {data:pv,error:pe}=await sb.functions.invoke('send-minutes-sms',{body:{customer_id:id,preview:true}});
+    let {data:pv,error:pe}=await sb.functions.invoke('send-minutes-sms',{body:{customer_id:id,preview:true,kind}});
     if(pe||!pv||!pv.success)return alert(await smsFunctionError(pe,pv));
     if(!confirm(`Send this text to ${pv.to}?\n\n"${pv.message}"`))return;
-    let {data:res,error:se}=await sb.functions.invoke('send-minutes-sms',{body:{customer_id:id}});
+    let {data:res,error:se}=await sb.functions.invoke('send-minutes-sms',{body:{customer_id:id,kind}});
     if(se||!res||!res.success)return alert(await smsFunctionError(se,res));
     alert('Text sent.');
     await loadLastSmsDate(id);
   }catch(e){alert(e.message||'Could not send the text.')}
-  finally{btn.disabled=false}
+  finally{btns.forEach(b=>b&&(b.disabled=false))}
 }
+function sendMinutesBalanceSms(){return sendCustomerSms('minutes_balance')}
