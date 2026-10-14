@@ -29,6 +29,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   sunbedsettings:'sunbed_settings',
   openinghours:'sunbed_settings',
   monthlytargets:'sunbed_settings',
+  partnerdiscounts:'sunbed_settings',
   tanningproducts:'sunbed_settings',
 
   diary:'treatment_room_diary',

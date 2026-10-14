@@ -42,6 +42,9 @@ function renderPageForNavigation(pageId){
     case 'monthlytargets':
       renderMonthlyTargets();
       break;
+    case 'partnerdiscounts':
+      renderPartnerDiscounts();
+      break;
     case 'openinghours':
       renderOpeningHours();
       break;

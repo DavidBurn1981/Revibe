@@ -1007,6 +1007,9 @@ function showSessionLoggedConfirmation(date){
   },2000);
 }
 let purchaseSelection={treatments:[],glowStudio:[]};
+let purchasePartnerApply=true;
+function purchaseDiscount(){let d=customerPartnerDiscount(document.getElementById('purchaseCustomerId')?.value||null);return d&&purchasePartnerApply?d:null}
+function togglePurchasePartner(on){purchasePartnerApply=!!on;renderPurchaseLists()}
 function openBlockMinutesPurchase(){openPurchaseCategory('Block Minutes')}
 function openTangiblesPurchase(){openPurchaseCategory('Tangible')}
 function openGiftVouchersPurchase(){openPurchaseCategory('Gift Voucher')}
@@ -1023,7 +1026,7 @@ function openPurchaseCategory(type){
 function closePurchaseProductModal(){document.getElementById('purchaseProductModal').classList.remove('show')}
 function addProductToPurchase(id){
   let p=(data.tanningProducts||[]).find(x=>x.id===id);if(!p)return;
-  let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0};
+  let entry={productId:p.id,title:p.title,price:+p.price||0,listPrice:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0};
   if(entry.cardMachine==='Treatment Card')purchaseSelection.treatments.push(entry);
   else purchaseSelection.glowStudio.push(entry);
   renderPurchaseLists();
@@ -1048,24 +1051,27 @@ function searchPurchaseCustomer(){
 }
 function selectPurchaseCustomer(id){
   let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
-  document.getElementById('purchaseCustomerId').value=id;
+  document.getElementById('purchaseCustomerId').value=id;purchasePartnerApply=true;
   document.getElementById('purchaseCustomerSearch').style.display='none';
   document.getElementById('purchaseCustomerResults').style.display='none';
   document.getElementById('purchaseCustomerResults').innerHTML='';
   let selectedDiv=document.getElementById('purchaseCustomerSelected');
   selectedDiv.innerHTML=`<span>${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)} (${escapeHtml(c.accountNumber)})</span><button type='button' onclick='clearPurchaseCustomer()'>✕</button>`;
   selectedDiv.style.display='flex';
+  renderPurchaseLists();
 }
 function clearPurchaseCustomer(){
   document.getElementById('purchaseCustomerId').value='';
   document.getElementById('purchaseCustomerSearch').value='';
   document.getElementById('purchaseCustomerSearch').style.display='block';
   document.getElementById('purchaseCustomerSelected').style.display='none';
+  purchasePartnerApply=true;renderPurchaseLists();
 }
 function renderPurchaseLists(){
+  {let disc=purchaseDiscount(),all=[...purchaseSelection.treatments,...purchaseSelection.glowStudio];partnerApplyToItems(all,disc);let box=document.getElementById('purchasePartnerBox');if(box)box.innerHTML=partnerBoxHtml(customerPartnerDiscount(document.getElementById('purchaseCustomerId')?.value||null),purchasePartnerApply,'togglePurchasePartner',partnerBasketSaving(all))}
   let treatmentsList=document.getElementById('purchaseListTreatments'),glowStudioList=document.getElementById('purchaseListGlowStudio');
   if(!treatmentsList||!glowStudioList)return;
-  let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>£${item.price.toFixed(2)}</div><button type='button' class='purchaseItemRemove' onclick="removePurchaseItem('${list}',${index})">✕</button></div></div>`;
+  let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>${partnerRowPriceHtml(item)}</div><button type='button' class='purchaseItemRemove' onclick="removePurchaseItem('${list}',${index})">✕</button></div></div>`;
   treatmentsList.innerHTML=purchaseSelection.treatments.length
     ? purchaseSelection.treatments.map((item,i)=>renderRow(item,'treatments',i)).join('')
     : `<div class='purchaseListEmpty'>No items added yet.</div>`;
@@ -1138,12 +1144,13 @@ async function confirmPurchases(){
     let {data:purchase,error}=await sb.from('customer_purchases').insert({
       purchase_date:localDateKey(),treatments_total:treatmentsTotal,glow_studio_total:glowStudioTotal,grand_total:grandTotal,
       glow_studio_card_amount:glowStudioCard,glow_studio_cash_amount:glowStudioCash,
-      treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash,customer_id:customerId
+      treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash,customer_id:customerId,
+      ...partnerPurchaseFields(allItems,purchaseDiscount())
     }).select().single();
     if(error)throw error;
     let itemRows=allItems.map(item=>({
       purchase_id:purchase.id,tanning_product_id:item.productId,product_title:item.title,
-      product_type:item.productType,card_machine:item.cardMachine,price:item.price
+      product_type:item.productType,card_machine:item.cardMachine,price:item.price,list_price:item.listPrice!=null?item.listPrice:item.price
     }));
     let {error:itemsError}=await sb.from('customer_purchase_items').insert(itemRows);
     if(itemsError)throw itemsError;
@@ -1255,7 +1262,7 @@ function applyTodaysBookingAutofill(customerId,prefix){
 }
 function selectSessionCustomer(id){
   let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
-  document.getElementById('sessionCustomerId').value=id;
+  document.getElementById('sessionCustomerId').value=id;sessionPartnerApply=true;
   document.getElementById('sessionCustomerSearch').style.display='none';
   document.getElementById('sessionCustomerResults').style.display='none';
   document.getElementById('sessionCustomerResults').innerHTML='';
@@ -1270,6 +1277,7 @@ function selectSessionCustomer(id){
   updateSessionLengthTotal();
 }
 function clearSessionCustomer(){
+  sessionPartnerApply=true;
   document.getElementById('sessionCustomerId').value='';
   document.getElementById('sessionCustomerSearch').value='';
   document.getElementById('sessionCustomerSearch').style.display='block';
@@ -1285,11 +1293,13 @@ function clearSessionCustomer(){
   document.getElementById('sessionSubscriberMinutes').value='';
   updateSessionLengthTotal();
 }
+let sessionPartnerApply=true;
+function toggleSessionPartner(on){sessionPartnerApply=!!on;updateSessionLengthTotal()}
 function paygSessionTotalsForDay(key){
   let sessions=(data.bedSessions||[]).filter(s=>s.date===key&&((+s.cashMinutes||0)+(+s.cardMinutes||0))>0);
   let cash=0,card=0;
   sessions.forEach(s=>{
-    let charge=paygChargeDetails(+s.cashMinutes||0,+s.cardMinutes||0);
+    let charge=paygChargeDetails(+s.cashMinutes||0,+s.cardMinutes||0,+s.partnerDiscountPercent||0);
     if(!charge)return;
     cash+=charge.cashAmount||0;
     card+=charge.cardAmount||0;
@@ -1324,16 +1334,16 @@ function bookingsMadeOnDate(dateKey){
 function portalRegistrationsOnDate(dateKey){
   return (data.customers||[]).filter(c=>c.portalAccountCreatedAt&&localDateKey(new Date(c.portalAccountCreatedAt))===dateKey).length;
 }
-function paygChargeDetails(cashMin,cardMin){
+function paygChargeDetails(cashMin,cardMin,partnerPercent=0){
   let totalMin=cashMin+cardMin;
   if(totalMin<=0)return null;
   let product=(data.tanningProducts||[]).find(p=>p.type==='PAYG Minutes'&&p.active!==false&&p.minutes===totalMin);
   if(!product)return {totalMessage:`No PAYG price is configured for ${totalMin} minutes — check Tanning/RLT Products.`,cashAmount:null,cardAmount:null};
-  let totalPence=pence(product.price);
+  let totalPence=pence(partnerPercent>0?partnerDiscountedPrice(product.price,partnerPercent):product.price);
   let cardPence=cardMin>0?Math.round(totalPence*cardMin/totalMin):0;
   let cashPence=totalPence-cardPence;
   return {
-    totalMessage:`Total charge for these Pay as you Go minutes is £${(totalPence/100).toFixed(2)}`,
+    totalMessage:`Total charge for these Pay as you Go minutes is £${(totalPence/100).toFixed(2)}${partnerPercent>0?` (price includes ${partnerPercentText(partnerPercent)} partner discount)`:''}`,
     cashAmount:cashMin>0?cashPence/100:null,
     cardAmount:cardMin>0?cardPence/100:null
   };
@@ -1395,7 +1405,9 @@ function updateSessionLengthTotal(){
   document.getElementById('sessionLength').value=cash+card+account+free+staff+rerun+subscriber+booked;
   document.getElementById('staffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('rerunReasonRow').style.display=rerun>0?'block':'none';
-  let paygDetails=paygChargeDetails(cash,card);
+  let sessCust=document.getElementById('sessionCustomerId').value||null,sessPct=paygPartnerPercent(sessCust,sessionPartnerApply,cash,card);
+  {let box=document.getElementById('sessionPartnerBox');if(box)box.innerHTML=paygPartnerBoxHtml(sessCust,sessionPartnerApply,cash,card,'toggleSessionPartner')}
+  let paygDetails=paygChargeDetails(cash,card,sessPct);
   let paygRow=document.getElementById('paygChargeRow');
   paygRow.style.display=paygDetails?'block':'none';
   if(paygDetails)paygRow.textContent=paygDetails.totalMessage;
@@ -1423,7 +1435,8 @@ function updateEditSessionLengthTotal(){
   document.getElementById('editSessionLength').value=cash+card+account+free+staff+rerun;
   document.getElementById('editStaffMemberNameRow').style.display=staff>0?'block':'none';
   document.getElementById('editRerunReasonRow').style.display=rerun>0?'block':'none';
-  let editPaygDetails=paygChargeDetails(cash,card);
+  let editSess=(data.bedSessions||[]).find(s=>String(s.id)===String(editingDailySessionId)),editPct=editSess?+editSess.partnerDiscountPercent||0:0;
+  let editPaygDetails=paygChargeDetails(cash,card,editPct);
   let editPaygRow=document.getElementById('editPaygChargeRow');
   editPaygRow.style.display=editPaygDetails?'block':'none';
   if(editPaygDetails)editPaygRow.textContent=editPaygDetails.totalMessage;
@@ -1590,7 +1603,8 @@ async function recordBedSession(){
  }
  let age=ageFromDob(c.dob);if(hybrid&&age<18)return alert('CUSTOMER IS BELOW 18 AND IS NOT ALLOWED TO USE UV.');if(hybrid&&age<25&&!c.idChecked)alert('Customer has not had ID checked and is under 25. This is not a blocker, just a note to user. Close to continue');if(hybrid&&!c.uvAllowed)return alert('This Customer can not use UV. Please check their Customer record to see why.');
  if(accountMin>c.minutesLeft){document.getElementById('insufficientMessage').textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;document.getElementById('insufficientMinutesModal').classList.add('show');return}
- let {data:bal,error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:customerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:newSignup,p_purchased_block_booking:purchasedBlock,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
+ let recPct=paygPartnerPercent(customerId,sessionPartnerApply,cashMin,cardMin);
+ let {data:bal,error}=await sb.rpc(recPct>0?'record_customer_bed_session_v3':'record_customer_bed_session_v2',{...(recPct>0?{p_partner_discount_percent:recPct}:{}),p_customer:customerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:newSignup,p_purchased_block_booking:purchasedBlock,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
  if(error)return alert(error.message);
 
  resetBedSessionForm();

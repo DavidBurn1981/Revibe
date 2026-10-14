@@ -3,6 +3,11 @@ let wizCustomerId=null;
 let wizSelectedSkinType=null;
 let wizUvAllowedManuallySet=false;
 let wizPurchaseSelection={treatments:[],glowStudio:[]};
+let wizPartnerApply=true;
+let wizSessionPartnerApply=true;
+function wizToggleSessionPartner(on){wizSessionPartnerApply=!!on;wizUpdateSessionLengthTotal()}
+function wizDiscount(){let d=customerPartnerDiscount(wizCustomerId);return d&&wizPartnerApply?d:null}
+function wizTogglePartner(on){wizPartnerApply=!!on;wizRenderPurchaseLists()}
 let wizBoughtBlockMinutes=false;
 let wizCurrentPurchaseCategory=null;
 let wizSessionBackTarget='purchaseAsk';
@@ -48,6 +53,7 @@ function openNewCustomerWizard(){
   document.getElementById('wizBedUse2').value='Hybrid';
   document.getElementById('wizPreferredBed').value='Any Bed';
   document.getElementById('wizWaiverSigned').value='false';
+  wizResetPartnerFields();
   document.getElementById('wizIdChecked').value='false';
   document.getElementById('wizUvAllowed').value='false';
   wizUpdateUvAllowedColour();
@@ -155,7 +161,8 @@ function wizGoTo(stepKey){
   wizRenderChevrons(stepKey);
   if(stepKey==='purchaseAsk')document.getElementById('wizAccountCreatedBanner').style.display=wizMode==='new'?'block':'none';
   if(stepKey==='sessionType')wizSessionBackTarget=wizCustomerId&&wizPurchaseSelection.treatments.length+wizPurchaseSelection.glowStudio.length>0?'payment':'purchaseAsk';
-  if(stepKey==='sessionMinutes'){wizRenderSessionCustomerBalance();wizUpdateSessionMinutesFieldVisibility();}
+  if(stepKey==='purchase'){wizPartnerApply=true;wizRenderPurchaseLists()}
+  if(stepKey==='sessionMinutes'){wizSessionPartnerApply=true;wizRenderSessionCustomerBalance();wizUpdateSessionMinutesFieldVisibility();}
 }
 function wizUpdateSessionMinutesFieldVisibility(){
   let accountWrap=document.getElementById('wizSessionAccountMinutesWrap'),subscriberWrap=document.getElementById('wizSessionSubscriberMinutesWrap');
@@ -276,6 +283,16 @@ function wizSelectCustomerNext(){
 }
 function wizGoToBeforeSession(){wizGoTo(wizSessionBackTarget)}
 
+// --- Partner discount fields (Personal Info step) ---
+function wizResetPartnerFields(){
+  document.getElementById('wizApplyPartner').value='false';
+  let sel=document.getElementById('wizPartnerId');
+  sel.innerHTML=`<option value=''>Select partner...</option>`+(data.partnerDiscounts||[]).filter(p=>p.active).map(p=>`<option value='${p.id}'>${escapeHtml(p.name)} (${partnerPercentText(p.percent)})</option>`).join('');
+  sel.value='';
+  wizTogglePartnerField();
+}
+function wizTogglePartnerField(){document.getElementById('wizPartnerFieldWrap').style.display=document.getElementById('wizApplyPartner').value==='true'?'block':'none'}
+
 // --- Personal Info ---
 function wizStep1Next(){
   let first=document.getElementById('wizFirst').value.trim(),last=document.getElementById('wizLast').value.trim(),
@@ -287,6 +304,7 @@ function wizStep1Next(){
   if(!phone){err.textContent='Phone number is required.';err.style.display='block';return}
   if(!address){err.textContent='Address is required.';err.style.display='block';return}
   if(!waiverSigned){err.textContent='Waiver Signed and Present must be set to Yes before continuing.';err.style.display='block';return}
+  if(document.getElementById('wizApplyPartner').value==='true'&&!document.getElementById('wizPartnerId').value){err.textContent='Please choose which Partner Discount applies, or set "Apply Partner Discount" to No.';err.style.display='block';return}
   if(!email){
     if(!confirm('Are you sure the customer will not provide an email address? You can continue without one.'))return;
   }
@@ -368,7 +386,9 @@ async function wizCreateAccount(){
   try{
     let payload={first_name:first,last_name:last,date_of_birth:dob,phone_number:phone||null,email:email||null,address:address||null,
       intends_uv_or_injectables:true,id_checked:idChecked,id_checked_date:idCheckedDate,uv_allowed:uvAllowed,waiver_signed_present:waiverSigned,
-      bed_use:bedUse,preferred_bed:preferredBed,bed_demo_provided:false,verified_by:verifiedBy,skin_type:wizSelectedSkinType,general_health_notes:healthNotes||null};
+      bed_use:bedUse,preferred_bed:preferredBed,bed_demo_provided:false,verified_by:verifiedBy,skin_type:wizSelectedSkinType,general_health_notes:healthNotes||null,
+      apply_partner_discount:document.getElementById('wizApplyPartner').value==='true'&&!!document.getElementById('wizPartnerId').value,
+      partner_discount_id:document.getElementById('wizApplyPartner').value==='true'?(document.getElementById('wizPartnerId').value||null):null};
     let {data:row,error}=await sb.from('customers').insert(payload).select().single();
     if(error){
       if(error.code==='23505'){
@@ -420,7 +440,7 @@ function wizAddProductToPurchase(id){
     }
     alert(`Please ensure the customer understands that they can:\n\n- Only use the beds once per day\n- Book a maximum of 15 minutes per session for the duration of the pass\n\nYou can continue processing the purchase once they understand this.`);
   }
-  let entry={productId:p.id,title:p.title,price:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0,grantsUnlimitedPass:!!p.grantsUnlimitedPass,unlimitedPassDays:p.unlimitedPassDays||null};
+  let entry={productId:p.id,title:p.title,price:+p.price||0,listPrice:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0,grantsUnlimitedPass:!!p.grantsUnlimitedPass,unlimitedPassDays:p.unlimitedPassDays||null};
   let targetList=entry.cardMachine==='Treatment Card'?wizPurchaseSelection.treatments:wizPurchaseSelection.glowStudio;
   let alreadyInCart=targetList.some(item=>item.productId===entry.productId);
   if(alreadyInCart&&!confirm(`"${p.title}" is already in the cart. Add it again?`))return;
@@ -433,9 +453,10 @@ function wizRemovePurchaseItem(list,index){
   wizRenderPurchaseLists();
 }
 function wizRenderPurchaseLists(){
+  {let disc=wizDiscount(),all=[...wizPurchaseSelection.treatments,...wizPurchaseSelection.glowStudio];partnerApplyToItems(all,disc);let box=document.getElementById('wizPartnerBox');if(box)box.innerHTML=partnerBoxHtml(customerPartnerDiscount(wizCustomerId),wizPartnerApply,'wizTogglePartner',partnerBasketSaving(all))}
   let treatmentsList=document.getElementById('wizPurchaseListTreatments'),glowStudioList=document.getElementById('wizPurchaseListGlowStudio');
   if(!treatmentsList||!glowStudioList)return;
-  let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>£${item.price.toFixed(2)}</div><button type='button' class='purchaseItemRemove' onclick="wizRemovePurchaseItem('${list}',${index})">✕</button></div></div>`;
+  let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>${partnerRowPriceHtml(item)}</div><button type='button' class='purchaseItemRemove' onclick="wizRemovePurchaseItem('${list}',${index})">✕</button></div></div>`;
   treatmentsList.innerHTML=wizPurchaseSelection.treatments.length
     ? wizPurchaseSelection.treatments.map((item,i)=>renderRow(item,'treatments',i)).join('')
     : `<div class='purchaseListEmpty'>No items added yet.</div>`;
@@ -527,12 +548,13 @@ async function wizConfirmPurchases(){
     let {data:purchase,error}=await sb.from('customer_purchases').insert({
       purchase_date:localDateKey(),treatments_total:treatmentsTotal,glow_studio_total:glowStudioTotal,grand_total:grandTotal,
       glow_studio_card_amount:glowStudioCard,glow_studio_cash_amount:glowStudioCash,
-      treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash,customer_id:wizCustomerId
+      treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash,customer_id:wizCustomerId,
+      ...partnerPurchaseFields(allItems,wizDiscount())
     }).select().single();
     if(error)throw error;
     let itemRows=allItems.map(item=>({
       purchase_id:purchase.id,tanning_product_id:item.productId,product_title:item.title,
-      product_type:item.productType,card_machine:item.cardMachine,price:item.price
+      product_type:item.productType,card_machine:item.cardMachine,price:item.price,list_price:item.listPrice!=null?item.listPrice:item.price
     }));
     let {error:itemsError}=await sb.from('customer_purchase_items').insert(itemRows);
     if(itemsError)throw itemsError;
@@ -625,7 +647,9 @@ function wizUpdateSessionLengthTotal(){
   }else{
     staffPriceEl.style.display='none';
   }
-  let paygRow=document.getElementById('wizPaygChargeRow'),paygDetails=paygChargeDetails(cash,card);
+  let wizPct=paygPartnerPercent(wizCustomerId,wizSessionPartnerApply,cash,card);
+  {let box=document.getElementById('wizSessionPartnerBox');if(box)box.innerHTML=paygPartnerBoxHtml(wizCustomerId,wizSessionPartnerApply,cash,card,'wizToggleSessionPartner')}
+  let paygRow=document.getElementById('wizPaygChargeRow'),paygDetails=paygChargeDetails(cash,card,wizPct);
   paygRow.style.display=paygDetails?'block':'none';
   if(paygDetails)paygRow.textContent=paygDetails.totalMessage;
   let cashAmountEl=document.getElementById('wizSessionCashPaygAmount');
@@ -674,7 +698,8 @@ async function wizRecordSession(){
   if(hybrid&&!c.uvAllowed)return alert('Customer UV Allowed set to No on Customer Account');
   if(accountMin>c.minutesLeft){err.textContent=`Customer has ${c.minutesLeft} minutes left but this session requires ${accountMin} minutes from account.`;err.style.display='block';return}
   try{
-    let {error}=await sb.rpc('record_customer_bed_session_v2',{p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
+    let wizRecPct=paygPartnerPercent(wizCustomerId,wizSessionPartnerApply,cashMin,cardMin);
+    let {error}=await sb.rpc(wizRecPct>0?'record_customer_bed_session_v3':'record_customer_bed_session_v2',{...(wizRecPct>0?{p_partner_discount_percent:wizRecPct}:{}),p_customer:wizCustomerId,p_session_date:date,p_cash_minutes:cashMin,p_card_minutes:cardMin,p_account_minutes:accountMin,p_free_minutes:freeMin,p_staff_minutes:staffMin,p_staff_member_name:staffMin>0?staffMemberName:null,p_rerun_minutes:rerunMin,p_rerun_reason:rerunMin>0?rerunReason:null,p_new_sign_up:wizMode==='new',p_purchased_block_booking:wizBoughtBlockMinutes,p_session_type:sessionTypeValue,p_subscriber_minutes:subscriberMin,p_booked_minutes:bookedMin,p_fulfils_booking_id:fulfilsBookingId});
     if(error)throw error;
     await loadLiveData();renderAll();
     wizGoTo('complete');
