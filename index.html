@@ -2606,6 +2606,19 @@ function exportSmsSuccessToExcel(){
   XLSX.utils.book_append_sheet(wb,ws,'SMS Success');XLSX.writeFile(wb,`REVIBE SMS Success ${localDateKey()}.xlsx`);
 }
 
+
+// ---------- Purchase thank-you text ----------
+// Sent when minutes, a week pass or a monthly pass is bought. The server skips opted-out customers and customers
+// without a valid UK mobile, and these texts ignore the 14-day limit. Runs quietly in the background: staff see
+// nothing, and a problem here can never get in the way of the purchase itself.
+function sendPurchaseText(customerId,productNames){
+  try{
+    let names=(productNames||[]).filter(Boolean);
+    if(!customerId||!names.length)return;
+    Promise.resolve(sb.functions.invoke('send-minutes-sms',{body:{customer_id:customerId,kind:'purchase',product_name:names.join(' & ')}})).catch(e=>console.error('Purchase text failed:',e));
+  }catch(e){console.error('Purchase text failed:',e)}
+}
+
 </script>
 <script src='js/customer-segments.js'></script>
 <script src='js/api.js'></script>
