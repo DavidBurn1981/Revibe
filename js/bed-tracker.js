@@ -1198,6 +1198,7 @@ async function confirmPurchases(){
       p_date:localDateKey(),p_cash:glowStudioCash+treatmentsCash,p_treatments_card:treatmentsCard,p_bed_card:glowStudioCard
     });
     if(takingsError)throw takingsError;
+    if(customerId)sendPurchaseText(customerId,allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0).map(item=>item.title));
     purchaseSelection={treatments:[],glowStudio:[]};
     clearPurchaseCustomer();
     closeProcessPurchasesModal();

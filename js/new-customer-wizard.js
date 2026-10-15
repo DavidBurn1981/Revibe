@@ -198,6 +198,20 @@ function wizSearchSelectCustomer(){
     : `<div class='customerSearchResultRow muted'>No matching customers.</div>`;
   results.style.display='block';
 }
+// Big red pop-up when an existing customer's last session was 21 or more days ago.
+const LAPSED_CUSTOMER_DAYS=21;
+function showLapsedCustomerPopup(id){
+  let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
+  let last=null;
+  (data.bedSessions||[]).forEach(x=>{if(x.customerId===id&&x.date&&(!last||x.date>last))last=x.date});
+  if(!last)return;
+  let dn=k=>{let [y,m,d]=k.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/86400000)};
+  let days=dn(localDateKey())-dn(last);
+  if(days<LAPSED_CUSTOMER_DAYS)return;
+  document.getElementById('lapsedCustomerName').textContent=`${c.firstName} ${c.lastName}`;
+  document.getElementById('lapsedCustomerDetail').textContent=`Last session: ${new Date(last+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} (${days} days ago)`;
+  document.getElementById('lapsedCustomerModal').classList.add('show');
+}
 function wizPickSelectCustomer(id){
   let c=(data.customers||[]).find(x=>x.id===id);if(!c)return;
   wizCustomerId=id;
@@ -212,6 +226,7 @@ function wizPickSelectCustomer(id){
   document.getElementById('wizSelectCustomerError').style.display='none';
   if(!c.waiverSignedPresent)alert('Customer does not have a waiver in place yet. Please ask them to do it before continuing');
   checkExistingCustomerUsageWarning(id);
+  showLapsedCustomerPopup(id);
   {let alreadyToday=subscriberAlreadyHadSessionMessage(id,localDateKey());if(alreadyToday)alert(alreadyToday);}
   if(wizMode==='existing-booking')wizCheckBookingForCustomer(id);
   else applyTodaysBookingAutofill(id,'wizSession');
@@ -586,6 +601,7 @@ async function wizConfirmPurchases(){
       let expiresLabel=expiresAt.toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
       alert(`${item.title} activated. Pass will expire on ${expiresLabel}.`);
     }
+    sendPurchaseText(wizCustomerId,[...blockMinuteItems,...passItems].map(item=>item.title));
     await loadLiveData();renderAll();renderDailyTakings();
     wizGoTo('sessionType');
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}

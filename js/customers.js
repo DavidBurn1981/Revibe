@@ -604,6 +604,7 @@ async function completeBlockPurchase(){
     });
     if(takingsError)throw takingsError;
     document.getElementById('purchaseModal').classList.remove('show');
+    sendPurchaseText(editingCustomerId,[q>1?`${q} x ${p.title}`:p.title]);
     await loadLiveData();openCustomer(editingCustomerId);renderAll();
     alert(`Purchase complete. ${bal} minutes left on account.`);
   }catch(e){err.textContent=e.message||'Could not complete this purchase.';err.style.display='block'}
