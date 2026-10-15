@@ -683,6 +683,7 @@ body.loading .app{visibility:hidden}
     <button onclick="openPortalUsersList()">Portal Users <span>→</span></button>
     <button onclick="openActiveSubscriptions()">Active Subscriptions <span>→</span></button>
     <button onclick="openSmsOpportunities()">Opportunity to SMS <span>→</span></button>
+    <button onclick="openWeekPassReport()">Week Pass Report <span>→</span></button>
   </div>
   <div class='trackerpanel' style='margin-bottom:16px;display:none'><h2>Today's Performance</h2><div class='muted' id='trackerDate'></div><div class='metricgrid'><div class='metric'><div class='label'>Sessions Today</div><div class='value' id='metricSessions'>0</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value' id='metricMinutes'>0</div></div><div class='metric'><div class='label'>Total New Sign Ups</div><div class='value' id='metricSignups'>0</div></div><div class='metric'><div class='label'>Total Red Light Minutes Today</div><div class='value' id='metricRltMinutes'>0</div></div><div class='metric'><div class='label'>Total Hybrid Minutes Today</div><div class='value' id='metricHybridMinutes'>0</div></div><div class='metric' style='opacity:.45'><div class='label'>Compared to Daily Average</div><div class='value' id='metricDailyAverage'>—</div><div class='kpiSub' id='metricDailyAverageDetail'></div></div></div></div>
   <div id='performanceReportingContent'></div>
@@ -1632,6 +1633,7 @@ body.loading .app{visibility:hidden}
 <div class='modal' id='usageFrequencyWarningModal'><div class='modalbox skinTypeWarningBox'><div class='skinTypeWarningIcon'>⚠</div><div class='skinTypeWarningText'>Customer has used sunbed either already today or for 4 days in a row. Please advise about safe use limits.</div><button class='skinTypeWarningBtn' onclick="document.getElementById('usageFrequencyWarningModal').classList.remove('show')">Understood</button></div></div>
 
 <div class='modal' id='customerProfilingListModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><h1 id='customerProfilingListTitle'>Customers</h1><div style='display:flex;gap:10px'><button onclick='exportCustomerProfilingListToExcel()'>Export to Excel</button><button onclick="document.getElementById('customerProfilingListModal').classList.remove('show')">✕</button></div></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='customerProfilingListTable'></table></div></div></div></div>
+<div class='modal' id='weekPassModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>Week Pass Report</h1><div class='muted' id='weekPassSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportWeekPassToExcel()'>Export to Excel</button><button onclick="document.getElementById('weekPassModal').classList.remove('show')">✕</button></div></div><div id='weekPassError' class='muted' style='display:none;color:#ff7777;margin-bottom:10px'></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='weekPassTable'></table></div></div></div></div>
 <div class='modal' id='activeSubsModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>Active Subscriptions</h1><div class='muted' id='activeSubsSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportActiveSubsToExcel()'>Export to Excel</button><button onclick="document.getElementById('activeSubsModal').classList.remove('show')">✕</button></div></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='activeSubsTable'></table></div></div></div></div>
 <div class='modal' id='smsOppModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>Opportunity to SMS</h1><div class='muted' id='smsOppSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportSmsOpportunityToExcel()'>Export to Excel</button><button onclick="document.getElementById('smsOppModal').classList.remove('show')">✕</button></div></div><div id='smsOppError' class='loginError' style='display:none;margin-bottom:12px'></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='smsOppTable'></table></div></div></div></div>
 <div class='modal' id='portalUsersListModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>Portal Users</h1><div class='muted' id='portalUsersListSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportPortalUsersToExcel()'>Export to Excel</button><button onclick="document.getElementById('portalUsersListModal').classList.remove('show')">✕</button></div></div><div id='portalUsersListError' class='loginError' style='display:none;margin-bottom:12px'></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='portalUsersListTable'></table></div></div></div></div>
@@ -2526,6 +2528,38 @@ function exportSmsOpportunityToExcel(){
   if(!lastSmsOpportunityExport||!lastSmsOpportunityExport.length){alert('Nobody to export.');return}
   let ws=XLSX.utils.json_to_sheet(lastSmsOpportunityExport.map(r=>({'Account':r.c.accountNumber||'','Customer':`${r.c.firstName} ${r.c.lastName}`,'Mobile':r.c.phone||'','Mins on Account':r.c.minutesLeft,'Last Visit':r.visit?listDate(r.visit+'T12:00:00'):'Never','Last Text':r.text?listDate(r.text):'Never'}))),wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Opportunity to SMS');XLSX.writeFile(wb,`REVIBE SMS Opportunities ${localDateKey()}.xlsx`);
+}
+
+
+// ---------- Week Pass Report ----------
+// Every 1 Week Pass sold (shop and online), with the sessions and minutes the customer used inside the pass window,
+// and revenue per minute = price paid / minutes used. Built by the get_week_pass_report database function.
+let lastWeekPassExport=null;
+function weekPassDateTime(v){if(!v)return '';let d=new Date(String(v).replace(' ','T'));return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+function gbp(n){return '£'+(+n).toFixed(2)}
+async function openWeekPassReport(){
+  let table=document.getElementById('weekPassTable'),err=document.getElementById('weekPassError');
+  err.style.display='none';
+  table.innerHTML=`<tr><td class='muted' style='text-align:center;padding:24px'>Loading...</td></tr>`;
+  document.getElementById('weekPassSubtitle').textContent='';
+  document.getElementById('weekPassModal').classList.add('show');
+  let {data:rows,error}=await sb.rpc('get_week_pass_report');
+  if(error){table.innerHTML='';err.textContent='Could not load the report: '+(error.message||'unknown error');err.style.display='block';return}
+  rows=rows||[];
+  lastWeekPassExport=rows;
+  let fin=rows.filter(r=>!r.is_active),sum=(a,k)=>a.reduce((s,r)=>s+(+r[k]||0),0);
+  let finPaid=sum(fin,'price_paid'),finMins=sum(fin,'minutes_used');
+  document.getElementById('weekPassSubtitle').textContent=`${rows.length} passes sold (${rows.length-fin.length} still running). Finished passes: ${fin.length?`${gbp(finPaid)} taken for ${finMins} minutes = ${finMins?gbp(finPaid/finMins):'—'} per minute on average.`:'none yet.'} Passes still running are still using minutes, so their £ per minute will fall.`;
+  let tot={paid:sum(rows,'price_paid'),sess:sum(rows,'sessions'),mins:sum(rows,'minutes_used')};
+  table.innerHTML=`<tr><th>Customer</th><th>Account</th><th>Sold</th><th>Pass Start</th><th>Pass End</th><th>Status</th><th>Price Paid</th><th>Sessions</th><th>Minutes Used</th><th>£ per Minute</th></tr>`+
+    (rows.length?rows.map(r=>`<tr class='clinicRow' onclick="openCustomerFromList('weekPassModal','${r.customer_id}')"><td><a href='javascript:void(0)' style='color:var(--pink);text-decoration:underline'>${escapeHtml(r.customer_name||'')}</a></td><td>${escapeHtml(r.account_number||'')}</td><td>${escapeHtml(r.source)}</td><td>${weekPassDateTime(r.pass_start)}</td><td>${weekPassDateTime(r.pass_end)}</td><td>${r.is_active?`<span style='color:var(--green);font-weight:700'>Running</span>`:`<span class="muted">Finished</span>`}</td><td>${gbp(r.price_paid)}</td><td>${r.sessions}</td><td>${r.minutes_used}</td><td><b>${r.revenue_per_minute===null?'—':gbp(r.revenue_per_minute)}</b></td></tr>`).join('')
+      +`<tr style='font-weight:800'><td colspan='6'>Total (all passes)</td><td>${gbp(tot.paid)}</td><td>${tot.sess}</td><td>${tot.mins}</td><td>${tot.mins?gbp(tot.paid/tot.mins):'—'}</td></tr>`
+     :`<tr><td colspan='10' class='muted' style='text-align:center;padding:24px'>No week passes have been sold yet.</td></tr>`);
+}
+function exportWeekPassToExcel(){
+  if(!lastWeekPassExport||!lastWeekPassExport.length){alert('No week passes to export.');return}
+  let ws=XLSX.utils.json_to_sheet(lastWeekPassExport.map(r=>({'Customer':r.customer_name,'Account':r.account_number||'','Sold':r.source,'Pass Start':weekPassDateTime(r.pass_start),'Pass End':weekPassDateTime(r.pass_end),'Status':r.is_active?'Running':'Finished','Price Paid':+r.price_paid,'Sessions':r.sessions,'Minutes Used':r.minutes_used,'£ per Minute':r.revenue_per_minute===null?'':+r.revenue_per_minute}))),wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Week Passes');XLSX.writeFile(wb,`REVIBE Week Pass Report ${localDateKey()}.xlsx`);
 }
 
 </script>
