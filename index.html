@@ -684,6 +684,7 @@ body.loading .app{visibility:hidden}
     <button onclick="openActiveSubscriptions()">Active Subscriptions <span>→</span></button>
     <button onclick="openSmsOpportunities()">Opportunity to SMS <span>→</span></button>
     <button onclick="openWeekPassReport()">Week Pass Report <span>→</span></button>
+    <button onclick="openSmsSuccess()">SMS Success <span>→</span></button>
   </div>
   <div class='trackerpanel' style='margin-bottom:16px;display:none'><h2>Today's Performance</h2><div class='muted' id='trackerDate'></div><div class='metricgrid'><div class='metric'><div class='label'>Sessions Today</div><div class='value' id='metricSessions'>0</div></div><div class='metric'><div class='label'>Total Minutes</div><div class='value' id='metricMinutes'>0</div></div><div class='metric'><div class='label'>Total New Sign Ups</div><div class='value' id='metricSignups'>0</div></div><div class='metric'><div class='label'>Total Red Light Minutes Today</div><div class='value' id='metricRltMinutes'>0</div></div><div class='metric'><div class='label'>Total Hybrid Minutes Today</div><div class='value' id='metricHybridMinutes'>0</div></div><div class='metric' style='opacity:.45'><div class='label'>Compared to Daily Average</div><div class='value' id='metricDailyAverage'>—</div><div class='kpiSub' id='metricDailyAverageDetail'></div></div></div></div>
   <div id='performanceReportingContent'></div>
@@ -1633,6 +1634,8 @@ body.loading .app{visibility:hidden}
 <div class='modal' id='usageFrequencyWarningModal'><div class='modalbox skinTypeWarningBox'><div class='skinTypeWarningIcon'>⚠</div><div class='skinTypeWarningText'>Customer has used sunbed either already today or for 4 days in a row. Please advise about safe use limits.</div><button class='skinTypeWarningBtn' onclick="document.getElementById('usageFrequencyWarningModal').classList.remove('show')">Understood</button></div></div>
 
 <div class='modal' id='customerProfilingListModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><h1 id='customerProfilingListTitle'>Customers</h1><div style='display:flex;gap:10px'><button onclick='exportCustomerProfilingListToExcel()'>Export to Excel</button><button onclick="document.getElementById('customerProfilingListModal').classList.remove('show')">✕</button></div></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='customerProfilingListTable'></table></div></div></div></div>
+<div class='modal' id='lapsedCustomerModal' style='z-index:200;background:#000d;align-items:center'><div class='modalbox' style='max-width:620px;background:#b3121f;border:4px solid #ff4d5a;color:#fff;text-align:center;padding:34px 30px;margin:auto'><div style='font-size:46px;line-height:1'>⚠️</div><div style='font-size:15px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin:10px 0 6px;opacity:.9' id='lapsedCustomerName'></div><div style='font-size:26px;font-weight:900;line-height:1.3'>This customer hasn't been in for a while, inform them of our new weekly and monthly passes, and our online portal</div><div style='font-size:14px;margin-top:12px;opacity:.9' id='lapsedCustomerDetail'></div><button type='button' onclick="document.getElementById('lapsedCustomerModal').classList.remove('show')" style='margin-top:24px;font-size:17px;font-weight:800;padding:14px 34px;background:#fff;color:#b3121f;border-color:#fff'>OK, I've told them</button></div></div>
+<div class='modal' id='smsSuccessModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>SMS Success</h1><div class='muted' id='smsSuccessSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportSmsSuccessToExcel()'>Export to Excel</button><button onclick="document.getElementById('smsSuccessModal').classList.remove('show')">✕</button></div></div><div id='smsSuccessError' class='muted' style='display:none;color:#ff7777;margin-bottom:10px'></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='smsSuccessTable'></table></div></div></div></div>
 <div class='modal' id='weekPassModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>Week Pass Report</h1><div class='muted' id='weekPassSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportWeekPassToExcel()'>Export to Excel</button><button onclick="document.getElementById('weekPassModal').classList.remove('show')">✕</button></div></div><div id='weekPassError' class='muted' style='display:none;color:#ff7777;margin-bottom:10px'></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='weekPassTable'></table></div></div></div></div>
 <div class='modal' id='activeSubsModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>Active Subscriptions</h1><div class='muted' id='activeSubsSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportActiveSubsToExcel()'>Export to Excel</button><button onclick="document.getElementById('activeSubsModal').classList.remove('show')">✕</button></div></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='activeSubsTable'></table></div></div></div></div>
 <div class='modal' id='smsOppModal'><div class='modalbox' style='max-width:calc(100vw - 56px);width:calc(100vw - 56px);min-height:calc(100vh - 56px)'><div class='top'><div><h1>Opportunity to SMS</h1><div class='muted' id='smsOppSubtitle'></div></div><div style='display:flex;gap:10px'><button onclick='exportSmsOpportunityToExcel()'>Export to Excel</button><button onclick="document.getElementById('smsOppModal').classList.remove('show')">✕</button></div></div><div id='smsOppError' class='loginError' style='display:none;margin-bottom:12px'></div><div class='card' style='padding:0'><div class='bedSessionsTableWrap' style='max-height:calc(100vh - 190px)'><table class='table' id='smsOppTable'></table></div></div></div></div>
@@ -2560,6 +2563,47 @@ function exportWeekPassToExcel(){
   if(!lastWeekPassExport||!lastWeekPassExport.length){alert('No week passes to export.');return}
   let ws=XLSX.utils.json_to_sheet(lastWeekPassExport.map(r=>({'Customer':r.customer_name,'Account':r.account_number||'','Sold':r.source,'Pass Start':weekPassDateTime(r.pass_start),'Pass End':weekPassDateTime(r.pass_end),'Status':r.is_active?'Running':'Finished','Price Paid':+r.price_paid,'Sessions':r.sessions,'Minutes Used':r.minutes_used,'£ per Minute':r.revenue_per_minute===null?'':+r.revenue_per_minute}))),wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Week Passes');XLSX.writeFile(wb,`REVIBE Week Pass Report ${localDateKey()}.xlsx`);
+}
+
+
+// ---------- SMS Success ----------
+// Every text sent from the account screen (Minutes Reminder or Marketing), and the first session the customer had after it.
+let lastSmsSuccessExport=null;
+function smsUkStamp(iso){
+  // 'YYYY-MM-DD HH:MM' in UK time, comparable with session date + time
+  let p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(iso)).map(x=>[x.type,x.value]));
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`;
+}
+function smsKindLabel(k){return k==='marketing'?'Marketing':'Mins Reminder'}
+async function openSmsSuccess(){
+  let table=document.getElementById('smsSuccessTable'),err=document.getElementById('smsSuccessError');
+  err.style.display='none';
+  table.innerHTML=`<tr><td class='muted' style='text-align:center;padding:24px'>Loading...</td></tr>`;
+  document.getElementById('smsSuccessSubtitle').textContent='';
+  document.getElementById('smsSuccessModal').classList.add('show');
+  let {data:logs,error}=await loadAllRows('sms_log','customer_id,kind,status,created_at',[['created_at',false]]);
+  if(error){table.innerHTML='';err.textContent='Could not load the text history: '+(error.message||'unknown error');err.style.display='block';return}
+  logs=(logs||[]).filter(l=>l.status==='sent'&&['minutes_balance','marketing'].includes(l.kind));
+  let sessionsBy={};
+  (data.bedSessions||[]).forEach(s=>{if(s.customerId&&s.date)(sessionsBy[s.customerId]=sessionsBy[s.customerId]||[]).push({stamp:`${s.date} ${s.time||'00:00'}`,date:s.date})});
+  Object.values(sessionsBy).forEach(a=>a.sort((x,y)=>x.stamp.localeCompare(y.stamp)));
+  let dn=k=>{let [y,m,d]=k.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/86400000)};
+  let rows=logs.map(l=>{
+    let c=(data.customers||[]).find(x=>x.id===l.customer_id),st=smsUkStamp(l.created_at);
+    let next=(sessionsBy[l.customer_id]||[]).find(s=>s.stamp>st);
+    return {c,kind:l.kind,sent:l.created_at,sentDate:st.slice(0,10),session:next?next.date:null,days:next?dn(next.date)-dn(st.slice(0,10)):null};
+  }).filter(r=>r.c);
+  lastSmsSuccessExport=rows;
+  let stat=k=>{let a=rows.filter(r=>r.kind===k),b=a.filter(r=>r.session);return `${a.length} ${smsKindLabel(k)} (${b.length} came in${a.length?`, ${Math.round(100*b.length/a.length)}%`:''})`};
+  document.getElementById('smsSuccessSubtitle').textContent=`${rows.length} texts sent: ${stat('minutes_balance')}; ${stat('marketing')}. "Session After Text" is the customer's first session after the text was sent; blank means they haven't been in since.`;
+  table.innerHTML=`<tr><th>Customer</th><th>Account</th><th>SMS Sent</th><th>Date Sent</th><th>Session After Text</th><th>Days Later</th></tr>`+
+    (rows.length?rows.map(r=>`<tr class='clinicRow' onclick="openCustomerFromList('smsSuccessModal','${r.c.id}')"><td><a href='javascript:void(0)' style='color:var(--pink);text-decoration:underline'>${escapeHtml(r.c.firstName)} ${escapeHtml(r.c.lastName)}</a></td><td>${escapeHtml(r.c.accountNumber||'')}</td><td>${smsKindLabel(r.kind)}</td><td>${listDate(r.sent)}</td><td>${r.session?`<b style='color:var(--green)'>${listDate(r.session+'T12:00:00')}</b>`:''}</td><td>${r.days===null?'':(r.days===0?'Same day':r.days+' day'+(r.days===1?'':'s'))}</td></tr>`).join('')
+     :`<tr><td colspan='6' class='muted' style='text-align:center;padding:24px'>No texts have been sent yet.</td></tr>`);
+}
+function exportSmsSuccessToExcel(){
+  if(!lastSmsSuccessExport||!lastSmsSuccessExport.length){alert('No texts to export.');return}
+  let ws=XLSX.utils.json_to_sheet(lastSmsSuccessExport.map(r=>({'Customer':`${r.c.firstName} ${r.c.lastName}`,'Account':r.c.accountNumber||'','SMS Sent':smsKindLabel(r.kind),'Date Sent':listDate(r.sent),'Session After Text':r.session?listDate(r.session+'T12:00:00'):'','Days Later':r.days===null?'':r.days}))),wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'SMS Success');XLSX.writeFile(wb,`REVIBE SMS Success ${localDateKey()}.xlsx`);
 }
 
 </script>
