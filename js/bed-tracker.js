@@ -798,6 +798,28 @@ function renderDailySessionsPurchases(key){
   table.innerHTML='<tr><th>Time</th><th>Channel</th><th>Customer</th><th>Items</th><th>Cash</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Grand Total</th></tr>'+
     (allRowsHtml||`<tr><td colspan='8' class='muted' style='text-align:center;padding:24px'>No purchases recorded for this day.</td></tr>`);
 }
+// For each session on the given day, the number of days since that customer's previous session in the system
+// (null = no previous session). Only sessions linked to a customer account can be matched.
+function previousSessionDaysForDay(key){
+  let out=new Map(),all=data.bedSessions||[];
+  let stamp=x=>(x.date||'')+' '+(x.time||'')+' '+(x.createdAt||'');
+  let dayNum=k=>{let [y,m,d]=k.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/86400000)};
+  let byCust=new Map();
+  all.forEach(x=>{if(x.customerId&&x.date){if(!byCust.has(x.customerId))byCust.set(x.customerId,[]);byCust.get(x.customerId).push(x)}});
+  all.filter(x=>x.date===key&&x.customerId).forEach(x=>{
+    let prev=null;
+    (byCust.get(x.customerId)||[]).forEach(o=>{
+      if(o.id===x.id||stamp(o)>=stamp(x))return;
+      if(!prev||stamp(o)>stamp(prev))prev=o;
+    });
+    out.set(x.id,prev?dayNum(x.date)-dayNum(prev.date):null);
+  });
+  return out;
+}
+function daysSinceLastLabel(n){
+  if(n===undefined||n===null)return `<span class='muted'>No Previous</span>`;
+  return n===0?'Same day':`${n} day${n===1?'':'s'}`;
+}
 function renderDailySessionsPage(key){
   if(!key)key=localDateKey();
 
@@ -849,9 +871,10 @@ function renderDailySessionsPage(key){
 
   let head=document.getElementById('dailySessionsHead');
   if(head)head.innerHTML=
-    `<tr><th>Time</th><th>Customer</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Subscriber</th><th>Booked</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th class='totalMinsCol'>Total Mins</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
+    `<tr><th>Time</th><th>Customer</th><th>Days Since Last Session</th><th>Session Length</th><th>Cash</th><th>Card</th><th>Account</th><th>Subscriber</th><th>Booked</th><th>Free</th><th>Staff</th><th>Rerun Minutes</th><th class='totalMinsCol'>Total Mins</th><th>Session Type</th><th>New Sign Up</th><th>Block Booking</th>${canDelete?"<th class='dailySessionsDeleteCol'></th>":''}</tr>`;
 
-  let cols=canDelete?16:15;
+  let cols=canDelete?17:16;
+  let prevByCustomer=previousSessionDaysForDay(key);
   let body=document.getElementById('dailySessionsRows');
   if(body)body.innerHTML=rows.length
     ? rows.map(x=>{
@@ -859,6 +882,7 @@ function renderDailySessionsPage(key){
         return `<tr class='clinicRow' onclick="openDailySessionEdit('${escapeHtml(x.id)}')">
         <td>${escapeHtml(x.time||'')}</td>
         <td>${customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName+' '+customer.lastName)}</a>`:'—'}</td>
+        <td>${x.customerId?daysSinceLastLabel(prevByCustomer.get(x.id)):'—'}</td>
         <td>${escapeHtml(x.length)} min</td>
         <td>${x.cashMinutes} min</td>
         <td>${x.cardMinutes} min</td>
@@ -881,6 +905,7 @@ function renderDailySessionsPage(key){
   if(foot)foot.innerHTML=rows.length
     ? `<tr>
         <td style='text-align:right'>Total</td>
+        <td></td>
         <td></td>
         <td>${totalMinutes} min</td>
         <td>${totalCash} min</td>
