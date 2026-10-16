@@ -408,13 +408,38 @@ function customerProfilingPurchaseTypeCustomers(weeks,productType){
   (data.customerPurchaseItems||[]).forEach(item=>{
     if(item.productType!==productType)return;
     let meta=purchaseMeta[item.purchaseId];if(!meta)return;
-    if(!byCustomer[meta.customerId])byCustomer[meta.customerId]={minutes:0,amount:0,items:0,latestDate:meta.date};
+    if(!byCustomer[meta.customerId])byCustomer[meta.customerId]={minutes:0,amount:0,items:0,latestDate:meta.date,extras:[]};
     let entry=byCustomer[meta.customerId];
-    if(productType==='Block Minutes'){let m=item.title.match(/(\d+)/);entry.minutes+=m?+m[1]:0}
+    if(productType==='Block Minutes'){
+      let prod=(data.tanningProducts||[]).find(x=>x.id===item.tanningProductId);
+      if((prod&&prod.grantsUnlimitedPass)||/pass/i.test(item.title||'')){entry.extras.push(item.title||'1 Week Pass')}
+      else{let m=item.title.match(/(\d+)/);entry.minutes+=m?+m[1]:0}
+    }
     entry.amount+=+item.price||0;
     entry.items+=1;
     if(meta.date>entry.latestDate)entry.latestDate=meta.date;
   });
+  // "Purchased Minutes" also counts everything bought online (minutes blocks and 1 Week Passes) and Unlimited
+  // Membership sign-ups and renewals - none of which are shop purchases, so they live in other tables.
+  if(productType==='Block Minutes'){
+    let addExtra=(customerId,dateIso,label,mins,amount)=>{
+      if(!customerId||!dateIso)return;
+      let day=localDateKey(new Date(dateIso));if(day<cutoff)return;
+      if(!byCustomer[customerId])byCustomer[customerId]={minutes:0,amount:0,items:0,latestDate:day,extras:[]};
+      let entry=byCustomer[customerId];
+      if(mins)entry.minutes+=mins;else entry.extras.push(label);
+      entry.amount+=amount||0;entry.items+=1;
+      if(day>entry.latestDate)entry.latestDate=day;
+    };
+    (data.customerTransactions||[]).forEach(t=>{
+      let m=(t.product||'').match(/^(1 Week Pass|(\d+) Minutes) \(Online Purchase\)$/);
+      if(m)addExtra(t.customerId,t.createdAt,'1 Week Pass (online)',m[2]?+m[2]:0,t.value);
+    });
+    (data.subscriptionEvents||[]).forEach(e=>{
+      if(e.eventType==='subscription_started')addExtra(e.customerId,e.occurredAt,'Unlimited Membership (new)',0,(e.details?.amount_paid_pence||0)/100);
+      else if(e.eventType==='payment_succeeded'&&e.details?.billing_reason==='subscription_cycle')addExtra(e.customerId,e.occurredAt,'Unlimited Membership (renewal)',0,(e.details?.amount_paid_pence||0)/100);
+    });
+  }
   return Object.keys(byCustomer).map(customerId=>{
     let c=(data.customers||[]).find(x=>x.id===customerId);
     return c?{customer:c,...byCustomer[customerId]}:null;
@@ -492,9 +517,9 @@ function openCustomerProfilingList(type){
     title=`Purchased ${productType==='Block Minutes'?'Minutes':'Tangibles'} in Last ${weeks} Weeks`;
     let entries=customerProfilingPurchaseTypeCustomers(weeks,productType);
     let extraByCustomer={};
-    entries.forEach(e=>{extraByCustomer[e.customer.id]=productType==='Block Minutes'?`${e.minutes} mins`:`£${e.amount.toFixed(2)}`});
+    entries.forEach(e=>{extraByCustomer[e.customer.id]=productType==='Block Minutes'?[e.minutes?`${e.minutes} mins`:'',...[...new Set(e.extras||[])]].filter(Boolean).join(' + ')||'—':`£${e.amount.toFixed(2)}`});
     rows=entries.map(e=>e.customer);
-    extraCol={label:productType==='Block Minutes'?'Minutes Purchased':'Amount Spent',get:c=>extraByCustomer[c.id]||'—'};
+    extraCol={label:productType==='Block Minutes'?'What They Bought':'Amount Spent',get:c=>extraByCustomer[c.id]||'—'};
   }else{
     let weeksMap={inactive2:2,inactive4:4,inactive6:6,inactive3with10:3,inactive3with20:3,inactive3with40:3};
     let minutesMap={inactive3with10:10,inactive3with20:20,inactive3with40:40};
