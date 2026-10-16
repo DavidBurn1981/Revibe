@@ -632,6 +632,7 @@ function setSmsButtonState(state){
 }
 async function loadLastSmsDate(customerId){
   let el=document.getElementById('custLastSms');if(!el)return;
+  {let ct=document.getElementById('custCustomSmsText');if(ct){ct.value='';updateCustomSmsCount()}}
   el.value=customerId?'Checking...':'Never';
   setSmsButtonState(customerId?'':'');
   if(!customerId)return;
@@ -665,5 +666,29 @@ async function sendCustomerSms(kind){
     await loadLastSmsDate(id);
   }catch(e){alert(e.message||'Could not send the text.')}
   finally{btns.forEach(b=>b&&(b.disabled=false))}
+}
+function updateCustomSmsCount(){
+  let t=document.getElementById('custCustomSmsText'),c=document.getElementById('custCustomSmsCount');
+  if(t&&c)c.textContent=`${t.value.length} / 150`;
+}
+// Staff-written text. Sent exactly as typed (the server tidies fancy quotes/emoji so it stays a single text).
+// Not part of the 14-day limit; opted-out customers and customers without a valid UK mobile are refused by the server.
+async function sendCustomSms(){
+  if(!editingCustomerId)return alert('Save this customer first.');
+  let t=document.getElementById('custCustomSmsText'),text=(t?.value||'').trim();
+  if(!text)return alert('Please type a message first.');
+  if(text.length>150)return alert('The message is too long. The limit is 150 characters.');
+  let id=editingCustomerId,btn=document.getElementById('smsCustomBtn');
+  if(btn)btn.disabled=true;
+  try{
+    let {data:pv,error:pe}=await sb.functions.invoke('send-minutes-sms',{body:{customer_id:id,preview:true,kind:'custom',message:text}});
+    if(pe||!pv||!pv.success)return alert(await smsFunctionError(pe,pv));
+    if(!confirm(`Send this text to ${pv.to}?\n\n"${pv.message}"`))return;
+    let {data:res,error:se}=await sb.functions.invoke('send-minutes-sms',{body:{customer_id:id,kind:'custom',message:text}});
+    if(se||!res||!res.success)return alert(await smsFunctionError(se,res));
+    alert('Text sent.');
+    if(t){t.value='';updateCustomSmsCount()}
+  }catch(e){alert(e.message||'Could not send the text.')}
+  finally{if(btn)btn.disabled=false}
 }
 function sendMinutesBalanceSms(){return sendCustomerSms('minutes_balance')}
