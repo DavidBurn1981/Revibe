@@ -619,11 +619,11 @@ function sessionCustomerChanged(){let id=document.getElementById('sessionCustome
 function purchaseMoreFromSession(){let id=document.getElementById('sessionCustomerId').value;document.getElementById('insufficientMinutesModal').classList.remove('show');if(id)openCustomer(id)}
 
 // ---- Texts to the customer, sent via Brevo by the send-minutes-sms function ----
-// Two kinds (minutes reminder / marketing). A customer can receive ONE text of either kind
+// Three kinds (minutes reminder / marketing / staff-written). A customer can receive ONE text of any kind
 // in any 14 days - enforced by the server; the buttons just show it: green = OK to send, red = blocked.
 const SMS_COOLDOWN_DAYS=14;
 function setSmsButtonState(state){
-  ['smsBalanceBtn','smsMarketingBtn'].forEach(id=>{
+  ['smsBalanceBtn','smsMarketingBtn','smsCustomBtn'].forEach(id=>{
     let b=document.getElementById(id);if(!b)return;
     if(state==='ok'){b.style.background='#1f9d55';b.style.borderColor='#1f9d55';b.style.color='#fff'}
     else if(state==='blocked'){b.style.background='#d63031';b.style.borderColor='#d63031';b.style.color='#fff'}
@@ -637,7 +637,7 @@ async function loadLastSmsDate(customerId){
   setSmsButtonState(customerId?'':'');
   if(!customerId)return;
   try{
-    let {data:rows,error}=await sb.from('sms_log').select('created_at').eq('customer_id',customerId).in('kind',['minutes_balance','marketing']).eq('status','sent').order('created_at',{ascending:false}).limit(1);
+    let {data:rows,error}=await sb.from('sms_log').select('created_at').eq('customer_id',customerId).in('kind',['minutes_balance','marketing','custom']).eq('status','sent').order('created_at',{ascending:false}).limit(1);
     if(error)throw error;
     if(editingCustomerId!==customerId)return;
     if(rows&&rows.length){
@@ -654,7 +654,7 @@ async function smsFunctionError(error,data){
 }
 async function sendCustomerSms(kind){
   if(!editingCustomerId)return alert('Save this customer first.');
-  let id=editingCustomerId,btns=['smsBalanceBtn','smsMarketingBtn'].map(x=>document.getElementById(x));
+  let id=editingCustomerId,btns=['smsBalanceBtn','smsMarketingBtn','smsCustomBtn'].map(x=>document.getElementById(x));
   btns.forEach(b=>b&&(b.disabled=true));
   try{
     let {data:pv,error:pe}=await sb.functions.invoke('send-minutes-sms',{body:{customer_id:id,preview:true,kind}});
@@ -688,6 +688,7 @@ async function sendCustomSms(){
     if(se||!res||!res.success)return alert(await smsFunctionError(se,res));
     alert('Text sent.');
     if(t){t.value='';updateCustomSmsCount()}
+    await loadLastSmsDate(id);
   }catch(e){alert(e.message||'Could not send the text.')}
   finally{if(btn)btn.disabled=false}
 }
