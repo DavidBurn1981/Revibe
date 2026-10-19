@@ -65,6 +65,18 @@ function updateUvAllowedColour(){
 function switchCustomerTab(tab){
   document.querySelectorAll('.customerTabBtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   document.querySelectorAll('.customerTabContent').forEach(c=>c.classList.toggle('active',c.dataset.tab===tab));
+  if(tab==='sms')loadCustomerSmsTab();
+}
+async function loadCustomerSmsTab(){
+  let t=document.getElementById('customerSmsTable');if(!t)return;
+  let id=editingCustomerId;
+  if(!id){t.innerHTML="<tr><td class='muted'>Save the customer first - no texts have been sent yet.</td></tr>";return}
+  t.innerHTML="<tr><td class='muted'>Loading...</td></tr>";
+  let kindLabel=k=>({minutes_balance:'Mins Reminder',marketing:'Marketing',custom:'Own Message',purchase:'Purchase Thank You'})[k]||k;
+  let {data:rows,error}=await sb.from('sms_log').select('created_at,kind,status,message,phone').eq('customer_id',id).order('created_at',{ascending:false}).limit(500);
+  if(editingCustomerId!==id)return;
+  if(error){t.innerHTML="<tr><td class='muted'>Could not load the texts: "+escapeHtml(error.message||'')+"</td></tr>";return}
+  t.innerHTML="<tr><th>Date Sent</th><th>Type</th><th>Message</th><th>Status</th></tr>"+((rows&&rows.length)?rows.map(r=>`<tr><td style='white-space:nowrap'>${new Date(r.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td><td>${kindLabel(r.kind)}</td><td>${escapeHtml(r.message||'')}</td><td>${r.status==='sent'?'Sent':r.status==='failed'?"<b style='color:var(--red,#ff6b6b)'>Failed</b>":escapeHtml(r.status||'')}</td></tr>`).join(''):"<tr><td colspan='4' class='muted'>No texts have been sent to this customer yet.</td></tr>");
 }
 function selectSkinType(type){
   selectedSkinType=type;
