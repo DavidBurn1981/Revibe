@@ -550,7 +550,15 @@ function renderCustomerPurchases(c){
    let d=new Date(t.createdAt),key=localDateKey(d);
    return {sort:key+'|'+t.createdAt,html:`<tr><td><b>${parseLocalDateKey(key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td><td>${escapeHtml(t.product)} <span class='muted'>(Online)</span></td><td><b>£${t.value.toFixed(2)}</b></td></tr>`};
  });
- let allRows=tillRows.concat(onlineRows).sort((a,b)=>b.sort.localeCompare(a.sort));
+ // Monthly membership payments (display-only, already counted in Online Sales): the first month at sign-up,
+ // then each monthly payment once Stripe confirms it. Amounts are what Stripe actually collected.
+ let fallbackSubPrice=((data.subscriptionProductConfig||[]).find(x=>x.active)?.pricePence||0)/100;
+ let subRows=(data.subscriptionEvents||[]).filter(e=>e.customerId===c.id&&e.occurredAt&&(e.eventType==='subscription_started'||(e.eventType==='payment_succeeded'&&e.details?.billing_reason==='subscription_cycle'&&e.details?.amount_paid_pence!=null))).map(e=>{
+   let key=localDateKey(new Date(e.occurredAt)),first=e.eventType==='subscription_started';
+   let amt=e.details?.amount_paid_pence!=null?e.details.amount_paid_pence/100:fallbackSubPrice;
+   return {sort:key+'|'+e.occurredAt,html:`<tr><td><b>${parseLocalDateKey(key).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</b></td><td>${first?'Monthly Subscription - Initial Month':'Monthly Payment'} <span class='muted'>(Online)</span></td><td><b>£${amt.toFixed(2)}</b></td></tr>`};
+ });
+ let allRows=tillRows.concat(onlineRows,subRows).sort((a,b)=>b.sort.localeCompare(a.sort));
  document.getElementById('customerRecordPurchasesTable').innerHTML="<tr><th>Date</th><th>Items</th><th>Grand Total</th></tr>"+(allRows.length?allRows.map(r=>r.html).join(''):"<tr><td colspan='3' class='muted'>No purchases yet.</td></tr>")
 }
 let blockPartnerApply=true;
