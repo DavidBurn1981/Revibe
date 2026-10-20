@@ -45,7 +45,7 @@ function openNewCustomerWizard(){
   wizCustomerId=null;
   wizUvAllowedManuallySet=false;
   wizSelectedSkinType=null;
-  wizPurchaseSelection={treatments:[],glowStudio:[]};
+  wizPurchaseSelection={treatments:[],glowStudio:[]};manualReset('wiz');
   wizBoughtBlockMinutes=false;
   wizSessionBackTarget='purchaseAsk';
   ['wizFirst','wizLast','wizPhone','wizEmail','wizAddress','wizDob','wizIdDate','wizHealthNotes'].forEach(id=>document.getElementById(id).value='');
@@ -87,7 +87,7 @@ function openExistingCustomerWizard(){
   wizMode='existing';
   document.getElementById('wizModalTitle').textContent='Process Existing Customer (Walk In)';
   wizCustomerId=null;
-  wizPurchaseSelection={treatments:[],glowStudio:[]};
+  wizPurchaseSelection={treatments:[],glowStudio:[]};manualReset('wiz');
   wizBoughtBlockMinutes=false;
   wizSessionBackTarget='purchaseAsk';
   document.getElementById('wizAccountCreatedSub').textContent='';
@@ -120,7 +120,7 @@ function openExistingCustomerWizardBooking(){
   wizMode='existing-booking';
   document.getElementById('wizModalTitle').textContent='Process Existing Customer (Booking)';
   wizCustomerId=null;
-  wizPurchaseSelection={treatments:[],glowStudio:[]};
+  wizPurchaseSelection={treatments:[],glowStudio:[]};manualReset('wiz');
   wizBoughtBlockMinutes=false;
   wizSessionBackTarget='purchaseAsk';
   document.getElementById('wizAccountCreatedSub').textContent='';
@@ -468,7 +468,7 @@ function wizRemovePurchaseItem(list,index){
   wizRenderPurchaseLists();
 }
 function wizRenderPurchaseLists(){
-  {let disc=wizDiscount(),all=[...wizPurchaseSelection.treatments,...wizPurchaseSelection.glowStudio];partnerApplyToItems(all,disc);let box=document.getElementById('wizPartnerBox');if(box)box.innerHTML=partnerBoxHtml(customerPartnerDiscount(wizCustomerId),wizPartnerApply,'wizTogglePartner',partnerBasketSaving(all))}
+  {let disc=wizDiscount(),all=[...wizPurchaseSelection.treatments,...wizPurchaseSelection.glowStudio];renderBasketTotals('wiz',wizPurchaseSelection.treatments,wizPurchaseSelection.glowStudio,disc,['wizPurchaseTotalTreatments','wizPurchaseTotalGlowStudio'],['wizPayableTreatments','wizPayableGlowStudio']);let box=document.getElementById('wizPartnerBox');if(box)box.innerHTML=partnerBoxHtml(customerPartnerDiscount(wizCustomerId),wizPartnerApply,'wizTogglePartner',partnerBasketSaving(all))}
   let treatmentsList=document.getElementById('wizPurchaseListTreatments'),glowStudioList=document.getElementById('wizPurchaseListGlowStudio');
   if(!treatmentsList||!glowStudioList)return;
   let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>${partnerRowPriceHtml(item)}</div><button type='button' class='purchaseItemRemove' onclick="wizRemovePurchaseItem('${list}',${index})">✕</button></div></div>`;
@@ -480,8 +480,6 @@ function wizRenderPurchaseLists(){
     : `<div class='purchaseListEmpty'>No items added yet.</div>`;
   let treatmentsTotal=wizPurchaseSelection.treatments.reduce((s,i)=>s+i.price,0),
       glowStudioTotal=wizPurchaseSelection.glowStudio.reduce((s,i)=>s+i.price,0);
-  document.getElementById('wizPurchaseTotalTreatments').value=`£${treatmentsTotal.toFixed(2)}`;
-  document.getElementById('wizPurchaseTotalGlowStudio').value=`£${glowStudioTotal.toFixed(2)}`;
 }
 
 // --- Payment ---
@@ -489,6 +487,7 @@ function wizGoToPayment(){
   let err=document.getElementById('wizPurchaseError');err.style.display='none';
   let allItems=[...wizPurchaseSelection.treatments,...wizPurchaseSelection.glowStudio];
   if(!allItems.length){err.textContent='Please add at least one item before processing.';err.style.display='block';return}
+  {let me=manualValidate('wiz');if(me){err.textContent=me;err.style.display='block';return}}
   let treatmentsTotal=wizPurchaseSelection.treatments.reduce((s,i)=>s+i.price,0),
       glowStudioTotal=wizPurchaseSelection.glowStudio.reduce((s,i)=>s+i.price,0);
   document.getElementById('wizPpGlowStudioDue').textContent=`£${glowStudioTotal.toFixed(2)}`;
@@ -564,7 +563,7 @@ async function wizConfirmPurchases(){
       purchase_date:localDateKey(),treatments_total:treatmentsTotal,glow_studio_total:glowStudioTotal,grand_total:grandTotal,
       glow_studio_card_amount:glowStudioCard,glow_studio_cash_amount:glowStudioCash,
       treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash,customer_id:wizCustomerId,
-      ...partnerPurchaseFields(allItems,wizDiscount())
+      ...purchaseDiscountFields('wiz',wizPurchaseSelection.treatments,wizPurchaseSelection.glowStudio,wizDiscount())
     }).select().single();
     if(error)throw error;
     let itemRows=allItems.map(item=>({
@@ -591,7 +590,7 @@ async function wizConfirmPurchases(){
       p_date:localDateKey(),p_cash:glowStudioCash+treatmentsCash,p_treatments_card:treatmentsCard,p_bed_card:glowStudioCard
     });
     if(takingsError)throw takingsError;
-    wizPurchaseSelection={treatments:[],glowStudio:[]};
+    wizPurchaseSelection={treatments:[],glowStudio:[]};manualReset('wiz');
     wizRenderPurchaseLists();
     let passItems=allItems.filter(item=>item.grantsUnlimitedPass);
     for(let item of passItems){

@@ -120,6 +120,54 @@ function partnerPurchaseFields(items,disc){
   return disc&&saving>0?{partner_discount_name:disc.name,partner_discount_percent:disc.percent,partner_discount_amount:saving}:{partner_discount_name:null,partner_discount_percent:null,partner_discount_amount:0};
 }
 
+// ---- Manual discount % typed by staff, one per side (Treatments / Glow Studio sunbed side) ----
+// Stacks on top of any partner discount: partner discount first, then this % off the result.
+// prefix is 'purchase' (Process Purchase pane) or 'wiz' (New / Existing Customer wizard).
+function manualPct(prefix,side){let v=+(document.getElementById(prefix+'Disc'+side)||{}).value;return isFinite(v)&&v>0?Math.min(v,100):0}
+function manualNote(prefix,side){return ((document.getElementById(prefix+'DiscNote'+side)||{}).value||'').trim()}
+function manualApply(items,pct){if(pct>0)items.forEach(i=>{i.price=Math.round(i.price*(1-pct/100)*100)/100})}
+function manualShowNoteRows(prefix){
+  ['Treatments','GlowStudio'].forEach(side=>{let r=document.getElementById(prefix+'DiscNoteRow'+side);if(r)r.style.display=manualPct(prefix,side)>0?'block':'none'});
+}
+function manualReset(prefix){
+  ['Treatments','GlowStudio'].forEach(side=>{let a=document.getElementById(prefix+'Disc'+side),b=document.getElementById(prefix+'DiscNote'+side);if(a)a.value='';if(b)b.value=''});
+  manualShowNoteRows(prefix);
+}
+// Returns '' if fine, otherwise a message for the screen.
+function manualValidate(prefix){
+  for(let side of ['Treatments','GlowStudio']){
+    let raw=(document.getElementById(prefix+'Disc'+side)||{}).value;
+    if(raw!==''&&raw!=null&&(!isFinite(+raw)||+raw<0||+raw>100))return 'The discount % must be between 0 and 100.';
+    if(manualPct(prefix,side)>0&&!manualNote(prefix,side))return `Please enter a reason for the ${side==='Treatments'?'Treatments':'Glow Studio'} discount.`;
+  }
+  return '';
+}
+// Everything stored on customer_purchases about discounts. Partner figures are the partner discount only;
+// the manual figures are the extra amount taken off by the typed % on each side.
+function purchaseDiscountFields(prefix,treatItems,glowItems,disc){
+  let partnerPrice=i=>disc?partnerDiscountedPrice(i.listPrice!=null?i.listPrice:i.price,disc.percent):(i.listPrice!=null?i.listPrice:i.price);
+  let all=[...treatItems,...glowItems];
+  let partnerSaving=Math.round(all.reduce((s,i)=>s+((i.listPrice!=null?i.listPrice:i.price)-partnerPrice(i)),0)*100)/100;
+  let amt=items=>Math.round(items.reduce((s,i)=>s+(partnerPrice(i)-i.price),0)*100)/100;
+  let tPct=manualPct(prefix,'Treatments'),gPct=manualPct(prefix,'GlowStudio');
+  let tAmt=tPct>0?amt(treatItems):0,gAmt=gPct>0?amt(glowItems):0;
+  return {
+    ...(disc&&partnerSaving>0?{partner_discount_name:disc.name,partner_discount_percent:disc.percent,partner_discount_amount:partnerSaving}:{partner_discount_name:null,partner_discount_percent:null,partner_discount_amount:0}),
+    treatments_discount_percent:tPct>0?tPct:null,treatments_discount_amount:tAmt,treatments_discount_note:tPct>0?manualNote(prefix,'Treatments'):null,
+    glow_studio_discount_percent:gPct>0?gPct:null,glow_studio_discount_amount:gAmt,glow_studio_discount_note:gPct>0?manualNote(prefix,'GlowStudio'):null
+  };
+}
+// Applies partner + manual discounts to the two baskets and fills the Total / Payable Total boxes.
+function renderBasketTotals(prefix,treatItems,glowItems,disc,totalIds,payableIds){
+  partnerApplyToItems([...treatItems,...glowItems],disc);
+  let pre=l=>l.reduce((s,i)=>s+i.price,0);
+  let tPre=pre(treatItems),gPre=pre(glowItems);
+  manualApply(treatItems,manualPct(prefix,'Treatments'));manualApply(glowItems,manualPct(prefix,'GlowStudio'));
+  manualShowNoteRows(prefix);
+  let set=(id,v)=>{let e=document.getElementById(id);if(e)e.value=`£${v.toFixed(2)}`};
+  set(totalIds[0],tPre);set(totalIds[1],gPre);set(payableIds[0],pre(treatItems));set(payableIds[1],pre(glowItems));
+}
+
 // ---- PAYG sessions ----
 // % to take off a pay-as-you-go session for this customer (0 = none). Only when PAYG minutes are entered
 // and staff have not ticked the discount off for this session.

@@ -1118,7 +1118,7 @@ function clearPurchaseCustomer(){
   purchasePartnerApply=true;renderPurchaseLists();
 }
 function renderPurchaseLists(){
-  {let disc=purchaseDiscount(),all=[...purchaseSelection.treatments,...purchaseSelection.glowStudio];partnerApplyToItems(all,disc);let box=document.getElementById('purchasePartnerBox');if(box)box.innerHTML=partnerBoxHtml(customerPartnerDiscount(document.getElementById('purchaseCustomerId')?.value||null),purchasePartnerApply,'togglePurchasePartner',partnerBasketSaving(all))}
+  {let disc=purchaseDiscount(),all=[...purchaseSelection.treatments,...purchaseSelection.glowStudio];renderBasketTotals('purchase',purchaseSelection.treatments,purchaseSelection.glowStudio,disc,['purchaseTotalTreatments','purchaseTotalGlowStudio'],['purchasePayableTreatments','purchasePayableGlowStudio']);let box=document.getElementById('purchasePartnerBox');if(box)box.innerHTML=partnerBoxHtml(customerPartnerDiscount(document.getElementById('purchaseCustomerId')?.value||null),purchasePartnerApply,'togglePurchasePartner',partnerBasketSaving(all))}
   let treatmentsList=document.getElementById('purchaseListTreatments'),glowStudioList=document.getElementById('purchaseListGlowStudio');
   if(!treatmentsList||!glowStudioList)return;
   let renderRow=(item,list,index)=>`<div class='purchaseItemRow'><div class='title'>${escapeHtml(item.title)}</div><div class='right'><div class='price'>${partnerRowPriceHtml(item)}</div><button type='button' class='purchaseItemRemove' onclick="removePurchaseItem('${list}',${index})">✕</button></div></div>`;
@@ -1130,8 +1130,6 @@ function renderPurchaseLists(){
     : `<div class='purchaseListEmpty'>No items added yet.</div>`;
   let treatmentsTotal=purchaseSelection.treatments.reduce((s,i)=>s+i.price,0),
       glowStudioTotal=purchaseSelection.glowStudio.reduce((s,i)=>s+i.price,0);
-  document.getElementById('purchaseTotalTreatments').value=`£${treatmentsTotal.toFixed(2)}`;
-  document.getElementById('purchaseTotalGlowStudio').value=`£${glowStudioTotal.toFixed(2)}`;
   let grandTotalEl=document.getElementById('purchaseGrandTotalPayable');
   if(grandTotalEl)grandTotalEl.textContent=`£${(treatmentsTotal+glowStudioTotal).toFixed(2)}`;
 }
@@ -1139,6 +1137,7 @@ function openProcessPurchasesModal(){
   let err=document.getElementById('confirmPurchaseError');err.style.display='none';
   let allItems=[...purchaseSelection.treatments,...purchaseSelection.glowStudio];
   if(!allItems.length){err.textContent='Please add at least one item before processing.';err.style.display='block';return}
+  {let me=manualValidate('purchase');if(me){err.textContent=me;err.style.display='block';return}}
   let treatmentsTotal=purchaseSelection.treatments.reduce((s,i)=>s+i.price,0),
       glowStudioTotal=purchaseSelection.glowStudio.reduce((s,i)=>s+i.price,0);
   document.getElementById('ppGlowStudioDue').textContent=`£${glowStudioTotal.toFixed(2)}`;
@@ -1195,7 +1194,7 @@ async function confirmPurchases(){
       purchase_date:localDateKey(),treatments_total:treatmentsTotal,glow_studio_total:glowStudioTotal,grand_total:grandTotal,
       glow_studio_card_amount:glowStudioCard,glow_studio_cash_amount:glowStudioCash,
       treatments_card_amount:treatmentsCard,treatments_cash_amount:treatmentsCash,customer_id:customerId,
-      ...partnerPurchaseFields(allItems,purchaseDiscount())
+      ...purchaseDiscountFields('purchase',purchaseSelection.treatments,purchaseSelection.glowStudio,purchaseDiscount())
     }).select().single();
     if(error)throw error;
     let itemRows=allItems.map(item=>({
@@ -1225,6 +1224,7 @@ async function confirmPurchases(){
     if(takingsError)throw takingsError;
     if(customerId)sendPurchaseText(customerId,allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0).map(item=>item.title));
     purchaseSelection={treatments:[],glowStudio:[]};
+    manualReset('purchase');
     clearPurchaseCustomer();
     closeProcessPurchasesModal();
     renderPurchaseLists();
