@@ -2,6 +2,7 @@
 let editingLeadId=null,leadsCache=[];
 const LEAD_STATUSES=['Contacted','In Discussion','Met face to face','Partner Created'];
 const LEAD_TYPES=['Gym','Wellbeing company','PT','Skin company','Other'];
+const LEAD_CONTACT_FIELDS=[['leadMainName','main_contact_name'],['leadMainPhone','main_contact_phone'],['leadMainEmail','main_contact_email'],['leadSecondName','second_contact_name'],['leadSecondPhone','second_contact_phone'],['leadSecondEmail','second_contact_email']];
 
 async function renderLeads(){
   let table=document.getElementById('leadsTable');if(!table)return;
@@ -13,8 +14,8 @@ async function renderLeads(){
   leadsCache=rows||[];
   let when=d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   let preview=t=>{t=(t||'').replace(/\s+/g,' ').trim();return t.length>110?t.slice(0,110)+'...':t};
-  table.innerHTML="<tr><th>Lead</th><th>Status</th><th>Type of Partner</th><th>Notes</th><th>Added</th><th></th></tr>"+
-    (leadsCache.length?leadsCache.map(l=>`<tr class='clinicRow' onclick="openLeadEdit('${l.id}')"><td><b>${escapeHtml(l.lead_name)}</b></td><td>${escapeHtml(l.lead_status)}</td><td>${escapeHtml(l.partner_type)}${l.partner_type==='Other'&&l.other_details?` <span class='muted'>(${escapeHtml(l.other_details)})</span>`:''}</td><td class='muted'>${escapeHtml(preview(l.notes))}</td><td>${when(l.created_at)}</td><td>${canDelete?`<button onclick="event.stopPropagation();deleteLead('${l.id}')">Delete</button>`:''}</td></tr>`).join(''):"<tr><td colspan='6' class='muted'>No leads yet. Click \"+ New Lead\" to add one.</td></tr>");
+  table.innerHTML="<tr><th>Lead</th><th>Status</th><th>Type of Partner</th><th>Main Contact</th><th>Notes</th><th>Added</th><th></th></tr>"+
+    (leadsCache.length?leadsCache.map(l=>`<tr class='clinicRow' onclick="openLeadEdit('${l.id}')"><td><b>${escapeHtml(l.lead_name)}</b></td><td>${escapeHtml(l.lead_status)}</td><td>${escapeHtml(l.partner_type)}${l.partner_type==='Other'&&l.other_details?` <span class='muted'>(${escapeHtml(l.other_details)})</span>`:''}</td><td>${escapeHtml(l.main_contact_name||'')}${l.main_contact_phone?` <span class='muted'>${escapeHtml(l.main_contact_phone)}</span>`:''}</td><td class='muted'>${escapeHtml(preview(l.notes))}</td><td>${when(l.created_at)}</td><td>${canDelete?`<button onclick="event.stopPropagation();deleteLead('${l.id}')">Delete</button>`:''}</td></tr>`).join(''):"<tr><td colspan='7' class='muted'>No leads yet. Click \"+ New Lead\" to add one.</td></tr>");
 }
 function leadFillSelects(){
   document.getElementById('leadStatus').innerHTML=LEAD_STATUSES.map(s=>`<option value='${s}'>${s}</option>`).join('');
@@ -27,6 +28,7 @@ function openLeadCreate(){
   document.getElementById('leadModalTitle').textContent='New Lead';
   document.getElementById('leadName').value='';document.getElementById('leadStatus').value='Contacted';document.getElementById('leadType').value='';
   document.getElementById('leadOther').value='';document.getElementById('leadNotes').value='';
+  LEAD_CONTACT_FIELDS.forEach(([id])=>document.getElementById(id).value='');
   leadToggleOther();document.getElementById('leadDeleteBtn').style.display='none';document.getElementById('leadError').style.display='none';
   document.getElementById('leadModal').classList.add('show');
 }
@@ -36,6 +38,7 @@ function openLeadEdit(id){
   document.getElementById('leadModalTitle').textContent=l.lead_name;
   document.getElementById('leadName').value=l.lead_name;document.getElementById('leadStatus').value=l.lead_status;document.getElementById('leadType').value=l.partner_type;
   document.getElementById('leadOther').value=l.other_details||'';document.getElementById('leadNotes').value=l.notes||'';
+  LEAD_CONTACT_FIELDS.forEach(([id,col])=>document.getElementById(id).value=l[col]||'');
   leadToggleOther();
   document.getElementById('leadDeleteBtn').style.display=hasRolePermission('leads','delete')?'inline-block':'none';
   document.getElementById('leadSaveBtn').style.display=hasRolePermission('leads','edit')?'inline-block':'none';
@@ -49,6 +52,7 @@ async function saveLead(){
   if(!type)return showLeadError('Please choose the type of partner.');
   if(type==='Other'&&!other)return showLeadError('You chose Other - please type in the details of the type of partner.');
   let row={lead_name:name,lead_status:status,partner_type:type,other_details:type==='Other'?other:null,notes:notes.trim()?notes:null,updated_at:new Date().toISOString()};
+  LEAD_CONTACT_FIELDS.forEach(([id,col])=>{row[col]=document.getElementById(id).value.trim()||null});
   let btn=document.getElementById('leadSaveBtn');btn.disabled=true;btn.textContent='Saving...';
   try{
     let res=editingLeadId?await sb.from('partner_leads').update(row).eq('id',editingLeadId):await sb.from('partner_leads').insert(row);
