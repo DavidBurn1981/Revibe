@@ -2018,6 +2018,14 @@ body.loading .app{visibility:hidden}
       <div><label>Lead Status</label><select id='leadStatus'></select></div>
       <div><label>Type of Partner</label><select id='leadType' onchange='leadToggleOther()'></select></div>
       <div id='leadOtherWrap' style='grid-column:1 / -1;display:none'><label>Other - please give details</label><input id='leadOther' placeholder='Type in the type of partner'></div>
+      <div style='grid-column:1 / -1;margin-top:6px'><h3 style='margin:0;font-size:14px'>Main Contact Details <span class='muted' style='font-weight:400'>(when known)</span></h3></div>
+      <div><label>Name of main contact</label><input id='leadMainName'></div>
+      <div><label>Phone number of main contact</label><input id='leadMainPhone' type='tel'></div>
+      <div style='grid-column:1 / -1'><label>Email of main contact</label><input id='leadMainEmail' type='email'></div>
+      <div style='grid-column:1 / -1;margin-top:6px'><h3 style='margin:0;font-size:14px'>Second Contact Details <span class='muted' style='font-weight:400'>(when known)</span></h3></div>
+      <div><label>Name of second contact (if required)</label><input id='leadSecondName'></div>
+      <div><label>Phone number of second contact (if required)</label><input id='leadSecondPhone' type='tel'></div>
+      <div style='grid-column:1 / -1'><label>Email of second contact (if required)</label><input id='leadSecondEmail' type='email'></div>
       <div style='grid-column:1 / -1'><label>Notes on this possible partnership - please describe details of what is being discussed etc.</label><textarea id='leadNotes' style='min-height:420px;height:55vh;resize:vertical;width:100%;line-height:1.5' placeholder='Write everything here: who you spoke to, what was agreed, what happens next...'></textarea></div>
     </div>
     <div id='leadError' class='loginError' style='margin-top:12px'></div>
