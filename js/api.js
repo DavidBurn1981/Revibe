@@ -194,6 +194,12 @@ async function bootRevibe(){
   let dailyPicker=document.getElementById('dailySessionsDatePicker');
   if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();
   applyPermissionBasedNavigation();applyPermissionBasedActions();
+  // After a refresh, go back to the page that was open (if this user is still allowed to see it).
+  try{
+    let saved=localStorage.getItem('revibe_last_page_'+currentUser.id);
+    let btn=saved&&document.querySelector(`#nav button[data-page="${saved}"]`);
+    if(btn&&btn.style.display!=='none'&&document.getElementById(saved)&&!document.getElementById(saved).classList.contains('active'))goToPage(saved);
+  }catch(_e){}
   // Keep the app quietly up to date in the background - staff otherwise have no
   // way of knowing about things that happened elsewhere, like a customer booking
   // a bed through the portal on their own phone, without manually refreshing.

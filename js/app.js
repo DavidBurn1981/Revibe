@@ -147,6 +147,7 @@ function goToPage(pageId){
   if(!page)return;
 
   page.classList.add('active');
+  try{if(currentUser&&currentUser.id)localStorage.setItem('revibe_last_page_'+currentUser.id,pageId)}catch(_e){}
 
   let navBtn=document.querySelector(`[data-page="${pageId}"]`);
   if(navBtn)navBtn.classList.add('active');
