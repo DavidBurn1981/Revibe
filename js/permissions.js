@@ -13,6 +13,7 @@ const REVIBE_PERMISSION_AREAS=[
   {group:'Staff',key:'staff_rota',label:'Staff Rota',approve:false},
   {group:'Staff',key:'holiday_requests',label:'Holiday Requests',approve:true},
 
+  {group:'Business Growth',key:'leads',label:'Leads',approve:false},
   {group:'Admin',key:'users',label:'Users',approve:false},
   {group:'Admin',key:'roles_permissions',label:'Roles & Permissions',approve:false},
   {group:'Admin',key:'finance',label:'Finance',approve:false},
@@ -45,6 +46,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   staffrota:'staff_rota',
   holidayrequests:'holiday_requests',
 
+  leads:'leads',
   users:'users',
   rolespermissions:'roles_permissions',
   finance:'finance',
@@ -87,6 +89,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   saveDailyTakings:['daily_session_tracker','edit'],
   openSunbedBooking:['sunbed_bookings','edit'], saveSunbedBooking:['sunbed_bookings','edit'], sunbedCancelBookingFromDetail:['sunbed_bookings','edit'],
   openTanningProduct:['sunbed_settings','edit'], saveTanningProduct:['sunbed_settings','edit'], deleteTanningProduct:['sunbed_settings','edit'],
+  openLeadCreate:['leads','edit'], saveLead:['leads','edit'], deleteLead:['leads','delete'],
   openMonthlyTargetCreate:['sunbed_settings','edit'], openMonthlyTargetEdit:['sunbed_settings','edit'], saveMonthlyTarget:['sunbed_settings','edit'], deleteMonthlyTargetStack:['sunbed_settings','delete'], saveOpeningHours:['sunbed_settings','edit'],
   openBooking:['treatment_room_diary','edit'], saveBooking:['treatment_room_diary','edit'],
   addClinic:['clinic_days','edit'], saveNewClinicDay:['clinic_days','edit'], saveClinicDayEdits:['clinic_days','edit'], deleteClinicDay:['clinic_days','delete'], copyClinicDay:['clinic_days','edit'],

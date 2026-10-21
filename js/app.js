@@ -45,6 +45,9 @@ function renderPageForNavigation(pageId){
     case 'partnerdiscounts':
       renderPartnerDiscounts();
       break;
+    case 'leads':
+      renderLeads();
+      break;
     case 'openinghours':
       renderOpeningHours();
       break;
