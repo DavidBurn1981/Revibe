@@ -79,19 +79,20 @@ async function saveMonthEndReviews(){
 }
 function getDailyTakings(dateKey){return (data.dailyTakings||[]).find(x=>x.date===dateKey)||null}
 // ---- Revenue target -------------------------------------------------------
-// Revenue that counts towards the monthly revenue target: cash + bed card +
-// online sales. Treatments card is a separate business and is excluded.
+// Revenue that counts towards the monthly revenue target: ALL revenue - cash + bed card +
+// treatments card + online sales.
 function revenueForTargetOnDate(key){
-  let cash,bed;
+  let cash,bed,treat;
   if(key===localDateKey()){
     // Today is still in progress - live from actual purchases (same as the End of Day panel).
     let purchases=(data.customerPurchases||[]).filter(p=>p.date===key),payg=paygSessionTotalsForDay(key);
     cash=purchases.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+payg.cash;
     bed=purchases.reduce((s,p)=>s+p.glowStudioCardAmount,0)+payg.card;
+    treat=purchases.reduce((s,p)=>s+p.treatmentsCardAmount,0);
   }else{
-    let row=getDailyTakings(key);cash=+row?.cash||0;bed=+row?.bedCard||0;
+    let row=getDailyTakings(key);cash=+row?.cash||0;bed=+row?.bedCard||0;treat=+row?.treatmentsCard||0;
   }
-  return cash+bed+onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0);
+  return cash+bed+treat+onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0);
 }
 // The target for one day: whatever is still needed for the month (the monthly
 // target minus everything taken on EARLIER days), spread evenly over every

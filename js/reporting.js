@@ -270,7 +270,7 @@ function buildPerformanceCards(stack,monthNumber,year){
 }
 function revenueTargetStripHtml(monthNumber,year){
   let today=localDateKey(),t=revenueTargetForDate(today);
-  let head=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Revenue Target (cash, bed card and online sales)</div>`;
+  let head=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Revenue Target (all revenue: cash, bed card, treatment card and online sales)</div>`;
   if(!t)return head+`<div class='performanceReportEmpty'>No Monthly Revenue Target has been set for ${MONTH_NAMES[monthNumber-1]} ${year}. Add one under Sunbed Performance → Settings → Monthly Targets.</div></div>`;
   let todayRev=revenueForTargetOnDate(today),
       monthRevSoFar=t.revenueBefore+todayRev,
