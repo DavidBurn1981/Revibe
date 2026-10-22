@@ -2041,6 +2041,10 @@ body.loading .app{visibility:hidden}
     <div class='formgrid' style='grid-template-columns:1fr'>
       <div><label>Partner Name</label><input id='partnerDiscountName' placeholder='e.g. Pure Gym'></div>
       <div><label>Agreed Discount (%)</label><input id='partnerDiscountPercent' type='number' min='0' max='100' step='0.5' placeholder='e.g. 10'></div>
+      <div><label>Main Contact Name for Partner</label><input id='partnerContactName'></div>
+      <div><label>Phone Number of Contact</label><input id='partnerContactPhone' type='tel'></div>
+      <div><label>Email Address of Contact</label><input id='partnerContactEmail' type='email'></div>
+      <div><label>Address of Partner</label><textarea id='partnerAddress' style='min-height:80px;resize:vertical;width:100%'></textarea></div>
       <div><label>Status</label><select id='partnerDiscountActive'><option value='true'>Active</option><option value='false'>Inactive (no discount given)</option></select></div>
     </div>
     <div id='partnerDiscountError' class='loginError' style='margin-top:12px'></div>
