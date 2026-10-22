@@ -2,6 +2,7 @@
 // Created in Settings > Sunbed Settings > Partner Discounts, switched on per customer account,
 // and applied automatically on the portal and in every shop purchase screen.
 let editingPartnerDiscountId=null;
+const PARTNER_CONTACT_FIELDS=[['partnerContactName','contact_name','contactName'],['partnerContactPhone','contact_phone','contactPhone'],['partnerContactEmail','contact_email','contactEmail'],['partnerAddress','partner_address','address']];
 
 // Price after a % discount. Matches the database function exactly: round(price*(100-pct)/100, 2).
 function partnerDiscountedPrice(listPrice,percent){let p=+listPrice||0,d=+percent||0;if(!(d>0))return Math.round(p*100)/100;return Math.round(+(p*(100-d)).toFixed(6))/100}
@@ -24,14 +25,14 @@ function renderPartnerDiscounts(){
   let canEdit=hasRolePermission('sunbed_settings','edit'),btn=document.getElementById('createPartnerDiscountBtn');
   if(btn)btn.style.display=canEdit?'inline-block':'none';
   let rows=[...(data.partnerDiscounts||[])];
-  table.innerHTML=`<tr><th>Partner</th><th>Discount</th><th>Customers</th><th>Status</th><th></th></tr>`+
-    (rows.length?rows.map(p=>`<tr><td><b>${escapeHtml(p.name)}</b></td><td>${partnerPercentText(p.percent)}</td><td>${partnerCustomerCount(p.id)}</td><td>${p.active?'Active':'Inactive'}</td><td>${canEdit?`<button onclick="openPartnerDiscountEdit('${p.id}')">Edit</button>`:''}</td></tr>`).join(''):`<tr><td colspan='5' class='muted'>No partner discounts yet. Click "+ Create Partner Discount".</td></tr>`);
+  table.innerHTML=`<tr><th>Partner</th><th>Discount</th><th>Main Contact</th><th>Customers</th><th>Status</th><th></th></tr>`+
+    (rows.length?rows.map(p=>`<tr><td><b>${escapeHtml(p.name)}</b></td><td>${partnerPercentText(p.percent)}</td><td>${escapeHtml(p.contactName||'')}${p.contactPhone?` <span class='muted'>${escapeHtml(p.contactPhone)}</span>`:''}</td><td>${partnerCustomerCount(p.id)}</td><td>${p.active?'Active':'Inactive'}</td><td>${canEdit?`<button onclick="openPartnerDiscountEdit('${p.id}')">Edit</button>`:''}</td></tr>`).join(''):`<tr><td colspan='6' class='muted'>No partner discounts yet. Click "+ Create Partner Discount".</td></tr>`);
 }
 function openPartnerDiscountCreate(){
   if(!requireRolePermission('sunbed_settings','edit'))return;
   editingPartnerDiscountId=null;
   document.getElementById('partnerDiscountModalTitle').textContent='Create Partner Discount';
-  document.getElementById('partnerDiscountName').value='';document.getElementById('partnerDiscountPercent').value='';document.getElementById('partnerDiscountActive').value='true';
+  document.getElementById('partnerDiscountName').value='';document.getElementById('partnerDiscountPercent').value='';document.getElementById('partnerDiscountActive').value='true';PARTNER_CONTACT_FIELDS.forEach(([id])=>document.getElementById(id).value='');
   document.getElementById('partnerDiscountDeleteBtn').style.display='none';document.getElementById('partnerDiscountError').style.display='none';
   document.getElementById('partnerDiscountModal').classList.add('show');
 }
@@ -39,7 +40,7 @@ function openPartnerDiscountEdit(id){
   let p=(data.partnerDiscounts||[]).find(x=>x.id===id);if(!p)return;
   editingPartnerDiscountId=id;
   document.getElementById('partnerDiscountModalTitle').textContent=p.name;
-  document.getElementById('partnerDiscountName').value=p.name;document.getElementById('partnerDiscountPercent').value=p.percent;document.getElementById('partnerDiscountActive').value=String(!!p.active);
+  document.getElementById('partnerDiscountName').value=p.name;document.getElementById('partnerDiscountPercent').value=p.percent;document.getElementById('partnerDiscountActive').value=String(!!p.active);PARTNER_CONTACT_FIELDS.forEach(([id,,k])=>document.getElementById(id).value=p[k]||'');
   document.getElementById('partnerDiscountDeleteBtn').style.display='inline-block';document.getElementById('partnerDiscountError').style.display='none';
   document.getElementById('partnerDiscountModal').classList.add('show');
 }
@@ -59,8 +60,9 @@ async function savePartnerDiscount(){
   let btn=document.getElementById('partnerDiscountSaveBtn');btn.disabled=true;btn.textContent='Saving...';
   try{
     let error;
-    if(editingPartnerDiscountId)({error}=await sb.from('partner_discounts').update({name,discount_percent:pct,active}).eq('id',editingPartnerDiscountId));
-    else({error}=await sb.from('partner_discounts').insert({name,discount_percent:pct,active}));
+    let row={name,discount_percent:pct,active};PARTNER_CONTACT_FIELDS.forEach(([id,col])=>{row[col]=document.getElementById(id).value.trim()||null});
+    if(editingPartnerDiscountId)({error}=await sb.from('partner_discounts').update(row).eq('id',editingPartnerDiscountId));
+    else({error}=await sb.from('partner_discounts').insert(row));
     if(error)throw error;
     closePartnerDiscountModal();await loadLiveData();renderPartnerDiscounts();
   }catch(e){showPartnerDiscountError(e.message||'Could not save.')}

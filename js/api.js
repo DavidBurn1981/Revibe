@@ -79,7 +79,7 @@ async function loadLiveData(){
   ]);
   let err=[products,treatments,treatmentGroupings,renters,renterProducts,clinics,bookings,beds,sunbeds,sessions,staffMembers,staffShifts,monthlyTargets,monthlyReviewCounts,holidayRequests,dailyTakings,orders,financeOutgoings,customers,tanningProducts,customerTransactions,hours,hist,businessPlannerActions,staffRotas,apartmentCleaningTasks,customerPurchases,customerPurchaseItems,apartments,apartmentBookings,subscriptionEvents,subscriptionProductConfig].find(x=>x.error)?.error;
   if(err)throw err;
-  {let pd=await loadAllRows('partner_discounts','*',[['name',true]]);if(pd.error)throw pd.error;data.partnerDiscounts=pd.data.map(x=>({id:x.id,name:x.name,percent:+x.discount_percent||0,active:x.active!==false}))}
+  {let pd=await loadAllRows('partner_discounts','*',[['name',true]]);if(pd.error)throw pd.error;data.partnerDiscounts=pd.data.map(x=>({id:x.id,name:x.name,percent:+x.discount_percent||0,active:x.active!==false,contactName:x.contact_name||'',contactPhone:x.contact_phone||'',contactEmail:x.contact_email||'',address:x.partner_address||''}))}
   data.products=products.data.map(x=>({id:x.id,name:x.name,active:x.active}));
   data.treatmentGroupings=treatmentGroupings.data.map(x=>({id:x.id,productId:x.product_id,name:x.name,displayOrder:+x.display_order||0}));
   data.businessPlannerActions=businessPlannerActions.data.map(x=>({id:x.id,date:x.action_date,description:x.description,ownerStaffId:x.owner_staff_id}));
