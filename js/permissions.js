@@ -105,7 +105,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   addStaffRota:['staff_rota','edit'], saveNewStaffRota:['staff_rota','edit'], deleteStaffRota:['staff_rota','delete'],
   openHolidayRequestCreate:['holiday_requests','edit'], saveHolidayRequest:['holiday_requests','edit'], deleteHolidayRequest:['holiday_requests','edit'], approveHolidayRequest:['holiday_requests','approve'],
   openOrderCreate:['finance','edit'], openOrderEdit:['finance','edit'], saveOrder:['finance','edit'], deleteOrder:['finance','edit'], saveFinanceOutgoings:['finance','edit'],
-  addBusinessPlannerAction:['business_planner','edit'], openBusinessPlannerActionEdit:['business_planner','edit'], saveBusinessPlannerAction:['business_planner','edit'], deleteBusinessPlannerAction:['business_planner','delete'],
+  addBusinessPlannerAction:['business_planner','edit'], openBusinessPlannerActionEdit:['business_planner','edit'], saveBusinessPlannerAction:['business_planner','edit'], deleteBusinessPlannerAction:['business_planner','delete'], openIdeaCreate:['business_planner','edit'], saveIdea:['business_planner','edit'], deleteIdea:['business_planner','delete'],
   addCleaningTask:['apartment_cleans','edit'], saveNewCleaningTask:['apartment_cleans','edit'], deleteCleaningTask:['apartment_cleans','delete'], toggleCleaningTaskComplete:['apartment_cleans','view'],
   openCleaningTaskEdit:['apartment_cleans','edit'], openOrCreateTaskForCell:['apartment_cleans','edit'], syncAirbnbCalendars:['apartment_cleans','edit'],
   saveBookingDetail:['my_bookings','edit'], deleteMyBooking:['my_bookings','delete'], createBookingFromMyBookings:['my_bookings','edit'], openBookingForClinician:['my_bookings','edit'],

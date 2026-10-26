@@ -122,6 +122,7 @@ function renderPageForNavigation(pageId){
       break;
     case 'businessplanner':
       renderBusinessPlanner();
+      if(typeof renderIdeas==='function')renderIdeas();
       break;
     case 'apartmentcleans':
       renderApartmentCleans();
