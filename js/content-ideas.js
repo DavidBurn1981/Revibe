@@ -13,9 +13,14 @@ async function renderIdeas(){
   let canDelete=hasRolePermission('business_planner','delete');
   let when=d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   let preview=t=>{t=(t||'').replace(/\s+/g,' ').trim();return t.length>140?t.slice(0,140)+'...':t};
-  table.innerHTML="<tr><th>Status</th><th>Content Type</th><th>Idea</th><th>Notes</th><th>Added</th><th></th></tr>"+
+  let html="<tr><th>Status</th><th>Content Type</th><th>Idea</th><th>Notes</th><th>Added</th><th></th></tr>"+
     (ideasCache.length?ideasCache.map(i=>`<tr class='clinicRow' onclick="openIdeaEdit('${i.id}')"><td>${escapeHtml(i.status)}</td><td>${escapeHtml(i.content_type||'')}</td><td><b>${escapeHtml(i.title)}</b></td><td class='muted'>${escapeHtml(preview(i.notes))}</td><td>${when(i.created_at)}</td><td>${canDelete?`<button onclick="event.stopPropagation();deleteIdea('${i.id}')">Delete</button>`:''}</td></tr>`).join(''):"<tr><td colspan='6' class='muted'>No ideas yet. Click \"Create Idea\" to add one.</td></tr>");
+  table.innerHTML=html;
+  let full=document.getElementById('ideasTableFull');if(full)full.innerHTML=html;
+  if(typeof makeTablesSortable==='function')makeTablesSortable();
 }
+function openIdeasFull(){document.getElementById('ideasFullModal').classList.add('show')}
+function closeIdeasFull(){document.getElementById('ideasFullModal').classList.remove('show')}
 function ideaFillStatus(){
   document.getElementById('ideaStatus').innerHTML=IDEA_STATUSES.map(s=>`<option value='${s}'>${s}</option>`).join('');
   document.getElementById('ideaContentType').innerHTML=`<option value=''>Select content type...</option>`+IDEA_TYPES.map(s=>`<option value='${s}'>${s}</option>`).join('');
