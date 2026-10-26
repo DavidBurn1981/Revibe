@@ -12,10 +12,18 @@ async function renderLeads(){
   let {data:rows,error}=await loadAllRows('partner_leads','*',[['created_at',false]]);
   if(error){table.innerHTML=`<tr><td class='muted'>Could not load the leads: ${escapeHtml(error.message||'')}</td></tr>`;return}
   leadsCache=rows||[];
+  drawLeads();
+}
+function filterLeads(){drawLeads()}
+function drawLeads(){
+  let table=document.getElementById('leadsTable');if(!table)return;
+  let canDelete=hasRolePermission('leads','delete');
+  let q=((document.getElementById('leadsSearch')||{}).value||'').trim().toLowerCase();
+  let list=q?leadsCache.filter(l=>(l.lead_name||'').toLowerCase().includes(q)):leadsCache;
   let when=d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   let preview=t=>{t=(t||'').replace(/\s+/g,' ').trim();return t.length>110?t.slice(0,110)+'...':t};
   table.innerHTML="<tr><th>Lead</th><th>Status</th><th>Type of Partner</th><th>Main Contact</th><th>Notes</th><th>Added</th><th></th></tr>"+
-    (leadsCache.length?leadsCache.map(l=>`<tr class='clinicRow' onclick="openLeadEdit('${l.id}')"><td><b>${escapeHtml(l.lead_name)}</b></td><td>${escapeHtml(l.lead_status)}</td><td>${escapeHtml(l.partner_type)}${l.partner_type==='Other'&&l.other_details?` <span class='muted'>(${escapeHtml(l.other_details)})</span>`:''}</td><td>${escapeHtml(l.main_contact_name||'')}${l.main_contact_phone?` <span class='muted'>${escapeHtml(l.main_contact_phone)}</span>`:''}</td><td class='muted'>${escapeHtml(preview(l.notes))}</td><td>${when(l.created_at)}</td><td>${canDelete?`<button onclick="event.stopPropagation();deleteLead('${l.id}')">Delete</button>`:''}</td></tr>`).join(''):"<tr><td colspan='7' class='muted'>No leads yet. Click \"+ New Lead\" to add one.</td></tr>");
+    (list.length?list.map(l=>`<tr class='clinicRow' onclick="openLeadEdit('${l.id}')"><td><b>${escapeHtml(l.lead_name)}</b></td><td>${escapeHtml(l.lead_status)}</td><td>${escapeHtml(l.partner_type)}${l.partner_type==='Other'&&l.other_details?` <span class='muted'>(${escapeHtml(l.other_details)})</span>`:''}</td><td>${escapeHtml(l.main_contact_name||'')}${l.main_contact_phone?` <span class='muted'>${escapeHtml(l.main_contact_phone)}</span>`:''}</td><td class='muted'>${escapeHtml(preview(l.notes))}</td><td>${when(l.created_at)}</td><td>${canDelete?`<button onclick="event.stopPropagation();deleteLead('${l.id}')">Delete</button>`:''}</td></tr>`).join(''):`<tr><td colspan='7' class='muted'>${q?'No leads match your search.':'No leads yet. Click "+ New Lead" to add one.'}</td></tr>`);
 }
 function leadFillSelects(){
   document.getElementById('leadStatus').innerHTML=LEAD_STATUSES.map(s=>`<option value='${s}'>${s}</option>`).join('');

@@ -72,7 +72,7 @@ async function loadCustomerSmsTab(){
   let id=editingCustomerId;
   if(!id){t.innerHTML="<tr><td class='muted'>Save the customer first - no texts have been sent yet.</td></tr>";return}
   t.innerHTML="<tr><td class='muted'>Loading...</td></tr>";
-  let kindLabel=k=>({minutes_balance:'Mins Reminder',marketing:'Marketing',custom:'Own Message',purchase:'Purchase Thank You'})[k]||k;
+  let kindLabel=k=>({minutes_balance:'Mins Reminder',marketing:'Marketing',custom:'Own Message',purchase:'Purchase Thank You',weekly_expiry:'Weekly Pass Ending',clinician_booking:'Clinician Booking'})[k]||k;
   let {data:rows,error}=await sb.from('sms_log').select('created_at,kind,status,message,phone').eq('customer_id',id).order('created_at',{ascending:false}).limit(500);
   if(editingCustomerId!==id)return;
   if(error){t.innerHTML="<tr><td class='muted'>Could not load the texts: "+escapeHtml(error.message||'')+"</td></tr>";return}
