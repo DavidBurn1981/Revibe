@@ -1220,7 +1220,7 @@ body.loading .app{visibility:hidden}
   <div class='card' style='margin-top:24px'>
     <div class='top' style='margin-bottom:10px'>
       <div><h2 style='margin:0'>Social Media/Content Ideas</h2><div class='muted'>Ideas for posts and content. Click an idea to open it.</div></div>
-      <button class='primary' id='createIdeaBtn' onclick='openIdeaCreate()'>Create Idea</button>
+      <div style='display:flex;gap:10px'><button onclick='openIdeasFull()'>Open Up List</button><button class='primary' id='createIdeaBtn' onclick='openIdeaCreate()'>Create Idea</button></div>
     </div>
     <table class='table' id='ideasTable'></table>
   </div>
@@ -2015,6 +2015,15 @@ body.loading .app{visibility:hidden}
 <div class='modal' id='staffShiftCreateModal'><div class='modalbox' style='max-width:720px'><div class='top'><div><h1 id='staffShiftModalTitle'>Create New Shift</h1><div class='muted' id='staffShiftModalSub'>Add a shift to the Staff Rota</div></div><button onclick='closeStaffShiftCreate()'>✕</button></div><div class='formgrid' style='grid-template-columns:repeat(2,1fr)'><div><label>Staff Member</label><select id='shiftStaff' onchange='updateShiftSummary()'></select></div><div><label>Date</label><div style='display:flex;gap:8px'><input id='shiftDateDisplay' readonly placeholder='Select date' style='flex:1;cursor:pointer' onclick='openShiftCalendarPicker()'><button type='button' onclick='openShiftCalendarPicker()'>📅</button></div><input id='shiftDate' type='hidden'></div><div><label>Start Time</label><select id='shiftStart' onchange='updateShiftSummary()'></select></div><div><label>End Time</label><select id='shiftEnd' onchange='updateShiftSummary()'></select></div></div><div class='staffWeekTotal'><div class='muted'>This Shift</div><div class='big' id='shiftHoursPreview'>0.00 hours</div><div class='muted' style='margin-top:10px'>Weekly Total Including This Shift</div><div class='big' id='shiftWeekTotalPreview'>0.00 hours</div><div class='muted' id='shiftWeekRange'></div></div><div id='shiftCreateError' class='loginError' style='margin-top:12px'></div><div style='display:flex;justify-content:space-between;margin-top:18px'><button id='shiftDeleteBtn' style='display:none' onclick='deleteStaffShiftFromModal()'>Delete Shift</button><div style='text-align:right;margin-left:auto'><button onclick='closeStaffShiftCreate()'>Cancel</button> <button class='primary' id='shiftCreateSaveBtn' onclick='saveStaffShift()'>Create Shift</button></div></div></div></div>
 <div class='modal' id='staffJoinCalendarPickerModal'><div class='modalbox' style='max-width:420px'><div class='top'><div><h1>Select Date of Joining</h1><div class='muted'>Choose the staff member's start date</div></div><button onclick='closeStaffJoinCalendarPicker()'>✕</button></div><div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'><button type='button' onclick='changeStaffJoinPickerMonth(-1)'>←</button><strong id='staffJoinPickerMonthLabel'></strong><button type='button' onclick='changeStaffJoinPickerMonth(1)'>→</button></div><div id='staffJoinPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div></div></div>
 <div class='modal' id='shiftCalendarPickerModal'><div class='modalbox' style='max-width:420px'><div class='top'><div><h1>Select Shift Date</h1><div class='muted'>Choose the rota date</div></div><button onclick='closeShiftCalendarPicker()'>✕</button></div><div style='display:flex;justify-content:space-between;align-items:center;margin:12px 0'><button type='button' onclick='changeShiftPickerMonth(-1)'>←</button><strong id='shiftPickerMonthLabel'></strong><button type='button' onclick='changeShiftPickerMonth(1)'>→</button></div><div id='shiftPickerGrid' style='display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center'></div></div></div>
+<div class='modal' id='ideasFullModal'>
+  <div class='modalbox' style='max-width:none;width:100vw;height:100vh;max-height:100vh;border-radius:0;margin:0;overflow:auto'>
+    <div class='top'>
+      <div><h1>Social Media/Content Ideas</h1><div class='muted'>Click an idea to open it.</div></div>
+      <div style='display:flex;gap:10px'><button class='primary' onclick='openIdeaCreate()'>Create Idea</button><button onclick='closeIdeasFull()'>✕ Close</button></div>
+    </div>
+    <table class='table' id='ideasTableFull'></table>
+  </div>
+</div>
 <div class='modal' id='ideaModal'>
   <div class='modalbox' style='max-width:860px;width:94vw'>
     <div class='top'>
