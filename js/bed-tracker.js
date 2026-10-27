@@ -1177,6 +1177,8 @@ async function confirmPurchases(){
   let confirmBtn=document.querySelector('.confirmPurchaseBtn');
   if(confirmBtn&&confirmBtn.disabled)return;
   let err=document.getElementById('processPurchasesError');err.style.display='none';
+  // Nothing left in the basket means this purchase has already been saved - never record a second, empty one.
+  if(!purchaseSelection.treatments.length&&!purchaseSelection.glowStudio.length){closeProcessPurchasesModal();return}
   let glowOk=halfMatchesDue('ppGlowStudioCard','ppGlowStudioCash',document.getElementById('ppGlowStudioDue')),
       treatOk=halfMatchesDue('ppTreatmentsCard','ppTreatmentsCash',document.getElementById('ppTreatmentsDue'));
   if(!glowOk||!treatOk){err.textContent='Card + Cash must equal the amount due in both halves before confirming.';err.style.display='block';return}
@@ -1226,6 +1228,8 @@ async function confirmPurchases(){
     if(customerId)sendPurchaseText(customerId,allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0).map(item=>item.title));
     purchaseSelection={treatments:[],glowStudio:[]};
     manualReset('purchase');
+    ['ppGlowStudioCard','ppGlowStudioCash','ppTreatmentsCard','ppTreatmentsCash'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ppGlowStudioDue').textContent='£0.00';document.getElementById('ppTreatmentsDue').textContent='£0.00';
     clearPurchaseCustomer();
     closeProcessPurchasesModal();
     renderPurchaseLists();

@@ -546,6 +546,8 @@ async function wizConfirmPurchases(){
   let confirmBtn=document.querySelector('.wizConfirmPurchaseBtn');
   if(confirmBtn&&confirmBtn.disabled)return;
   let err=document.getElementById('wizPaymentError');err.style.display='none';
+  // Nothing left in the basket means this purchase has already been saved - never record a second, empty one.
+  if(!wizPurchaseSelection.treatments.length&&!wizPurchaseSelection.glowStudio.length){wizGoTo('sessionType');return}
   let glowOk=wizHalfMatchesDue('wizPpGlowStudioCard','wizPpGlowStudioCash',document.getElementById('wizPpGlowStudioDue')),
       treatOk=wizHalfMatchesDue('wizPpTreatmentsCard','wizPpTreatmentsCash',document.getElementById('wizPpTreatmentsDue'));
   if(!glowOk||!treatOk){err.textContent='Card + Cash must equal the amount due in both halves before confirming.';err.style.display='block';return}
@@ -592,6 +594,8 @@ async function wizConfirmPurchases(){
     if(takingsError)throw takingsError;
     wizPurchaseSelection={treatments:[],glowStudio:[]};manualReset('wiz');
     wizRenderPurchaseLists();
+    ['wizPpGlowStudioCard','wizPpGlowStudioCash','wizPpTreatmentsCard','wizPpTreatmentsCash'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('wizPpGlowStudioDue').textContent='£0.00';document.getElementById('wizPpTreatmentsDue').textContent='£0.00';
     let passItems=allItems.filter(item=>item.grantsUnlimitedPass);
     for(let item of passItems){
       let {data:passResult,error:passError}=await sb.rpc('grant_weekly_pass',{p_customer:wizCustomerId,p_days:item.unlimitedPassDays||7});
