@@ -22,18 +22,18 @@ function customerLinkCell(modalId,c){
 // ---------- Active Subscriptions ----------
 function openActiveSubscriptions(){
   let rows=(data.customers||[]).filter(c=>c.subscriptionStatus==='Subscriber'||c.subscriptionStatus==='Subscriber - Failed Payment')
-    .map(c=>({c,type:c.subscriptionType==='7_Day_Pass'?'1 Week Pass':c.subscriptionType==='Monthly'?'Monthly':'Unknown',issue:c.subscriptionStatus==='Subscriber - Failed Payment'}))
+    .map(c=>({c,type:c.subscriptionType==='7_Day_Pass'?'1 Week Pass':c.subscriptionType==='Monthly'?'Monthly':'Unknown',issue:c.subscriptionStatus==='Subscriber - Failed Payment',cancelling:!!c.subscriptionCancelling&&c.subscriptionType!=='7_Day_Pass'}))
     .sort((a,b)=>a.type.localeCompare(b.type)||`${a.c.firstName} ${a.c.lastName}`.localeCompare(`${b.c.firstName} ${b.c.lastName}`));
   lastActiveSubsExport=rows;
   let monthly=rows.filter(r=>r.type==='Monthly').length,passes=rows.filter(r=>r.type==='1 Week Pass').length,issues=rows.filter(r=>r.issue).length;
   document.getElementById('activeSubsSubtitle').textContent=`${rows.length} active subscription${rows.length===1?'':'s'} - ${monthly} Monthly, ${passes} 1 Week Pass${issues?`, ${issues} with a payment issue`:''}`;
   document.getElementById('activeSubsTable').innerHTML='<tr><th>Account</th><th>Customer</th><th>Type</th><th>Status</th><th>Expires / Renews</th><th>Mobile</th></tr>'+
-    (rows.length?rows.map(r=>`<tr class='clinicRow' onclick="openCustomerFromList('activeSubsModal','${r.c.id}')"><td>${escapeHtml(r.c.accountNumber||'')}</td>${customerLinkCell('activeSubsModal',r.c)}<td>${r.type}</td><td>${r.issue?`<span style='color:var(--amber);font-weight:700'>Payment issue</span>`:`<span style='color:var(--green);font-weight:700'>Active</span>`}</td><td>${r.c.subscriptionExpiresAt?listDate(r.c.subscriptionExpiresAt):'<span class="muted">—</span>'}</td><td>${escapeHtml(r.c.phone||'')}</td></tr>`).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:24px'>There are no active subscriptions.</td></tr>`);
+    (rows.length?rows.map(r=>`<tr class='clinicRow' onclick="openCustomerFromList('activeSubsModal','${r.c.id}')"><td>${escapeHtml(r.c.accountNumber||'')}</td>${customerLinkCell('activeSubsModal',r.c)}<td>${r.type}</td><td>${r.issue?`<span style='color:var(--amber);font-weight:700'>Payment issue</span>`:r.cancelling?`<span style='color:var(--amber);font-weight:700'>Cancelling</span>`:`<span style='color:var(--green);font-weight:700'>Active</span>`}</td><td>${r.cancelling&&r.c.subscriptionPeriodEnd?'Ends '+listDate(r.c.subscriptionPeriodEnd):r.c.subscriptionExpiresAt?listDate(r.c.subscriptionExpiresAt):'<span class="muted">—</span>'}</td><td>${escapeHtml(r.c.phone||'')}</td></tr>`).join(''):`<tr><td colspan='6' class='muted' style='text-align:center;padding:24px'>There are no active subscriptions.</td></tr>`);
   document.getElementById('activeSubsModal').classList.add('show');
 }
 function exportActiveSubsToExcel(){
   if(!lastActiveSubsExport||!lastActiveSubsExport.length){alert('No active subscriptions to export.');return}
-  let ws=XLSX.utils.json_to_sheet(lastActiveSubsExport.map(r=>({'Account':r.c.accountNumber||'','Customer':`${r.c.firstName} ${r.c.lastName}`,'Type':r.type,'Status':r.issue?'Payment issue':'Active','Expires / Renews':r.c.subscriptionExpiresAt?listDate(r.c.subscriptionExpiresAt):'','Mobile':r.c.phone||''}))),wb=XLSX.utils.book_new();
+  let ws=XLSX.utils.json_to_sheet(lastActiveSubsExport.map(r=>({'Account':r.c.accountNumber||'','Customer':`${r.c.firstName} ${r.c.lastName}`,'Type':r.type,'Status':r.issue?'Payment issue':r.cancelling?'Cancelling':'Active','Expires / Renews':r.cancelling&&r.c.subscriptionPeriodEnd?'Ends '+listDate(r.c.subscriptionPeriodEnd):r.c.subscriptionExpiresAt?listDate(r.c.subscriptionExpiresAt):'','Mobile':r.c.phone||''}))),wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Active Subscriptions');XLSX.writeFile(wb,`REVIBE Active Subscriptions ${localDateKey()}.xlsx`);
 }
 

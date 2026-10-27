@@ -121,6 +121,9 @@ document.getElementById('custCancelSubBtn').style.display=(c.subscriptionStatus=
 if(c.subscriptionStatus==='Subscriber'&&c.subscriptionType==='7_Day_Pass'&&c.subscriptionExpiresAt){
   passExpiryEl.textContent=`Expires ${new Date(c.subscriptionExpiresAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}`;
   passExpiryEl.style.display='block';
+}else if((c.subscriptionStatus==='Subscriber'||c.subscriptionStatus==='Subscriber - Failed Payment')&&c.subscriptionCancelling&&c.subscriptionPeriodEnd){
+  passExpiryEl.textContent=`Monthly membership CANCELLED - ends ${new Date(c.subscriptionPeriodEnd).toLocaleString('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/London'})} (set to No at midnight)`;
+  passExpiryEl.style.display='block';
 }else{
   passExpiryEl.style.display='none';
 }
