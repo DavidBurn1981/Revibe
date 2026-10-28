@@ -38,7 +38,7 @@ function exportActiveSubsToExcel(){
 }
 
 // ---------- High Session Users ----------
-// Customers with more than 6 sessions in the last 7 days (today + previous 6), or 10 or more in the last 12 days.
+// Customers with 5 or more sessions in the last 7 days (today + previous 6), or 9 or more in the last 12 days.
 let lastHighUsersExport=null;
 function openHighSessionUsers(){
   try{openHighSessionUsersInner()}catch(e){console.error(e);alert('High Session Users could not open: '+(e&&e.message||e))}
@@ -54,10 +54,10 @@ function openHighSessionUsersInner(){
     if(x.date>=from12)a.s12++;
     if(x.date>=from7)a.s7++;
   });
-  let rows=(data.customers||[]).filter(c=>agg[c.id]&&(agg[c.id].s7>6||agg[c.id].s12>=10)).map(c=>({c,...agg[c.id]}))
+  let rows=(data.customers||[]).filter(c=>agg[c.id]&&(agg[c.id].s7>=5||agg[c.id].s12>=9)).map(c=>({c,...agg[c.id]}))
     .sort((a,b)=>b.s7-a.s7||b.s14-a.s14||`${a.c.firstName} ${a.c.lastName}`.localeCompare(`${b.c.firstName} ${b.c.lastName}`));
   lastHighUsersExport=rows;
-  document.getElementById('highUsersSubtitle').textContent=`${rows.length} customer${rows.length===1?'':'s'} with more than 6 sessions in the last 7 days, or 10 or more in the last 12 days`;
+  document.getElementById('highUsersSubtitle').textContent=`${rows.length} customer${rows.length===1?'':'s'} with 5 or more sessions in the last 7 days, or 9 or more in the last 12 days`;
   document.getElementById('highUsersTable').innerHTML='<tr><th>Account</th><th>Customer</th><th>Skin Type</th><th>Sessions (last 7 days)</th><th>Sessions (last 14 days)</th><th>Total Minutes (last 14 days)</th></tr>'+
     (rows.length?rows.map(r=>`<tr class='clinicRow' onclick="openCustomerFromList('highUsersModal','${r.c.id}')"><td>${escapeHtml(r.c.accountNumber||'')}</td>${customerLinkCell('highUsersModal',r.c)}<td>${r.c.skinType?'Type '+escapeHtml(String(r.c.skinType)):'<span class="muted">Not set</span>'}</td><td>${r.s7}</td><td>${r.s14}</td><td>${r.min14}</td></tr>`).join(''):`<tr><td colspan='6' class='muted'>No customers meet this at the moment.</td></tr>`);
   document.getElementById('highUsersModal').classList.add('show');
