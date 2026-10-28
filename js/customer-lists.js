@@ -41,6 +41,9 @@ function exportActiveSubsToExcel(){
 // Customers with more than 6 sessions in the last 7 days (today + previous 6), or 10 or more in the last 12 days.
 let lastHighUsersExport=null;
 function openHighSessionUsers(){
+  try{openHighSessionUsersInner()}catch(e){console.error(e);alert('High Session Users could not open: '+(e&&e.message||e))}
+}
+function openHighSessionUsersInner(){
   let back=n=>localDateKey(new Date(Date.now()-n*86400000));
   let from7=back(6),from12=back(11),from14=back(13);
   let agg={};
