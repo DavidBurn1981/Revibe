@@ -17,6 +17,7 @@ const REVIBE_PERMISSION_AREAS=[
   {group:'Admin',key:'users',label:'Users',approve:false},
   {group:'Admin',key:'roles_permissions',label:'Roles & Permissions',approve:false},
   {group:'Admin',key:'finance',label:'Finance',approve:false},
+  {group:'Admin',key:'cash_account',label:'Cash Account',approve:false},
   {group:'Admin',key:'business_planner',label:'Social Media Planning',approve:false},
   {group:'Admin',key:'customer_purchases',label:'Customer Purchases',approve:false},
   {group:'Apartments',key:'apartment_cleans',label:'Apartment Cleans',approve:false},
@@ -51,6 +52,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   rolespermissions:'roles_permissions',
   finance:'finance',
   orders:'finance',
+  cashaccount:'cash_account',
   businessplanner:'business_planner',
   customerpurchases:'customer_purchases',
   customersegments:'customer_purchases',
@@ -87,6 +89,7 @@ const REVIBE_ACTION_PERMISSION_RULES={
   openCustomerPurchaseDetail:['customer_purchases','view'], deleteCustomerPurchase:['customer_purchases','delete'],
   openDailySessionEdit:['daily_session_tracker','edit'], saveDailySessionEdit:['daily_session_tracker','edit'],
   saveDailyTakings:['daily_session_tracker','edit'],
+  openCashAction:['cash_account','edit'], saveCashAction:['cash_account','edit'],
   openSunbedBooking:['sunbed_bookings','edit'], saveSunbedBooking:['sunbed_bookings','edit'], sunbedCancelBookingFromDetail:['sunbed_bookings','edit'],
   openTanningProduct:['sunbed_settings','edit'], saveTanningProduct:['sunbed_settings','edit'], deleteTanningProduct:['sunbed_settings','edit'],
   openLeadCreate:['leads','edit'], saveLead:['leads','edit'], deleteLead:['leads','delete'],
@@ -151,7 +154,7 @@ function applyPermissionBasedNavigation(){
   // Hide empty section headings automatically.
   document.querySelectorAll('#nav .navtitle').forEach(title=>{
     if(title.id==='adminNavTitle'){
-      let visible=[...document.querySelectorAll('#usersNavButton,#rolesPermissionsNavButton,#financeNavButton,#businessPlannerNavButton,#customerPurchasesNavButton')]
+      let visible=[...document.querySelectorAll('#usersNavButton,#rolesPermissionsNavButton,#financeNavButton,#cashAccountNavButton,#businessPlannerNavButton,#customerPurchasesNavButton')]
         .some(x=>x.style.display!=='none');
       title.style.display=visible?'block':'none';
       return;

@@ -117,6 +117,9 @@ function renderPageForNavigation(pageId){
     case 'finance':
       renderFinance();
       break;
+    case 'cashaccount':
+      renderCashAccount();
+      break;
     case 'orders':
       renderOrders();
       break;
