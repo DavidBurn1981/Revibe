@@ -37,6 +37,34 @@ function exportActiveSubsToExcel(){
   XLSX.utils.book_append_sheet(wb,ws,'Active Subscriptions');XLSX.writeFile(wb,`REVIBE Active Subscriptions ${localDateKey()}.xlsx`);
 }
 
+// ---------- High Session Users ----------
+// Customers with more than 6 sessions in the last 7 days (today + previous 6), or 10 or more in the last 12 days.
+let lastHighUsersExport=null;
+function openHighSessionUsers(){
+  let back=n=>localDateKey(new Date(Date.now()-n*86400000));
+  let from7=back(6),from12=back(11),from14=back(13);
+  let agg={};
+  (data.bedSessions||[]).forEach(x=>{
+    if(!x.customerId||!x.date||x.date<from14)return;
+    let a=agg[x.customerId]||(agg[x.customerId]={s7:0,s12:0,s14:0,min14:0});
+    a.s14++;a.min14+=(+x.length||0);
+    if(x.date>=from12)a.s12++;
+    if(x.date>=from7)a.s7++;
+  });
+  let rows=(data.customers||[]).filter(c=>agg[c.id]&&(agg[c.id].s7>6||agg[c.id].s12>=10)).map(c=>({c,...agg[c.id]}))
+    .sort((a,b)=>b.s7-a.s7||b.s14-a.s14||`${a.c.firstName} ${a.c.lastName}`.localeCompare(`${b.c.firstName} ${b.c.lastName}`));
+  lastHighUsersExport=rows;
+  document.getElementById('highUsersSubtitle').textContent=`${rows.length} customer${rows.length===1?'':'s'} with more than 6 sessions in the last 7 days, or 10 or more in the last 12 days`;
+  document.getElementById('highUsersTable').innerHTML='<tr><th>Account</th><th>Customer</th><th>Skin Type</th><th>Sessions (last 7 days)</th><th>Sessions (last 14 days)</th><th>Total Minutes (last 14 days)</th></tr>'+
+    (rows.length?rows.map(r=>`<tr class='clinicRow' onclick="openCustomerFromList('highUsersModal','${r.c.id}')"><td>${escapeHtml(r.c.accountNumber||'')}</td>${customerLinkCell('highUsersModal',r.c)}<td>${r.c.skinType?'Type '+escapeHtml(String(r.c.skinType)):'<span class="muted">Not set</span>'}</td><td>${r.s7}</td><td>${r.s14}</td><td>${r.min14}</td></tr>`).join(''):`<tr><td colspan='6' class='muted'>No customers meet this at the moment.</td></tr>`);
+  document.getElementById('highUsersModal').classList.add('show');
+}
+function exportHighUsersToExcel(){
+  if(!lastHighUsersExport||!lastHighUsersExport.length){alert('No customers to export.');return}
+  let ws=XLSX.utils.json_to_sheet(lastHighUsersExport.map(r=>({'Account':r.c.accountNumber||'','Customer':`${r.c.firstName} ${r.c.lastName}`,'Skin Type':r.c.skinType?'Type '+r.c.skinType:'Not set','Sessions (last 7 days)':r.s7,'Sessions (last 14 days)':r.s14,'Total Minutes (last 14 days)':r.min14}))),wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'High Session Users');XLSX.writeFile(wb,`REVIBE High Session Users ${localDateKey()}.xlsx`);
+}
+
 // ---------- Opportunity to SMS ----------
 async function openSmsOpportunities(){
   let table=document.getElementById('smsOppTable'),err=document.getElementById('smsOppError');
