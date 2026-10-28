@@ -1331,6 +1331,7 @@ function selectSessionCustomer(id){
   document.getElementById('sessionCustomerBalance').innerHTML=`<div>${c.minutesLeft} minutes left on account.</div><div>Bed Use: ${escapeHtml(c.bedUse||'Hybrid')}</div><div>Preferred Bed: ${escapeHtml(c.preferredBed||'Any Bed')}</div><div>${uvHtml}</div>${warningHtml}${subscriberStatusBadgeHtml(c)}`;
   applyTodaysBookingAutofill(id);
   updateSessionLengthTotal();
+  checkSevenDayStreakWarning(id);
 }
 function clearSessionCustomer(){
   sessionPartnerApply=true;
@@ -1430,6 +1431,28 @@ function subscriberAlreadyHadSessionMessage(customerId,dateKey){
   let tomorrow=new Date(y,m-1,d+1).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
   let when=key===localDateKey()?'today':'on that day';
   return `${c.firstName} ${c.lastName} is a subscriber and can only have one session per day. They already had a session ${when}${existing.time?' at '+existing.time:''}, so they can have another from ${tomorrow}.`;
+}
+// Number of days in a row this customer has had a session, counting today (whether today's session is
+// already logged or is about to be). Any recorded session counts, whatever it was paid with.
+function customerConsecutiveSessionDays(customerId){
+  let dates=new Set((data.bedSessions||[]).filter(x=>x.customerId===customerId).map(x=>x.date));
+  let d=parseLocalDateKey(localDateKey()),run=1;
+  while(true){
+    d.setDate(d.getDate()-1);
+    if(!dates.has(iso(d)))break;
+    run++;
+  }
+  return run;
+}
+// Big red warning for more than 7 days in a row. Staff can still carry on; shown every day it applies.
+function checkSevenDayStreakWarning(customerId){
+  if(!customerId)return;
+  let days=customerConsecutiveSessionDays(customerId);
+  if(days<=7)return;
+  let c=(data.customers||[]).find(x=>x.id===customerId);
+  document.getElementById('sevenDayName').textContent=c?`${c.firstName||''} ${c.lastName||''}`.trim():'';
+  document.getElementById('sevenDayHeadline').textContent=`THIS IS SERIOUS NOW. THIS USER HAS NOW HAD A SESSION ${days} DAYS IN A ROW. LEGALLY WE SHOULD NOT BE ALLOWING THIS.`;
+  document.getElementById('sevenDayWarningModal').classList.add('show');
 }
 function checkExistingCustomerUsageWarning(customerId){
   if(!customerId)return;

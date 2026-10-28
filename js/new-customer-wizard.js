@@ -226,6 +226,7 @@ function wizPickSelectCustomer(id){
   document.getElementById('wizSelectCustomerError').style.display='none';
   if(!c.waiverSignedPresent)alert('Customer does not have a waiver in place yet. Please ask them to do it before continuing');
   checkExistingCustomerUsageWarning(id);
+  checkSevenDayStreakWarning(id);
   showLapsedCustomerPopup(id);
   {let alreadyToday=subscriberAlreadyHadSessionMessage(id,localDateKey());if(alreadyToday)alert(alreadyToday);}
   if(wizMode==='existing-booking')wizCheckBookingForCustomer(id);

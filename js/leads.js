@@ -1,6 +1,6 @@
 // Business Growth > Leads: possible partnerships being worked on (gyms, PTs, wellbeing companies...).
 let editingLeadId=null,leadsCache=[];
-const LEAD_STATUSES=['Contacted','In Discussion','Met face to face','Partner Created'];
+const LEAD_STATUSES=['Contacted','In Discussion','Met face to face','Partner Created','Not Possible'];
 const LEAD_TYPES=['Gym','Wellbeing company','PT','Skin company','Other'];
 const LEAD_CONTACT_FIELDS=[['leadMainName','main_contact_name'],['leadMainPhone','main_contact_phone'],['leadMainEmail','main_contact_email'],['leadSecondName','second_contact_name'],['leadSecondPhone','second_contact_phone'],['leadSecondEmail','second_contact_email']];
 
