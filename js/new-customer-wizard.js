@@ -11,24 +11,27 @@ function wizTogglePartner(on){wizPartnerApply=!!on;wizRenderPurchaseLists()}
 let wizBoughtBlockMinutes=false;
 let wizCurrentPurchaseCategory=null;
 let wizSessionBackTarget='purchaseAsk';
+let wizCreatedAccountNumber='';
+let wizPortalDone=false,wizPortalBusy=false;
+const WIZ_DEFAULT_TEMP_PASSWORD='12345678';
 
 let wizMode='new';
 let wizNoSessionMode=false;
 function wizIsExistingFlow(){return wizMode==='existing'||wizMode==='existing-booking'}
 function wizGetStepOrder(){
-  if(wizMode==='new'&&wizNoSessionMode)return ['personal','id','skin'];
+  if(wizMode==='new'&&wizNoSessionMode)return ['personal','id','skin','portal'];
   return wizIsExistingFlow()
     ? ['selectCustomer','purchaseAsk','purchase','payment','sessionType','sessionMinutes']
-    : ['personal','id','skin','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
+    : ['personal','id','skin','portal','purchaseAsk','purchase','payment','sessionType','sessionMinutes'];
 }
 function wizGetChevronGroups(){
-  if(wizMode==='new'&&wizNoSessionMode)return [{label:'Setup Customer',keys:['personal','id','skin']}];
+  if(wizMode==='new'&&wizNoSessionMode)return [{label:'Setup Customer',keys:['personal','id','skin','portal']}];
   return wizIsExistingFlow()
     ? [{label:'Select Customer',keys:['selectCustomer']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}]
-    : [{label:'Setup Customer',keys:['personal','id','skin']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}];
+    : [{label:'Setup Customer',keys:['personal','id','skin','portal']},{label:'Any Purchases',keys:['purchaseAsk','purchase','payment']},{label:'Session',keys:['sessionType','sessionMinutes']}];
 }
-const WIZ_STEP_LABELS={personal:'Personal Info',id:'ID Checks',skin:'Skin Assessment',selectCustomer:'Select Customer',purchaseAsk:'Purchase?',purchase:'Purchase',payment:'Payment',sessionType:'Session Type',sessionMinutes:'Session Minutes'};
-const WIZ_STEP_PHASE_CLASS={personal:'phase-account',id:'phase-account',skin:'phase-account',selectCustomer:'phase-account',purchaseAsk:'phase-purchase',purchase:'phase-purchase',payment:'phase-purchase',sessionType:'phase-session',sessionMinutes:'phase-session'};
+const WIZ_STEP_LABELS={personal:'Personal Info',id:'ID Checks',skin:'Skin Assessment',portal:'Portal Set Up',selectCustomer:'Select Customer',purchaseAsk:'Purchase?',purchase:'Purchase',payment:'Payment',sessionType:'Session Type',sessionMinutes:'Session Minutes'};
+const WIZ_STEP_PHASE_CLASS={personal:'phase-account',id:'phase-account',skin:'phase-account',portal:'phase-account',selectCustomer:'phase-account',purchaseAsk:'phase-purchase',purchase:'phase-purchase',payment:'phase-purchase',sessionType:'phase-session',sessionMinutes:'phase-session'};
 function wizRenderChevrons(currentKey){
   let stepOrder=wizGetStepOrder(),currentIndex=stepOrder.indexOf(currentKey),groups=wizGetChevronGroups();
   let labelsHtml=groups.map(g=>`<div class='wizardChevronGroupLabel' style='flex-grow:${g.keys.length}'>${g.label}</div>`).join('');
@@ -154,11 +157,12 @@ function exitNewCustomerWizard(){
   }
   document.getElementById('newCustomerWizardModal').classList.remove('show');
 }
-const WIZ_STEP_IDS={personal:'wizPersonal',id:'wizId',skin:'wizSkin',selectCustomer:'wizSelectCustomer',purchaseAsk:'wizPurchaseAsk',purchase:'wizPurchase',payment:'wizPayment',sessionType:'wizSessionType',sessionMinutes:'wizSessionMinutes',complete:'wizComplete'};
+const WIZ_STEP_IDS={personal:'wizPersonal',id:'wizId',skin:'wizSkin',portal:'wizPortal',selectCustomer:'wizSelectCustomer',purchaseAsk:'wizPurchaseAsk',purchase:'wizPurchase',payment:'wizPayment',sessionType:'wizSessionType',sessionMinutes:'wizSessionMinutes',complete:'wizComplete'};
 function wizGoTo(stepKey){
   Object.values(WIZ_STEP_IDS).forEach(id=>{document.getElementById(id).style.display='none'});
   document.getElementById(WIZ_STEP_IDS[stepKey]).style.display='block';
   wizRenderChevrons(stepKey);
+  if(stepKey==='portal')wizPortalInit();
   if(stepKey==='purchaseAsk')document.getElementById('wizAccountCreatedBanner').style.display=wizMode==='new'?'block':'none';
   if(stepKey==='sessionType')wizSessionBackTarget=wizCustomerId&&wizPurchaseSelection.treatments.length+wizPurchaseSelection.glowStudio.length>0?'payment':'purchaseAsk';
   if(stepKey==='purchase'){wizPartnerApply=true;wizRenderPurchaseLists()}
@@ -416,15 +420,65 @@ async function wizCreateAccount(){
     }
     wizCustomerId=row.id;
     await loadLiveData();renderCustomers();
-    if(wizNoSessionMode){
-      alert(`${first} ${last}'s account has been created successfully (Account ${row.account_number||''}). No session or purchase has been recorded.`);
-      document.getElementById('newCustomerWizardModal').classList.remove('show');
-      return;
-    }
+    wizCreatedAccountNumber=row.account_number||'';
     document.getElementById('wizAccountCreatedSub').textContent=`${first} ${last}'s account has been created successfully (Account ${row.account_number||''}).`;
-    wizGoTo('purchaseAsk');
+    wizGoTo('portal');
   }catch(e){err.textContent=e.message||'Could not create this account.';err.style.display='block'}
   finally{btn.disabled=false;btn.textContent='Create Account →'}
+}
+
+// --- Portal Set Up (new customers) ---
+function wizPortalInit(){
+  let c=(data.customers||[]).find(x=>x.id===wizCustomerId);
+  wizPortalBusy=false;
+  wizPortalDone=!!(c&&c.authUserId);
+  document.getElementById('wizPortalAccountMsg').textContent=document.getElementById('wizAccountCreatedSub').textContent;
+  document.getElementById('wizPortalEmail').value=(c&&c.email)||'';
+  document.getElementById('wizPortalPassword').value=WIZ_DEFAULT_TEMP_PASSWORD;
+  document.getElementById('wizPortalError').style.display='none';
+  wizPortalRender();
+}
+function wizPortalRender(){
+  document.getElementById('wizPortalDoneBox').style.display=wizPortalDone?'block':'none';
+  let btn=document.getElementById('wizPortalSetupBtn');
+  btn.disabled=wizPortalDone||wizPortalBusy;
+  btn.textContent=wizPortalDone?'Portal Account Set Up ✓':wizPortalBusy?'Setting up...':'Setup Portal Account';
+  document.getElementById('wizPortalEmail').readOnly=wizPortalDone;
+  document.getElementById('wizPortalPassword').readOnly=wizPortalDone;
+  document.getElementById('wizPortalNextBtn').textContent=wizNoSessionMode?'Finish ✓':'Next: Purchase →';
+}
+async function wizPortalSetup(){
+  if(wizPortalDone||wizPortalBusy||!wizCustomerId)return;
+  let err=document.getElementById('wizPortalError');err.style.display='none';
+  let email=document.getElementById('wizPortalEmail').value.trim(),pw=document.getElementById('wizPortalPassword').value;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='Please enter a valid email address for the customer.';err.style.display='block';return}
+  if(!pw||pw.length<8){err.textContent='The temporary password must be at least 8 characters.';err.style.display='block';return}
+  wizPortalBusy=true;wizPortalRender();
+  try{
+    let {data:result,error}=await sb.functions.invoke('wizard-portal-setup',{body:{customer_id:wizCustomerId,email,password:pw}});
+    if(error){
+      let info=null;try{if(error.context&&typeof error.context.json==='function')info=await error.context.json()}catch(_){}
+      throw new Error((info&&info.error)||error.message||'Could not set up the portal account.');
+    }
+    if(result&&result.error)throw new Error(result.error);
+    wizPortalDone=true;
+    try{await loadLiveData();renderCustomers()}catch(e){console.error(e)}
+  }catch(e){
+    err.textContent=e.message||'Could not set up the portal account.';err.style.display='block';
+  }finally{
+    wizPortalBusy=false;wizPortalRender();
+  }
+}
+function wizPortalNext(){
+  if(wizPortalBusy)return;
+  if(!wizPortalDone&&!confirm('The portal account has not been set up yet. Continue without it?'))return;
+  if(wizNoSessionMode){
+    let c=(data.customers||[]).find(x=>x.id===wizCustomerId);
+    alert(`${c?c.firstName+' '+c.lastName+"'s":'The'} account has been created successfully (Account ${wizCreatedAccountNumber}). No session or purchase has been recorded.`);
+    document.getElementById('newCustomerWizardModal').classList.remove('show');
+    return;
+  }
+  wizGoTo('purchaseAsk');
 }
 
 // --- Purchase ---
