@@ -1767,6 +1767,23 @@ body.loading .app{visibility:hidden}
     <div class='wizardNav'><button onclick='wizGoTo("id")'>← Back</button><button class='primary' id='wizCreateAccountBtn' onclick='wizCreateAccount()'>Create Account →</button></div>
   </div>
 
+  <div id='wizPortal' class='wizardStep' style='display:none'>
+    <h3>Portal Set Up</h3>
+    <p class='muted' id='wizPortalAccountMsg'></p>
+    <div style='max-width:520px'>
+      <label>Check Email</label>
+      <input id='wizPortalEmail' type='email' inputmode='email' autocomplete='off' placeholder='Customer email address'>
+      <label style='margin-top:14px;display:block'>Temporary Password</label>
+      <div style='display:flex;gap:10px;flex-wrap:wrap;align-items:stretch'>
+        <input id='wizPortalPassword' type='text' autocomplete='off' style='flex:1;min-width:150px'>
+        <button type='button' class='primary' id='wizPortalSetupBtn' onclick='wizPortalSetup()'>Setup Portal Account</button>
+      </div>
+    </div>
+    <div id='wizPortalError' class='loginError' style='margin-top:12px'></div>
+    <div id='wizPortalDoneBox' style='display:none;margin-top:18px;max-width:640px;padding:14px 16px;background:#173323;border:1px solid #285d3d;color:#81e9aa;border-radius:9px;font-weight:700;line-height:1.5'>Please tell the new customer their temporary password and guide them on their phone to log in using this temporary password, and show them the portal.<div style='font-weight:400;margin-top:8px;color:#bfeacb'>They should change it to their own password from the portal menu (Change Password).</div></div>
+    <div class='wizardNav'><span></span><button class='primary' id='wizPortalNextBtn' onclick='wizPortalNext()'>Next: Purchase →</button></div>
+  </div>
+
   <div id='wizSelectCustomer' class='wizardStep' style='display:none'>
     <h3>Select Customer</h3>
     <div style='position:relative;max-width:460px'>
