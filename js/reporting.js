@@ -303,12 +303,14 @@ function renderPerformanceReporting(){
   let monthStatus=reportingMonthStatus(now.month,now.year),
       revenueKeys=dateRangeKeys(monthStatus.monthStart,monthStatus.effectiveEnd),
       revenue=periodRevenue(revenueKeys);
+  let bankedT=revenue.treatments*0.975,bankedB=revenue.beds*0.975,bankedO=revenue.online*0.965,bankedTotal=bankedT+bankedB+bankedO,
+      bk=(label,v)=>`<div style='margin-top:8px;padding-top:8px;border-top:1px solid #323844'><div class='label'>${label}</div><div class='value' style='font-size:18px;margin-top:3px'>£${v.toFixed(2)}</div></div>`;
   currentHtml+=`<div class='revenueToDateStrip'><div class='performanceSectionTitle'>Revenue to Date</div><div class='revenueGrid' style='grid-template-columns:repeat(auto-fit,minmax(130px,1fr))'>
     <div class='revenueMetric'><div class='label'>Cash Taken</div><div class='value'>£${revenue.cash.toFixed(2)}</div></div>
-    <div class='revenueMetric'><div class='label'>Treatments Card</div><div class='value'>£${revenue.treatments.toFixed(2)}</div></div>
-    <div class='revenueMetric'><div class='label'>Bed Card</div><div class='value'>£${revenue.beds.toFixed(2)}</div></div>
-    <div class='revenueMetric'><div class='label'>Online Sales</div><div class='value'>£${revenue.online.toFixed(2)}</div></div>
-    <div class='revenueMetric'><div class='label'>Total</div><div class='value'>£${revenue.totalWithOnline.toFixed(2)}</div></div>
+    <div class='revenueMetric'><div class='label'>Treatments Card</div><div class='value'>£${revenue.treatments.toFixed(2)}</div>${bk('Treatments Banked',bankedT)}</div>
+    <div class='revenueMetric'><div class='label'>Bed Card</div><div class='value'>£${revenue.beds.toFixed(2)}</div>${bk('Bed Banked',bankedB)}</div>
+    <div class='revenueMetric'><div class='label'>Online Sales</div><div class='value'>£${revenue.online.toFixed(2)}</div>${bk('Online Banked',bankedO)}</div>
+    <div class='revenueMetric'><div class='label'>Revenue So Far</div><div class='value'>£${revenue.totalWithOnline.toFixed(2)}</div>${bk('Revenue Banked So Far',bankedTotal)}</div>
   </div></div>`;
 
   let monthSessionRows=performanceSessions(data.bedSessions.filter(x=>{let d=parseLocalDateKey(x.date);return d.getMonth()+1===now.month&&d.getFullYear()===now.year;}));
