@@ -87,8 +87,8 @@ function revenueForTargetOnDate(key){
     // Today is still in progress - live from actual purchases (same as the End of Day panel).
     let purchases=(data.customerPurchases||[]).filter(p=>p.date===key),payg=paygSessionTotalsForDay(key);
     cash=purchases.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+payg.cash;
-    bed=purchases.reduce((s,p)=>s+p.glowStudioCardAmount,0)+payg.card;
-    treat=purchases.reduce((s,p)=>s+p.treatmentsCardAmount,0);
+    bed=purchases.reduce((s,p)=>s+p.glowStudioCardAmount,0);
+    treat=purchases.reduce((s,p)=>s+p.treatmentsCardAmount,0)+payg.card;
   }else{
     let row=getDailyTakings(key);cash=+row?.cash||0;bed=+row?.bedCard||0;treat=+row?.treatmentsCard||0;
   }
@@ -138,8 +138,8 @@ function renderDailyTakings(){
     let purchasesForDay=(data.customerPurchases||[]).filter(p=>p.date===key);
     let paygForDay=paygSessionTotalsForDay(key);
     cashValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+paygForDay.cash;
-    treatmentsCardValue=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0);
-    bedCardValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygForDay.card;
+    treatmentsCardValue=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0)+paygForDay.card;
+    bedCardValue=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0);
   }else{
     // Past days are already finalised - respect whatever was saved (including any manual
     // till-reconciliation correction staff made at the time) rather than recalculating over it.
@@ -236,9 +236,9 @@ function renderBedTracker(){
   let headerCashEl=document.getElementById('headerCashValue');
   if(headerCashEl)headerCashEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+paygToday.cash).toFixed(2)}`;
   let headerTreatmentsCardEl=document.getElementById('headerTreatmentsCardValue');
-  if(headerTreatmentsCardEl)headerTreatmentsCardEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.treatmentsCardAmount,0).toFixed(2)}`;
+  if(headerTreatmentsCardEl)headerTreatmentsCardEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.treatmentsCardAmount,0)+paygToday.card).toFixed(2)}`;
   let headerBedCardEl=document.getElementById('headerBedCardValue');
-  if(headerBedCardEl)headerBedCardEl.textContent=`£${(purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygToday.card).toFixed(2)}`;
+  if(headerBedCardEl)headerBedCardEl.textContent=`£${purchasesToday.reduce((s,p)=>s+p.glowStudioCardAmount,0).toFixed(2)}`;
   // Online sales (weekly passes, memberships bought through the portal) get their
   // own figure here, and are also folded into Total Purchases below - but they
   // stay out of Total Sunbed Card, which is till/card takings only.
@@ -791,7 +791,7 @@ function renderDailySessionsPurchases(key){
   let treatmentsTotal=rows.reduce((s,p)=>s+(p.treatmentsTotal||0),0);
   let glowStudioTotal=rows.reduce((s,p)=>s+(p.glowStudioTotal||0),0);
   let treatmentsTotalEl=document.getElementById('dailySessionsTreatmentsTotalValue');
-  if(treatmentsTotalEl)treatmentsTotalEl.textContent=`£${treatmentsTotal.toFixed(2)}`;
+  if(treatmentsTotalEl)treatmentsTotalEl.textContent=`£${(treatmentsTotal+paygForPurchasesTotal.cash+paygForPurchasesTotal.card).toFixed(2)}`;
   let glowStudioTotalEl=document.getElementById('dailySessionsGlowStudioTotalValue');
   if(glowStudioTotalEl)glowStudioTotalEl.textContent=`£${glowStudioTotal.toFixed(2)}`;
   // Bottom panel must tally with the top "Total Purchases": shop purchases
@@ -881,8 +881,8 @@ function renderDailySessionsPage(key){
   let paygForDay=paygSessionTotalsForDay(key);
   let onlineForDay=onlineSalesForDate(key).reduce((s,o)=>s+o.amount,0);
   let cashFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCashAmount+p.treatmentsCashAmount,0)+paygForDay.cash;
-  let treatmentsCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0);
-  let bedCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0)+paygForDay.card;
+  let treatmentsCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.treatmentsCardAmount,0)+paygForDay.card;
+  let bedCardFromPurchases=purchasesForDay.reduce((s,p)=>s+p.glowStudioCardAmount,0);
   let cashEl=document.getElementById('dailySessionsCashValue');
   if(cashEl)cashEl.textContent=`£${cashFromPurchases.toFixed(2)}`;
   let treatmentsCardEl=document.getElementById('dailySessionsTreatmentsCardValue');
