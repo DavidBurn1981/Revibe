@@ -88,6 +88,9 @@ function renderPageForNavigation(pageId){
     case 'holidayrequests':
       renderHolidayRequests();
       break;
+    case 'todayspurchases':
+      renderTodaysPurchasesPage();
+      break;
     case 'dailysessions': {
       let today=localDateKey(),
           dailyPicker=document.getElementById('dailySessionsDatePicker');
@@ -202,6 +205,7 @@ function renderAll(){
     applyPermissionBasedActions();
   },0);
 
+  if(document.getElementById('todayspurchases')?.classList.contains('active'))renderTodaysPurchasesPage();
   if(document.getElementById('dailysessions')?.classList.contains('active')){
     let dailyPicker=document.getElementById('dailySessionsDatePicker');
     if(dailyPicker&&!dailyPicker.value)dailyPicker.value=localDateKey();

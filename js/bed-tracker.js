@@ -775,6 +775,12 @@ function onlineSalesForDate(dateKey){
     .map(e=>({createdAt:e.occurredAt,customerId:e.customerId,item:'Monthly Unlimited Membership (Renewal)',amount:e.details.amount_paid_pence/100}));
   return [...passRows,...membershipRows,...renewalRows];
 }
+function renderTodaysPurchasesPage(){
+  let key=localDateKey();
+  renderDailySessionsPurchases(key);
+  let src=document.getElementById('dailySessionsPurchasesTable'),dst=document.getElementById('todaysPurchasesTable');
+  if(src&&dst)dst.innerHTML=src.innerHTML;
+}
 function renderDailySessionsPurchases(key){
   let table=document.getElementById('dailySessionsPurchasesTable');if(!table)return;
   let rows=(data.customerPurchases||[])
@@ -818,7 +824,7 @@ function renderDailySessionsPurchases(key){
     let customerLabel=customer?`<a href='javascript:void(0)' onclick="event.stopPropagation();openCustomer('${customer.id}')" style='color:var(--pink);text-decoration:underline'>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</a>`:'—';
     return {sortKey:o.createdAt||'',html:`<tr><td>${timeLabel}</td><td>Online</td><td>${customerLabel}</td><td>${escapeHtml(o.item)}</td><td>—</td><td>—</td><td>—</td><td>£${o.amount.toFixed(2)}</td><td><b>£${o.amount.toFixed(2)}</b></td></tr>`};
   });
-  let paygRowsHtml=paygDayTotal>0?[{sortKey:'',html:`<tr><td>—</td><td>Shop</td><td>—</td><td>Pay As You Go sessions (all customers)</td><td>£${paygForPurchasesTotal.cash.toFixed(2)}</td><td>—</td><td>£${paygDayTotal.toFixed(2)}</td><td>—</td><td><b>£${paygDayTotal.toFixed(2)}</b></td></tr>`}]:[];
+  let paygRowsHtml=paygDayTotal>0?[{sortKey:'',html:`<tr><td>—</td><td>Shop</td><td>—</td><td>Pay As You Go sessions (all customers)</td><td>£${paygForPurchasesTotal.cash.toFixed(2)}</td><td>£${paygDayTotal.toFixed(2)}</td><td>—</td><td>—</td><td><b>£${paygDayTotal.toFixed(2)}</b></td></tr>`}]:[];
   let allRowsHtml=[...shopRowsHtml,...onlineRowsHtml,...paygRowsHtml].sort((a,b)=>b.sortKey.localeCompare(a.sortKey)).map(r=>r.html).join('');
 
   table.innerHTML='<tr><th>Time</th><th>Channel</th><th>Customer</th><th>Items</th><th>Cash</th><th>Revibe Treatments</th><th>Revibe Glow Studio</th><th>Online Sales</th><th>Grand Total</th></tr>'+

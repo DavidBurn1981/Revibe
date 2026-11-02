@@ -26,6 +26,7 @@ const REVIBE_PAGE_PERMISSION_MAP={
   bedtracker:'daily_session_tracker',
   recordasession:'daily_session_tracker',
   dailysessions:'daily_session_tracker',
+  todayspurchases:'daily_session_tracker',
   sunbedbookings:'sunbed_bookings',
   performancereporting:'performance_reporting',
   sunbedsettings:'sunbed_settings',
