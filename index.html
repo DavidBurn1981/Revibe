@@ -664,7 +664,7 @@ body.loading .app{visibility:hidden}
 <div id='userBar' class='userBar' style='display:none'></div>
 <button id='mobileMenuButton' class='mobileMenuButton' type='button' aria-label='Open menu' onclick='toggleMobileNav()'>☰</button>
 <div id='mobileNavBackdrop' class='mobileNavBackdrop' onclick='closeMobileNav()'></div>
-<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='todayspurchases'>Today's Purchases</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='mybookings'>My Bookings</button><button data-page='mytreatmenttype'>My Treatment Type</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle'>Business Growth</div><button data-page='leads'>Leads</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button> <button data-page='cashaccount' id='cashAccountNavButton'>Cash Account</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button data-page='customerpurchases' id='customerPurchasesNavButton'>Customer Purchases</button><button data-page='customersegments' id='customerSegmentsNavButton'>Advanced Query</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><button data-page='recordasession'>Record A Session</button><button data-page='customerportalpreview'>Customer Portal Preview</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button><button data-page='apartmentairbnb'>Apartment Air BnB Calendar</button></nav></aside><main class='main'>
+<div class='app'><aside><div class='logo'><img src='LOGO.svg' alt='REVIBE'></div><nav id='nav'><button data-page='customers' class='topCustomerNav'>Customers</button><div class='navtitle'>UV/RLT Machines</div><button data-page='bedtracker' class='active'>NEW SESSION</button><button data-page='dailysessions'>Daily Sessions</button><button data-page='todayspurchases'>Today's Purchases</button><button data-page='sunbedbookings'>Sunbed Bookings</button><button data-page='performancereporting'>Performance Reporting</button><button data-page='sunbedsettings'>Settings</button><div class='navtitle'>Treatment Bookings</div><button data-page='diary'>Treatment Room Diary</button><button data-page='clinic'>Clinic Days</button><button data-page='mybookings'>My Bookings</button><button data-page='mytreatmenttype'>My Treatment Type</button><button data-page='treatmentsettings'>Settings</button><div class='navtitle'>Staff</div><button data-page='staffmembers'>Staff Members</button><button data-page='staffrota'>Staff Rota</button><button data-page='holidayrequests'>Holiday Requests</button><div class='navtitle'>Business Growth</div><button data-page='leads'>Leads</button><div class='navtitle' id='adminNavTitle'>Admin</div><button data-page='users' id='usersNavButton'>Users</button><button data-page='rolespermissions' id='rolesPermissionsNavButton'>Roles & Permissions</button><button data-page='finance' id='financeNavButton'>Finance</button> <button data-page='cashaccount' id='cashAccountNavButton'>Cash Account</button><button data-page='databackup'>Data Backup</button><button data-page='businessplanner' id='businessPlannerNavButton'>Social Media Planning</button><button data-page='customerpurchases' id='customerPurchasesNavButton'>Customer Purchases</button><button data-page='customersegments' id='customerSegmentsNavButton'>Advanced Query</button><button type='button' id='customerBookingPageNavButton' onclick='openCustomerBookingPage()'>Customer Booking Page ↗</button><button data-page='settings'>Settings</button><button data-page='recordasession'>Record A Session</button><button data-page='customerportalpreview'>Customer Portal Preview</button><div class='navtitle'>Apartments</div><button data-page='apartmentcleans'>Apartment Cleans</button><button data-page='apartmentairbnb'>Apartment Air BnB Calendar</button></nav></aside><main class='main'>
 
 
 <section id='performancereporting' class='page'>
@@ -1127,6 +1127,17 @@ body.loading .app{visibility:hidden}
   </div>
 </section>
 
+<section id='databackup' class='page'>
+  <div class='top'><div><h1>Data Backup</h1><div class='muted'>Download a copy of all your shop data as one Excel file.</div></div></div>
+  <div class='card' style='padding:18px;max-width:720px'>
+    <div id='backupOverdue' style='display:none;background:#44202a;border:1px solid #7b3347;border-radius:9px;padding:10px 12px;margin-bottom:12px;font-weight:800'>Your last backup is over a week old (or none has been taken). Please download a new one.</div>
+    <div class='muted' id='backupLastInfo' style='margin-bottom:12px'></div>
+    <button id='backupBtn' type='button' onclick='downloadBackup()'>Download Backup Now</button>
+    <div id='backupStatus' style='margin-top:12px;font-weight:800'></div>
+    <div id='backupLog' style='margin-top:8px;font-size:12px'></div>
+    <div class='muted' style='margin-top:14px;font-size:12px'>The file contains customer names, phone numbers and emails. Keep it somewhere private (a password-protected folder) and please do not email it unprotected. Passwords and card details are not included. Aim to download one every Monday.</div>
+  </div>
+</section>
 <section id='cashaccount' class='page'>
   <div class='top'>
     <div>
@@ -2599,6 +2610,7 @@ body.loading .app{visibility:hidden}
 <script src='js/customer-purchases.js'></script>
 <script src='js/customer-lists.js'></script>
 <script src='js/cash-account.js'></script>
+<script src='js/data-backup.js'></script>
 <script src='js/table-sort.js'></script>
 <script src='js/customer-segments.js'></script>
 <script src='js/api.js'></script>
