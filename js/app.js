@@ -120,6 +120,9 @@ function renderPageForNavigation(pageId){
     case 'finance':
       renderFinance();
       break;
+    case 'databackup':
+      renderDataBackup();
+      break;
     case 'cashaccount':
       renderCashAccount();
       break;
