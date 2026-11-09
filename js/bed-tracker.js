@@ -1083,7 +1083,7 @@ function openPurchaseCategory(type){
 function closePurchaseProductModal(){document.getElementById('purchaseProductModal').classList.remove('show')}
 function addProductToPurchase(id){
   let p=(data.tanningProducts||[]).find(x=>x.id===id);if(!p)return;
-  let entry={productId:p.id,title:p.title,price:+p.price||0,listPrice:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0};
+  let entry={productId:p.id,title:p.title,price:+p.price||0,listPrice:+p.price||0,productType:p.type,cardMachine:p.cardMachine||'Sunbed Card',minutes:+p.minutes||0,grantsUnlimitedPass:!!p.grantsUnlimitedPass,unlimitedPassDays:p.unlimitedPassDays||7};
   if(entry.cardMachine==='Treatment Card')purchaseSelection.treatments.push(entry);
   else purchaseSelection.glowStudio.push(entry);
   renderPurchaseLists();
@@ -1231,7 +1231,18 @@ async function confirmPurchases(){
       p_date:localDateKey(),p_cash:glowStudioCash+treatmentsCash,p_treatments_card:treatmentsCard,p_bed_card:glowStudioCard
     });
     if(takingsError)throw takingsError;
-    if(customerId)sendPurchaseText(customerId,allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0).map(item=>item.title));
+    let passAlerts=[];
+    let passItems=customerId?allItems.filter(item=>item.grantsUnlimitedPass):[];
+    for(let item of passItems){
+      let {data:passResult,error:passError}=await sb.rpc('grant_weekly_pass',{p_customer:customerId,p_days:item.unlimitedPassDays||7});
+      if(passError){
+        passAlerts.push(passError.message&&passError.message.includes('ALREADY_SUBSCRIBER')?`${item.title} was sold, but this customer already has an active membership or pass, so it was NOT activated. Please check their account.`:`${item.title} was sold but could not be activated (${passError.message}). Please activate it on their account.`);
+      }else{
+        let expiresAt=new Date((Array.isArray(passResult)?passResult[0]:passResult).expires_at);
+        passAlerts.push(`${item.title} activated. Pass will expire on ${expiresAt.toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}.`);
+      }
+    }
+    if(customerId)sendPurchaseText(customerId,[...allItems.filter(item=>item.productType==='Block Minutes'&&item.minutes>0&&!item.grantsUnlimitedPass),...passItems].map(item=>item.title));
     purchaseSelection={treatments:[],glowStudio:[]};
     manualReset('purchase');
     ['ppGlowStudioCard','ppGlowStudioCash','ppTreatmentsCard','ppTreatmentsCash'].forEach(id=>document.getElementById(id).value='');
@@ -1240,7 +1251,7 @@ async function confirmPurchases(){
     closeProcessPurchasesModal();
     renderPurchaseLists();
     await loadLiveData();renderAll();renderDailyTakings();
-    alert('Purchase confirmed.');
+    alert(['Purchase confirmed.',...passAlerts].join('\n\n'));
   }catch(e){err.textContent=e.message||'Could not confirm this purchase.';err.style.display='block'}
   finally{if(confirmBtn){confirmBtn.disabled=false;confirmBtn.textContent='Confirm Purchases'}}
 }
